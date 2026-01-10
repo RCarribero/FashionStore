@@ -1,0 +1,161 @@
+---
+/**
+ * Admin Categories Page Template
+ */
+import AdminLayout from "../layouts/AdminLayout.astro";
+import {
+    getCategories,
+    createCategory,
+    deleteCategory,
+    getProductCountByCategory,
+} from "../services/category.service";
+import { ROUTES } from "../../../config";
+import type { Category } from "../../../shared/types";
+
+// Fetch categories
+const { data: categories } = await getCategories();
+const countByCategory = await getProductCountByCategory();
+
+let error = "";
+let success = "";
+
+// Handle form submissions
+if (Astro.request.method === "POST") {
+    const formData = await Astro.request.formData();
+    const action = formData.get("action")?.toString();
+
+    if (action === "create") {
+        const name = formData.get("name")?.toString() || "";
+        const result = await createCategory(name);
+        if (!result.success) {
+            error = result.error || "Error al crear";
+        } else {
+            return Astro.redirect(ROUTES.ADMIN.CATEGORIES);
+        }
+    } else if (action === "delete") {
+        const id = formData.get("id")?.toString() || "";
+        const result = await deleteCategory(id);
+        if (!result.success) {
+            error = result.error || "Error al eliminar";
+        } else {
+            return Astro.redirect(ROUTES.ADMIN.CATEGORIES);
+        }
+    }
+}
+---
+
+<AdminLayout title="Categorias">
+    {
+        error && (
+            <div class="mb-6 p-4 bg-red-50 border border-red-200 text-red-700">
+                {error}
+            </div>
+        )
+    }
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Categories List -->
+        <div class="lg:col-span-2">
+            <div class="bg-white shadow-elegant overflow-hidden">
+                <div class="px-6 py-4 border-b border-charcoal-100">
+                    <h2 class="font-display text-lg text-navy-900">
+                        Categorias Existentes
+                    </h2>
+                </div>
+
+                {
+                    categories && categories.length > 0 ? (
+                        <table class="w-full">
+                            <thead class="bg-charcoal-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-charcoal-500 uppercase">
+                                        Nombre
+                                    </th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-charcoal-500 uppercase">
+                                        Slug
+                                    </th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-charcoal-500 uppercase">
+                                        Productos
+                                    </th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-charcoal-500 uppercase">
+                                        Acciones
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-charcoal-100">
+                                {categories.map((category: Category) => (
+                                    <tr class="hover:bg-charcoal-50">
+                                        <td class="px-6 py-4 font-medium text-navy-900">
+                                            {category.name}
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-charcoal-500">
+                                            {category.slug}
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-right text-charcoal-600">
+                                            {countByCategory[category.id] || 0}
+                                        </td>
+                                        <td class="px-6 py-4 text-right">
+                                            <form method="POST" class="inline">
+                                                <input
+                                                    type="hidden"
+                                                    name="action"
+                                                    value="delete"
+                                                />
+                                                <input
+                                                    type="hidden"
+                                                    name="id"
+                                                    value={category.id}
+                                                />
+                                                <button
+                                                    type="submit"
+                                                    class="text-red-600 hover:text-red-800 text-sm font-medium"
+                                                    onclick="return confirm('Eliminar categoria?')"
+                                                >
+                                                    Eliminar
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    ) : (
+                        <div class="p-6 text-center text-charcoal-500">
+                            No hay categorias
+                        </div>
+                    )
+                }
+            </div>
+        </div>
+
+        <!-- Create Form -->
+        <div>
+            <div class="bg-white shadow-elegant p-6">
+                <h2 class="font-display text-lg text-navy-900 mb-4">
+                    Nueva Categoria
+                </h2>
+                <form method="POST">
+                    <input type="hidden" name="action" value="create" />
+                    <div class="mb-4">
+                        <label
+                            for="name"
+                            class="block text-sm font-medium text-navy-900 mb-2"
+                            >Nombre *</label
+                        >
+                        <input
+                            type="text"
+                            id="name"
+                            name="name"
+                            required
+                            class="input"
+                            placeholder="Ej: Accesorios"
+                        />
+                    </div>
+                    <button type="submit" class="btn-primary w-full"
+                        >Crear Categoria</button
+                    >
+                </form>
+            </div>
+        </div>
+    </div>
+</AdminLayout>

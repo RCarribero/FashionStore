@@ -1,0 +1,173 @@
+---
+/**
+ * Store Layout
+ * Public store layout with header and footer
+ */
+import BaseLayout from "../../../shared/layouts/BaseLayout.astro";
+import CartSlideOver, { CartTrigger } from "../components/CartSlideOver";
+import { ROUTES, STORE_NAV } from "../../../config";
+
+interface Props {
+    title: string;
+    description?: string;
+}
+
+const { title, description } = Astro.props;
+const currentPath = Astro.url.pathname;
+---
+
+<BaseLayout title={title} description={description}>
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header
+            class="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-charcoal-100"
+        >
+            <div class="container-wide">
+                <div class="flex items-center justify-between h-16">
+                    <!-- Logo -->
+                    <a
+                        href={ROUTES.HOME}
+                        class="font-display text-xl text-navy-900"
+                    >
+                        Fashion<span class="text-leather-600">Market</span>
+                    </a>
+
+                    <!-- Nav -->
+                    <nav class="hidden md:flex items-center gap-8">
+                        {
+                            STORE_NAV.map((item) => (
+                                <a
+                                    href={item.href}
+                                    class:list={[
+                                        "text-sm font-medium transition-colors",
+                                        currentPath === item.href
+                                            ? "text-navy-900"
+                                            : "text-charcoal-600 hover:text-navy-900",
+                                    ]}
+                                >
+                                    {item.name}
+                                </a>
+                            ))
+                        }
+                    </nav>
+
+                    <!-- Actions -->
+                    <div class="flex items-center gap-4">
+                        <button
+                            type="button"
+                            class="p-2 text-charcoal-600 hover:text-navy-900"
+                        >
+                            <svg
+                                class="h-5 w-5"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="1.5"
+                                    d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+                                ></path>
+                            </svg>
+                        </button>
+                        <CartTrigger client:load />
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main -->
+        <main class="flex-1">
+            <slot />
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-navy-950 text-cream-100 py-16">
+            <div class="container-wide">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
+                    <!-- Brand -->
+                    <div class="md:col-span-1">
+                        <span class="font-display text-2xl text-cream-50">
+                            Fashion<span class="text-leather-400">Market</span>
+                        </span>
+                        <p class="mt-4 text-cream-400 text-sm">
+                            Moda masculina premium. Piezas atemporales para el
+                            hombre moderno.
+                        </p>
+                    </div>
+
+                    <!-- Links -->
+                    <div>
+                        <h3 class="font-display text-lg text-cream-50 mb-4">
+                            Tienda
+                        </h3>
+                        <ul class="space-y-2 text-sm text-cream-400">
+                            {
+                                STORE_NAV.slice(1).map((item) => (
+                                    <li>
+                                        <a
+                                            href={item.href}
+                                            class="hover:text-cream-50"
+                                        >
+                                            {item.name}
+                                        </a>
+                                    </li>
+                                ))
+                            }
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h3 class="font-display text-lg text-cream-50 mb-4">
+                            Ayuda
+                        </h3>
+                        <ul class="space-y-2 text-sm text-cream-400">
+                            <li>
+                                <a href="#" class="hover:text-cream-50">Envio</a
+                                >
+                            </li>
+                            <li>
+                                <a href="#" class="hover:text-cream-50"
+                                    >Devoluciones</a
+                                >
+                            </li>
+                            <li>
+                                <a href="#" class="hover:text-cream-50"
+                                    >Contacto</a
+                                >
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h3 class="font-display text-lg text-cream-50 mb-4">
+                            Legal
+                        </h3>
+                        <ul class="space-y-2 text-sm text-cream-400">
+                            <li>
+                                <a href="#" class="hover:text-cream-50"
+                                    >Privacidad</a
+                                >
+                            </li>
+                            <li>
+                                <a href="#" class="hover:text-cream-50"
+                                    >Terminos</a
+                                >
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div
+                    class="mt-12 pt-8 border-t border-navy-800 text-center text-sm text-cream-500"
+                >
+                    &copy; {new Date().getFullYear()} FashionMarket. Todos los derechos
+                    reservados.
+                </div>
+            </div>
+        </footer>
+
+        <CartSlideOver client:load />
+    </div>
+</BaseLayout>

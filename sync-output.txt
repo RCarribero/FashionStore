@@ -1,0 +1,83 @@
+﻿[2m12:00:39[22m [34m[@astrojs/node][39m Enabling sessions with filesystem storage
+node.exe : [31m[1m12
+:00:39[22m [ERROR] [@
+astrojs/tailwind][39m
+ An unhandled error 
+occurred while 
+running the [1m"astro
+:config:setup"[22m 
+hook
+At line:1 char:1
++ & "C:\Program Files\
+nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo 
+...
++ ~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: ([31m[1m1   
+ 2:00:...etup"[22    
+m hook:String) []    
+, RemoteException
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+It looks like you're 
+trying to use 
+`tailwindcss` 
+directly as a PostCSS 
+plugin. The PostCSS 
+plugin has moved to a 
+separate package, so 
+to continue using 
+Tailwind CSS with 
+PostCSS you'll need 
+to install `@tailwindc
+ss/postcss` and 
+update your PostCSS 
+configuration.
+  [1mLocation:[22m
+    [4mC:\Users\RBX\D
+ocuments\FashionStore\
+node_modules\tailwindc
+ss\dist\chunk-CT46QCH7
+.mjs:38:1643[24m
+  [1mStack 
+trace:[22m
+[2m    at Ha (file://
+/C:/Users/RBX/Document
+s/FashionStore/node_mo
+dules/tailwindcss/dist
+/chunk-CT46QCH7.mjs:38
+:1643)
+    at async 
+astro:config:setup (fi
+le:///C:/Users/RBX/Doc
+uments/FashionStore/no
+de_modules/@astrojs/ta
+ilwind/dist/index.js:4
+5:17)
+    at async 
+runHookInternal (file:
+///C:/Users/RBX/Docume
+nts/FashionStore/node_
+modules/astro/dist/int
+egrations/hooks.js:51:
+5)
+    at async sync (fil
+e:///C:/Users/RBX/Docu
+ments/FashionStore/nod
+e_modules/astro/dist/c
+ore/sync/index.js:41:1
+4)
+    at async 
+runCommand (file:///C:
+/Users/RBX/Documents/F
+ashionStore/node_modul
+es/astro/dist/cli/inde
+x.js:167:7)[22m

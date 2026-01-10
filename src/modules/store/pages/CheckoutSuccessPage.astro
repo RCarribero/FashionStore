@@ -1,0 +1,66 @@
+---
+/**
+ * Checkout Success Page
+ */
+import StoreLayout from "../../store/layouts/StoreLayout.astro";
+import { ROUTES } from "../../../config";
+
+export const prerender = false;
+
+const sessionId = Astro.url.searchParams.get("session_id");
+---
+
+<StoreLayout title="Pedido Confirmado">
+    <div class="container-wide py-24">
+        <div class="max-w-lg mx-auto text-center">
+            <!-- Success Icon -->
+            <div
+                class="mx-auto w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-8"
+            >
+                <svg
+                    class="h-10 w-10 text-green-600"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+
+            <h1 class="font-display text-display-md text-navy-900">
+                Gracias por tu compra
+            </h1>
+
+            <p class="mt-4 text-charcoal-600">
+                Tu pedido ha sido procesado correctamente. Recibiras un email de
+                confirmacion con los detalles del envio.
+            </p>
+
+            {
+                sessionId && (
+                    <p class="mt-4 text-sm text-charcoal-400">
+                        ID de sesion: {sessionId.slice(0, 20)}...
+                    </p>
+                )
+            }
+
+            <div class="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
+                <a href={ROUTES.PRODUCTS} class="btn-primary">
+                    Seguir comprando
+                </a>
+                <a href={ROUTES.HOME} class="btn-ghost"> Volver al inicio </a>
+            </div>
+        </div>
+    </div>
+</StoreLayout>
+
+<script>
+    // Clear cart after successful purchase
+    if (typeof window !== "undefined") {
+        localStorage.removeItem("fashionmarket-cart");
+    }
+</script>

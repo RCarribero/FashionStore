@@ -1,0 +1,186 @@
+---
+/**
+ * Admin Products List Page Template
+ */
+import AdminLayout from "../layouts/AdminLayout.astro";
+import { getProducts, deleteProduct } from "../services/product.service";
+import { formatPrice } from "../../../shared/utils";
+import { ROUTES } from "../../../config";
+import type { Product } from "../../../shared/types";
+
+// Fetch products
+const { data: products } = await getProducts();
+---
+
+<AdminLayout title="Productos">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-8">
+        <p class="text-charcoal-600">Gestiona el inventario de tu tienda</p>
+        <a href={ROUTES.ADMIN.PRODUCTS.NEW} class="btn-primary">
+            Nuevo Producto
+        </a>
+    </div>
+
+    <!-- Products Table -->
+    <div class="bg-white shadow-elegant overflow-hidden">
+        {
+            products && products.length > 0 ? (
+                <table class="w-full">
+                    <thead class="bg-charcoal-50">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-charcoal-500 uppercase tracking-wider">
+                                Producto
+                            </th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-charcoal-500 uppercase tracking-wider">
+                                Categoria
+                            </th>
+                            <th class="px-6 py-4 text-right text-xs font-medium text-charcoal-500 uppercase tracking-wider">
+                                Precio
+                            </th>
+                            <th class="px-6 py-4 text-right text-xs font-medium text-charcoal-500 uppercase tracking-wider">
+                                Stock
+                            </th>
+                            <th class="px-6 py-4 text-right text-xs font-medium text-charcoal-500 uppercase tracking-wider">
+                                Acciones
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-charcoal-100">
+                        {products.map((product: Product) => (
+                            <tr class="hover:bg-charcoal-50 transition-colors">
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-4">
+                                        <div class="h-12 w-12 bg-charcoal-100 flex-shrink-0 overflow-hidden">
+                                            {product.images[0] ? (
+                                                <img
+                                                    src={product.images[0]}
+                                                    alt={product.name}
+                                                    class="h-full w-full object-cover"
+                                                />
+                                            ) : (
+                                                <div class="h-full w-full flex items-center justify-center text-charcoal-300">
+                                                    <svg
+                                                        class="h-6 w-6"
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                        stroke="currentColor"
+                                                    >
+                                                        <path
+                                                            stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                            stroke-width="1"
+                                                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                                        />
+                                                    </svg>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div>
+                                            <p class="font-medium text-navy-900">
+                                                {product.name}
+                                            </p>
+                                            {product.featured && (
+                                                <span class="text-xs text-leather-600">
+                                                    Destacado
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-charcoal-600">
+                                    {product.category?.name || "Sin categoria"}
+                                </td>
+                                <td class="px-6 py-4 text-sm text-navy-900 text-right font-medium">
+                                    {formatPrice(product.price)}
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <span
+                                        class:list={[
+                                            "px-2 py-1 rounded text-xs font-medium",
+                                            product.stock === 0
+                                                ? "bg-red-100 text-red-700"
+                                                : product.stock < 5
+                                                  ? "bg-yellow-100 text-yellow-700"
+                                                  : "bg-green-100 text-green-700",
+                                        ]}
+                                    >
+                                        {product.stock}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <div class="flex items-center justify-end gap-3">
+                                        <a
+                                            href={ROUTES.ADMIN.PRODUCTS.EDIT(
+                                                product.id,
+                                            )}
+                                            class="text-navy-600 hover:text-navy-900 text-sm font-medium"
+                                        >
+                                            Editar
+                                        </a>
+                                        <button
+                                            type="button"
+                                            class="text-red-600 hover:text-red-800 text-sm font-medium delete-btn"
+                                            data-id={product.id}
+                                            data-name={product.name}
+                                        >
+                                            Eliminar
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            ) : (
+                <div class="text-center py-12">
+                    <svg
+                        class="mx-auto h-12 w-12 text-charcoal-300"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="1"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                        />
+                    </svg>
+                    <h3 class="mt-4 text-lg font-medium text-navy-900">
+                        No hay productos
+                    </h3>
+                    <p class="mt-2 text-charcoal-500">
+                        Comienza creando tu primer producto
+                    </p>
+                    <a
+                        href={ROUTES.ADMIN.PRODUCTS.NEW}
+                        class="btn-primary mt-6 inline-block"
+                    >
+                        Crear Producto
+                    </a>
+                </div>
+            )
+        }
+    </div>
+</AdminLayout>
+
+<script>
+    document.querySelectorAll(".delete-btn").forEach((btn) => {
+        btn.addEventListener("click", async (e) => {
+            const target = e.target as HTMLElement;
+            const id = target.dataset.id;
+            const name = target.dataset.name;
+
+            if (confirm(`Eliminar "${name}"?`)) {
+                const response = await fetch(`/api/products/${id}`, {
+                    method: "DELETE",
+                });
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    alert("Error al eliminar");
+                }
+            }
+        });
+    });
+</script>
