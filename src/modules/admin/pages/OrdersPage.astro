@@ -1,0 +1,84 @@
+---
+/**
+ * Admin Orders Page Template
+ * Placeholder for orders management
+ */
+import AdminLayout from "../layouts/AdminLayout.astro";
+---
+
+<AdminLayout title="Pedidos">
+    <div class="bg-white shadow-elegant p-8 text-center">
+        <svg
+            class="mx-auto h-16 w-16 text-charcoal-300"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+        >
+            <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1"
+                d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+        </svg>
+
+        <h2 class="mt-6 font-display text-2xl text-navy-900">
+            Gestion de Pedidos
+        </h2>
+
+        <p class="mt-4 text-charcoal-600 max-w-md mx-auto">
+            Esta seccion estara disponible despues de integrar Stripe para
+            procesar pagos.
+        </p>
+
+        <div class="mt-8 p-4 bg-navy-50 rounded-lg max-w-md mx-auto">
+            <h3 class="font-medium text-navy-900 mb-2">Proximos pasos:</h3>
+            <ul class="text-sm text-charcoal-600 text-left space-y-2">
+                <li class="flex items-center gap-2">
+                    <svg
+                        class="h-4 w-4 text-navy-600"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M9 12l2 2 4-4"></path>
+                    </svg>
+                    Integrar Stripe Checkout
+                </li>
+                <li class="flex items-center gap-2">
+                    <svg
+                        class="h-4 w-4 text-navy-600"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M9 12l2 2 4-4"></path>
+                    </svg>
+                    Crear tabla de pedidos
+                </li>
+                <li class="flex items-center gap-2">
+                    <svg
+                        class="h-4 w-4 text-navy-600"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M9 12l2 2 4-4"></path>
+                    </svg>
+                    Configurar webhooks de pago
+                </li>
+            </ul>
+        </div>
+    </div>
+</AdminLayout>

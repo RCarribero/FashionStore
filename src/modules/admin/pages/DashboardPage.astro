@@ -1,0 +1,322 @@
+---
+/**
+ * Admin Dashboard Page Template
+ */
+import AdminLayout from "../layouts/AdminLayout.astro";
+import {
+    getDashboardStats,
+    getRecentProducts,
+    getProductsByCategory,
+    getLowStockProducts,
+} from "../services/dashboard.service";
+import { formatPrice } from "../../../shared/utils";
+import { ROUTES } from "../../../config";
+
+// Fetch all dashboard data
+const stats = await getDashboardStats();
+const { data: recentProducts } = await getRecentProducts();
+const productsByCategory = await getProductsByCategory();
+const { data: lowStockProducts } = await getLowStockProducts();
+---
+
+<AdminLayout title="Dashboard">
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Total Products -->
+        <div class="bg-white p-6 shadow-elegant">
+            <div class="flex items-center gap-4">
+                <div class="p-3 bg-navy-100 text-navy-600 rounded-lg">
+                    <svg
+                        class="h-6 w-6"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="1.5"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                        ></path>
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-sm text-charcoal-500">Total Productos</p>
+                    <p class="text-2xl font-display text-navy-900">
+                        {stats.productCount}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Stock -->
+        <div class="bg-white p-6 shadow-elegant">
+            <div class="flex items-center gap-4">
+                <div class="p-3 bg-green-100 text-green-600 rounded-lg">
+                    <svg
+                        class="h-6 w-6"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="1.5"
+                            d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
+                        ></path>
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-sm text-charcoal-500">Unidades en Stock</p>
+                    <p class="text-2xl font-display text-navy-900">
+                        {stats.totalStock}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventory Value -->
+        <div class="bg-white p-6 shadow-elegant">
+            <div class="flex items-center gap-4">
+                <div class="p-3 bg-gold-100 text-gold-700 rounded-lg">
+                    <svg
+                        class="h-6 w-6"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="1.5"
+                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        ></path>
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-sm text-charcoal-500">Valor Inventario</p>
+                    <p class="text-2xl font-display text-navy-900">
+                        {formatPrice(stats.totalValue)}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Low Stock Alert -->
+        <div class="bg-white p-6 shadow-elegant">
+            <div class="flex items-center gap-4">
+                <div class="p-3 bg-red-100 text-red-600 rounded-lg">
+                    <svg
+                        class="h-6 w-6"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="1.5"
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                        ></path>
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-sm text-charcoal-500">
+                        Stock Bajo / Agotado
+                    </p>
+                    <p class="text-2xl font-display text-navy-900">
+                        {stats.lowStockCount} / {stats.outOfStockCount}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="flex flex-wrap gap-4 mb-8">
+        <a href={ROUTES.ADMIN.PRODUCTS.NEW} class="btn-primary">
+            + Nuevo Producto
+        </a>
+        <a href={ROUTES.ADMIN.PRODUCTS.LIST} class="btn-secondary">
+            Ver Productos
+        </a>
+        <a href={ROUTES.ADMIN.CATEGORIES} class="btn-ghost">
+            Gestionar Categorias
+        </a>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left Column -->
+        <div class="lg:col-span-2 space-y-8">
+            <!-- Recent Products -->
+            <div class="bg-white shadow-elegant overflow-hidden">
+                <div
+                    class="px-6 py-4 border-b border-charcoal-100 flex items-center justify-between"
+                >
+                    <h2 class="font-display text-lg text-navy-900">
+                        Productos Recientes
+                    </h2>
+                    <a
+                        href={ROUTES.ADMIN.PRODUCTS.LIST}
+                        class="text-sm text-navy-600 hover:text-navy-900"
+                    >
+                        Ver todos &rarr;
+                    </a>
+                </div>
+
+                {
+                    recentProducts && recentProducts.length > 0 ? (
+                        <div class="divide-y divide-charcoal-100">
+                            {recentProducts.map((product) => (
+                                <a
+                                    href={ROUTES.ADMIN.PRODUCTS.EDIT(
+                                        product.id,
+                                    )}
+                                    class="flex items-center gap-4 p-4 hover:bg-charcoal-50 transition-colors"
+                                >
+                                    <div class="h-16 w-16 bg-charcoal-100 flex-shrink-0 overflow-hidden">
+                                        {product.images[0] ? (
+                                            <img
+                                                src={product.images[0]}
+                                                alt={product.name}
+                                                class="h-full w-full object-cover"
+                                            />
+                                        ) : (
+                                            <div class="h-full w-full flex items-center justify-center text-charcoal-300">
+                                                <svg
+                                                    class="h-8 w-8"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                >
+                                                    <path
+                                                        stroke-linecap="round"
+                                                        stroke-linejoin="round"
+                                                        stroke-width="1"
+                                                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                                    />
+                                                </svg>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="font-medium text-navy-900 truncate">
+                                            {product.name}
+                                        </p>
+                                        <p class="text-sm text-charcoal-500">
+                                            {product.category?.name ||
+                                                "Sin categoria"}
+                                        </p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="font-medium text-navy-900">
+                                            {formatPrice(product.price)}
+                                        </p>
+                                        <p class="text-sm text-charcoal-500">
+                                            {product.stock} uds
+                                        </p>
+                                    </div>
+                                </a>
+                            ))}
+                        </div>
+                    ) : (
+                        <div class="p-8 text-center text-charcoal-500">
+                            <p>No hay productos aun</p>
+                            <a
+                                href={ROUTES.ADMIN.PRODUCTS.NEW}
+                                class="text-navy-600 hover:text-navy-900 font-medium"
+                            >
+                                Crear el primero
+                            </a>
+                        </div>
+                    )
+                }
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="space-y-8">
+            <!-- Categories Summary -->
+            <div class="bg-white shadow-elegant p-6">
+                <h2 class="font-display text-lg text-navy-900 mb-4">
+                    Productos por Categoria
+                </h2>
+
+                {
+                    productsByCategory.length > 0 ? (
+                        <div class="space-y-4">
+                            {productsByCategory.map((cat) => {
+                                const percentage = stats.productCount
+                                    ? Math.round(
+                                          (cat.count / stats.productCount) *
+                                              100,
+                                      )
+                                    : 0;
+                                return (
+                                    <div>
+                                        <div class="flex items-center justify-between text-sm mb-1">
+                                            <span class="text-charcoal-700">
+                                                {cat.name}
+                                            </span>
+                                            <span class="text-charcoal-500">
+                                                {cat.count}
+                                            </span>
+                                        </div>
+                                        <div class="h-2 bg-charcoal-100 rounded-full overflow-hidden">
+                                            <div
+                                                class="h-full bg-navy-600 rounded-full"
+                                                style={`width: ${percentage}%`}
+                                            />
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <p class="text-charcoal-500 text-sm">
+                            No hay categorias
+                        </p>
+                    )
+                }
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="bg-white shadow-elegant p-6">
+                <h2 class="font-display text-lg text-navy-900 mb-4">Resumen</h2>
+                <div class="space-y-3">
+                    <div
+                        class="flex justify-between py-2 border-b border-charcoal-100"
+                    >
+                        <span class="text-charcoal-600">Categorias</span>
+                        <span class="font-medium text-navy-900"
+                            >{stats.categoryCount}</span
+                        >
+                    </div>
+                    <div
+                        class="flex justify-between py-2 border-b border-charcoal-100"
+                    >
+                        <span class="text-charcoal-600">Destacados</span>
+                        <span class="font-medium text-navy-900"
+                            >{stats.featuredCount}</span
+                        >
+                    </div>
+                    <div class="flex justify-between py-2">
+                        <span class="text-charcoal-600">Agotados</span>
+                        <span
+                            class:list={[
+                                "font-medium",
+                                stats.outOfStockCount > 0
+                                    ? "text-red-600"
+                                    : "text-green-600",
+                            ]}
+                        >
+                            {stats.outOfStockCount}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</AdminLayout>

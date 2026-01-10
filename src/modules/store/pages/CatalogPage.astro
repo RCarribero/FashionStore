@@ -1,0 +1,284 @@
+---
+/**
+ * Product Catalog Page Template
+ */
+import StoreLayout from "../layouts/StoreLayout.astro";
+import { supabase } from "../../auth";
+import { formatPrice } from "../../../shared/utils";
+import { ROUTES } from "../../../config";
+import type { Product, Category } from "../../../shared/types";
+
+// Get filter params
+const minPrice = Astro.url.searchParams.get("minPrice");
+const maxPrice = Astro.url.searchParams.get("maxPrice");
+const selectedSizes = Astro.url.searchParams.getAll("size");
+
+// Get all products
+const { data: rawProducts } = await supabase
+    .from("products")
+    .select("*, variants:product_variants(*)")
+    .order("created_at", { ascending: false });
+
+// Filter products
+let products = rawProducts || [];
+
+if (minPrice) {
+    products = products.filter((p) => p.price >= Number(minPrice) * 100);
+}
+
+if (maxPrice) {
+    products = products.filter((p) => p.price <= Number(maxPrice) * 100);
+}
+
+if (selectedSizes.length > 0) {
+    products = products.filter((p) =>
+        p.variants?.some(
+            (v: any) => selectedSizes.includes(v.size) && v.stock > 0,
+        ),
+    );
+}
+
+// Get all categories for filter
+const { data: categories } = await supabase
+    .from("categories")
+    .select("*")
+    .order("name");
+
+const SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
+---
+
+<StoreLayout
+    title="Catalogo"
+    description="Explora nuestra coleccion completa de moda masculina premium"
+>
+    <!-- Hero -->
+    <section class="bg-navy-950 text-cream-50 py-16 lg:py-20">
+        <div class="container-wide text-center">
+            <h1 class="font-display text-display-lg lg:text-display-xl">
+                Nuestra Coleccion
+            </h1>
+            <p class="mt-4 text-cream-300 max-w-2xl mx-auto">
+                Piezas atemporales disenadas para el hombre moderno. Calidad
+                premium, estilo sofisticado.
+            </p>
+        </div>
+    </section>
+
+    <!-- Catalog -->
+    <div class="min-h-screen bg-cream-50 border-t border-charcoal-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="flex flex-col lg:flex-row gap-8">
+                <!-- Sidebar -->
+                <aside class="lg:w-64 flex-shrink-0">
+                    <div class="space-y-8">
+                        <!-- Categories -->
+                        <div class="bg-white p-6 border border-charcoal-100">
+                            <h3 class="font-display text-lg text-navy-900 mb-4">
+                                Categorias
+                            </h3>
+                            <ul class="space-y-2">
+                                <li>
+                                    <a
+                                        href={ROUTES.PRODUCTS}
+                                        class="block py-2 text-navy-900 font-medium"
+                                    >
+                                        Todas las categorias
+                                    </a>
+                                </li>
+                                {
+                                    categories?.map((cat: Category) => (
+                                        <li>
+                                            <a
+                                                href={ROUTES.CATEGORY(cat.slug)}
+                                                class="block py-2 text-charcoal-600 hover:text-navy-900"
+                                            >
+                                                {cat.name}
+                                            </a>
+                                        </li>
+                                    ))
+                                }
+                            </ul>
+                        </div>
+
+                        <!-- Filters -->
+                        <div class="bg-white p-6 border border-charcoal-100">
+                            <h3 class="font-display text-lg text-navy-900 mb-4">
+                                Filtros
+                            </h3>
+                            <form action={ROUTES.PRODUCTS} method="GET">
+                                <!-- Price -->
+                                <div class="mb-6">
+                                    <h4
+                                        class="text-sm font-medium text-navy-900 mb-2"
+                                    >
+                                        Precio (€)
+                                    </h4>
+                                    <div class="flex items-center gap-2">
+                                        <input
+                                            type="number"
+                                            name="minPrice"
+                                            placeholder="Min"
+                                            value={minPrice}
+                                            class="w-full px-3 py-2 border border-charcoal-200 text-sm focus:border-navy-900 outline-none"
+                                        />
+                                        <span class="text-charcoal-400">-</span>
+                                        <input
+                                            type="number"
+                                            name="maxPrice"
+                                            placeholder="Max"
+                                            value={maxPrice}
+                                            class="w-full px-3 py-2 border border-charcoal-200 text-sm focus:border-navy-900 outline-none"
+                                        />
+                                    </div>
+                                </div>
+
+                                <!-- Sizes -->
+                                <div class="mb-6">
+                                    <h4
+                                        class="text-sm font-medium text-navy-900 mb-2"
+                                    >
+                                        Talla
+                                    </h4>
+                                    <div class="space-y-2">
+                                        {
+                                            SIZES.map((size) => (
+                                                <label class="flex items-center gap-2 cursor-pointer">
+                                                    <input
+                                                        type="checkbox"
+                                                        name="size"
+                                                        value={size}
+                                                        checked={selectedSizes.includes(
+                                                            size,
+                                                        )}
+                                                        class="rounded border-charcoal-300 text-navy-900 focus:ring-navy-900"
+                                                    />
+                                                    <span class="text-sm text-charcoal-600">
+                                                        {size}
+                                                    </span>
+                                                </label>
+                                            ))
+                                        }
+                                    </div>
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    class="btn-primary w-full text-sm"
+                                >
+                                    Aplicar Filtros
+                                </button>
+                                {
+                                    (minPrice ||
+                                        maxPrice ||
+                                        selectedSizes.length > 0) && (
+                                        <a
+                                            href={ROUTES.PRODUCTS}
+                                            class="block text-center mt-3 text-sm text-charcoal-500 hover:text-navy-900 underline"
+                                        >
+                                            Limpiar
+                                        </a>
+                                    )
+                                }
+                            </form>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Products Grid -->
+                <div class="flex-1">
+                    <div class="flex items-center justify-between mb-8">
+                        <h2 class="font-display text-2xl text-navy-900">
+                            Todos los Productos
+                        </h2>
+                        <p class="text-charcoal-500">
+                            {products?.length || 0} productos
+                        </p>
+                    </div>
+
+                    {
+                        products && products.length > 0 ? (
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {products.map((product: Product) => (
+                                    <a
+                                        href={ROUTES.PRODUCT_DETAIL(
+                                            product.slug,
+                                        )}
+                                        class="group bg-white border border-charcoal-100 hover:border-charcoal-200 transition-colors"
+                                    >
+                                        <article>
+                                            <div class="aspect-[3/4] bg-charcoal-100 overflow-hidden">
+                                                {product.images[0] ? (
+                                                    <img
+                                                        src={product.images[0]}
+                                                        alt={product.name}
+                                                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                        loading="lazy"
+                                                    />
+                                                ) : (
+                                                    <div class="w-full h-full flex items-center justify-center text-charcoal-300">
+                                                        <svg
+                                                            class="h-12 w-12"
+                                                            fill="none"
+                                                            viewBox="0 0 24 24"
+                                                            stroke="currentColor"
+                                                        >
+                                                            <path
+                                                                stroke-linecap="round"
+                                                                stroke-linejoin="round"
+                                                                stroke-width="1"
+                                                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                                            />
+                                                        </svg>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div class="p-4">
+                                                <h3 class="font-display text-lg text-navy-900 group-hover:text-leather-600 transition-colors">
+                                                    {product.name}
+                                                </h3>
+                                                <div class="mt-2 flex items-center justify-between">
+                                                    <p class="font-medium text-navy-900">
+                                                        {formatPrice(
+                                                            product.price,
+                                                        )}
+                                                    </p>
+                                                    {product.stock === 0 && (
+                                                        <span class="text-xs text-red-600">
+                                                            Agotado
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </article>
+                                    </a>
+                                ))}
+                            </div>
+                        ) : (
+                            <div class="text-center py-16">
+                                <svg
+                                    class="mx-auto h-16 w-16 text-charcoal-300"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="1"
+                                        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                                    />
+                                </svg>
+                                <h3 class="mt-4 font-display text-xl text-navy-900">
+                                    No hay productos disponibles
+                                </h3>
+                                <p class="mt-2 text-charcoal-500">
+                                    Intenta ajustar tus filtros o vuelve pronto.
+                                </p>
+                            </div>
+                        )
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</StoreLayout>

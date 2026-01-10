@@ -1,0 +1,310 @@
+---
+/**
+ * Category Page - Store Module
+ * Shows products filtered by category
+ */
+import StoreLayout from "../layouts/StoreLayout.astro";
+import { supabase } from "../../auth";
+import { formatPrice } from "../../../shared/utils";
+import { ROUTES } from "../../../config";
+import type { Product, Category } from "../../../shared/types";
+
+const { slug } = Astro.params;
+
+if (!slug) {
+    return Astro.redirect(ROUTES.PRODUCTS);
+}
+
+// Get category
+const { data: category } = await supabase
+    .from("categories")
+    .select("*")
+    .eq("slug", slug)
+    .single();
+
+if (!category) {
+    return Astro.redirect(ROUTES.PRODUCTS);
+}
+
+// Get filter params
+const minPrice = Astro.url.searchParams.get("minPrice");
+const maxPrice = Astro.url.searchParams.get("maxPrice");
+const selectedSizes = Astro.url.searchParams.getAll("size");
+
+// Get products in this category
+const { data: rawProducts } = await supabase
+    .from("products")
+    .select("*, variants:product_variants(*)")
+    .eq("category_id", category.id)
+    .order("created_at", { ascending: false });
+
+// Filter products
+let products = rawProducts || [];
+
+if (minPrice) {
+    products = products.filter((p) => p.price >= Number(minPrice) * 100);
+}
+
+if (maxPrice) {
+    products = products.filter((p) => p.price <= Number(maxPrice) * 100);
+}
+
+if (selectedSizes.length > 0) {
+    products = products.filter((p) =>
+        p.variants?.some(
+            (v: any) => selectedSizes.includes(v.size) && v.stock > 0,
+        ),
+    );
+}
+
+// Get all categories for filter
+const { data: categories } = await supabase
+    .from("categories")
+    .select("*")
+    .order("name");
+
+const SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
+---
+
+<StoreLayout title={`${category.name} | FashionMarket`}>
+    <div class="min-h-screen bg-cream-50">
+        <!-- Breadcrumb -->
+        <div class="bg-white border-b border-charcoal-100">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                <nav class="flex items-center gap-2 text-sm">
+                    <a
+                        href={ROUTES.HOME}
+                        class="text-charcoal-500 hover:text-navy-900">Inicio</a
+                    >
+                    <span class="text-charcoal-300">/</span>
+                    <a
+                        href={ROUTES.PRODUCTS}
+                        class="text-charcoal-500 hover:text-navy-900"
+                        >Productos</a
+                    >
+                    <span class="text-charcoal-300">/</span>
+                    <span class="text-navy-900 font-medium"
+                        >{category.name}</span
+                    >
+                </nav>
+            </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="flex flex-col lg:flex-row gap-8">
+                <!-- Sidebar -->
+                <aside class="lg:w-64 flex-shrink-0">
+                    <div class="space-y-8">
+                        <!-- Categories -->
+                        <div class="bg-white p-6 border border-charcoal-100">
+                            <h3 class="font-display text-lg text-navy-900 mb-4">
+                                Categorias
+                            </h3>
+                            <ul class="space-y-2">
+                                <li>
+                                    <a
+                                        href={ROUTES.PRODUCTS}
+                                        class="block py-2 text-charcoal-600 hover:text-navy-900"
+                                    >
+                                        Todas las categorias
+                                    </a>
+                                </li>
+                                {
+                                    categories?.map((cat: Category) => (
+                                        <li>
+                                            <a
+                                                href={ROUTES.CATEGORY(cat.slug)}
+                                                class={`block py-2 ${cat.id === category.id ? "text-navy-900 font-medium" : "text-charcoal-600 hover:text-navy-900"}`}
+                                            >
+                                                {cat.name}
+                                            </a>
+                                        </li>
+                                    ))
+                                }
+                            </ul>
+                        </div>
+
+                        <!-- Filters -->
+                        <div class="bg-white p-6 border border-charcoal-100">
+                            <h3 class="font-display text-lg text-navy-900 mb-4">
+                                Filtros
+                            </h3>
+                            <form action={Astro.url.pathname} method="GET">
+                                <!-- Price -->
+                                <div class="mb-6">
+                                    <h4
+                                        class="text-sm font-medium text-navy-900 mb-2"
+                                    >
+                                        Precio (€)
+                                    </h4>
+                                    <div class="flex items-center gap-2">
+                                        <input
+                                            type="number"
+                                            name="minPrice"
+                                            placeholder="Min"
+                                            value={minPrice}
+                                            class="w-full px-3 py-2 border border-charcoal-200 text-sm focus:border-navy-900 outline-none"
+                                        />
+                                        <span class="text-charcoal-400">-</span>
+                                        <input
+                                            type="number"
+                                            name="maxPrice"
+                                            placeholder="Max"
+                                            value={maxPrice}
+                                            class="w-full px-3 py-2 border border-charcoal-200 text-sm focus:border-navy-900 outline-none"
+                                        />
+                                    </div>
+                                </div>
+
+                                <!-- Sizes -->
+                                <div class="mb-6">
+                                    <h4
+                                        class="text-sm font-medium text-navy-900 mb-2"
+                                    >
+                                        Talla
+                                    </h4>
+                                    <div class="space-y-2">
+                                        {
+                                            SIZES.map((size) => (
+                                                <label class="flex items-center gap-2 cursor-pointer">
+                                                    <input
+                                                        type="checkbox"
+                                                        name="size"
+                                                        value={size}
+                                                        checked={selectedSizes.includes(
+                                                            size,
+                                                        )}
+                                                        class="rounded border-charcoal-300 text-navy-900 focus:ring-navy-900"
+                                                    />
+                                                    <span class="text-sm text-charcoal-600">
+                                                        {size}
+                                                    </span>
+                                                </label>
+                                            ))
+                                        }
+                                    </div>
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    class="btn-primary w-full text-sm"
+                                >
+                                    Aplicar Filtros
+                                </button>
+                                {
+                                    (minPrice ||
+                                        maxPrice ||
+                                        selectedSizes.length > 0) && (
+                                        <a
+                                            href={Astro.url.pathname}
+                                            class="block text-center mt-3 text-sm text-charcoal-500 hover:text-navy-900 underline"
+                                        >
+                                            Limpiar
+                                        </a>
+                                    )
+                                }
+                            </form>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Products Grid -->
+                <div class="flex-1">
+                    <div class="flex items-center justify-between mb-8">
+                        <h1 class="font-display text-3xl text-navy-900">
+                            {category.name}
+                        </h1>
+                        <p class="text-charcoal-500">
+                            {products?.length || 0} productos
+                        </p>
+                    </div>
+
+                    {
+                        products && products.length > 0 ? (
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {products.map((product: Product) => (
+                                    <a
+                                        href={ROUTES.PRODUCT_DETAIL(
+                                            product.slug,
+                                        )}
+                                        class="group bg-white border border-charcoal-100 hover:border-charcoal-200 transition-colors"
+                                    >
+                                        <div class="aspect-[3/4] bg-charcoal-100 overflow-hidden">
+                                            {product.images?.[0] ? (
+                                                <img
+                                                    src={product.images[0]}
+                                                    alt={product.name}
+                                                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                />
+                                            ) : (
+                                                <div class="w-full h-full flex items-center justify-center text-charcoal-300">
+                                                    <svg
+                                                        class="h-16 w-16"
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                        stroke="currentColor"
+                                                    >
+                                                        <path
+                                                            stroke-linecap="round"
+                                                            stroke-linejoin="round"
+                                                            stroke-width="1"
+                                                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14"
+                                                        />
+                                                    </svg>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div class="p-4">
+                                            <p class="text-xs text-gold-600 uppercase tracking-wider mb-1">
+                                                {category.name}
+                                            </p>
+                                            <h3 class="font-display text-lg text-navy-900 group-hover:text-gold-600 transition-colors">
+                                                {product.name}
+                                            </h3>
+                                            <p class="mt-2 text-navy-900 font-medium">
+                                                {formatPrice(product.price)}
+                                            </p>
+                                            {product.stock === 0 && (
+                                                <p class="mt-1 text-sm text-red-600">
+                                                    Agotado
+                                                </p>
+                                            )}
+                                        </div>
+                                    </a>
+                                ))}
+                            </div>
+                        ) : (
+                            <div class="text-center py-16 bg-white border border-charcoal-100">
+                                <svg
+                                    class="mx-auto h-16 w-16 text-charcoal-300 mb-4"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="1"
+                                        d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+                                    />
+                                </svg>
+                                <h3 class="font-display text-xl text-navy-900 mb-2">
+                                    No hay productos
+                                </h3>
+                                <p class="text-charcoal-500 mb-6">
+                                    No hay productos en esta categoria todavia
+                                </p>
+                                <a
+                                    href={ROUTES.PRODUCTS}
+                                    class="btn-primary inline-block"
+                                >
+                                    Ver todos los productos
+                                </a>
+                            </div>
+                        )
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</StoreLayout>

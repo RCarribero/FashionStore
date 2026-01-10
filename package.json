@@ -1,0 +1,27 @@
+{
+  "name": "fashionstore",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/node": "^9.5.1",
+    "@astrojs/react": "^4.4.2",
+    "@astrojs/tailwind": "^5.1.3",
+    "@nanostores/persistent": "^1.2.0",
+    "@nanostores/react": "^1.0.0",
+    "@supabase/supabase-js": "^2.90.0",
+    "astro": "^5.16.7",
+    "autoprefixer": "^10.4.23",
+    "nanostores": "^1.1.0",
+    "postcss": "^8.5.6",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "stripe": "^20.1.2",
+    "tailwindcss": "^3.4.16"
+  }
+}

@@ -1,0 +1,125 @@
+---
+/**
+ * Auth Login Page Template
+ * Renders the login form with error handling
+ */
+import BaseLayout from "../../../shared/layouts/BaseLayout.astro";
+import { signIn, createAuthCookies, AUTH_CONFIG } from "../index";
+import { ROUTES } from "../../../config";
+
+interface Props {
+    request: Request;
+}
+
+const { request } = Astro.props;
+
+let error = "";
+
+// Handle form submission
+if (request.method === "POST") {
+    const formData = await request.formData();
+    const email = formData.get("email")?.toString() || "";
+    const password = formData.get("password")?.toString() || "";
+
+    const { data, error: authError } = await signIn(email, password);
+
+    if (authError) {
+        error = `Error: ${authError.message}`;
+        console.error("Login error:", authError);
+    } else if (data.session) {
+        const cookies = createAuthCookies(
+            data.session.access_token,
+            data.session.refresh_token,
+        );
+        const response = Astro.redirect(AUTH_CONFIG.redirects.afterLogin);
+        cookies.forEach((cookie) =>
+            response.headers.append("Set-Cookie", cookie),
+        );
+        return response;
+    }
+}
+---
+
+<BaseLayout title="Admin Login">
+    <div
+        class="min-h-screen flex items-center justify-center bg-cream-50 py-12 px-4"
+    >
+        <div class="w-full max-w-md">
+            <!-- Logo -->
+            <div class="text-center mb-10">
+                <a href={ROUTES.HOME} class="inline-block">
+                    <span class="font-display text-3xl text-navy-900">
+                        Fashion<span class="text-leather-600">Market</span>
+                    </span>
+                </a>
+                <p class="mt-2 text-charcoal-500">Panel de Administracion</p>
+            </div>
+
+            <!-- Login Card -->
+            <div class="bg-white p-8 shadow-elegant">
+                <h1
+                    class="font-display text-2xl text-navy-900 text-center mb-8"
+                >
+                    Iniciar Sesion
+                </h1>
+
+                {
+                    error && (
+                        <div class="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 text-sm">
+                            {error}
+                        </div>
+                    )
+                }
+
+                <form method="POST" class="space-y-6">
+                    <div>
+                        <label
+                            for="email"
+                            class="block text-sm font-medium text-navy-900 mb-2"
+                        >
+                            Email
+                        </label>
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            required
+                            class="input"
+                            placeholder="admin@fashionmarket.com"
+                        />
+                    </div>
+
+                    <div>
+                        <label
+                            for="password"
+                            class="block text-sm font-medium text-navy-900 mb-2"
+                        >
+                            Contrasena
+                        </label>
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            required
+                            class="input"
+                            placeholder="Tu contrasena"
+                        />
+                    </div>
+
+                    <button type="submit" class="btn-primary w-full">
+                        Acceder
+                    </button>
+                </form>
+
+                <p class="mt-6 text-center text-sm text-charcoal-500">
+                    <a
+                        href={ROUTES.HOME}
+                        class="text-navy-700 hover:text-navy-900"
+                    >
+                        Volver a la tienda
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+</BaseLayout>
