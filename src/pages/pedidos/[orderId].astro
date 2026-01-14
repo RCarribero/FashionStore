@@ -1,0 +1,241 @@
+---
+/**
+ * Order Tracking Page
+ */
+export const prerender = false;
+
+import StoreLayout from "../../modules/store/layouts/StoreLayout.astro";
+
+const { orderId } = Astro.params;
+---
+
+<StoreLayout title="Seguimiento de Pedido">
+    <div class="min-h-screen bg-slate-950 py-12">
+        <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+            <a
+                href="/perfil"
+                class="text-slate-400 hover:text-white flex items-center gap-2 text-sm mb-6"
+            >
+                <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Volver a Mis Pedidos
+            </a>
+
+            <div id="tracking-container" data-order-id={orderId}>
+                <div class="text-center py-12">
+                    <div
+                        class="animate-spin w-8 h-8 border-2 border-accent border-t-transparent rounded-full mx-auto"
+                    >
+                    </div>
+                    <p class="text-slate-400 mt-4">Cargando seguimiento...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</StoreLayout>
+
+<script>
+    const container = document.getElementById("tracking-container");
+    const orderId = container?.dataset.orderId;
+
+    if (orderId) {
+        loadTracking(orderId);
+    }
+
+    async function loadTracking(orderId: string) {
+        try {
+            const response = await fetch(`/api/orders/${orderId}/tracking`);
+            const data = await response.json();
+
+            if (data.error) {
+                renderError(data.error);
+                return;
+            }
+
+            renderTracking(data);
+        } catch (error) {
+            renderError("Error al cargar el seguimiento");
+        }
+    }
+
+    function renderError(message: string) {
+        container!.innerHTML = `
+            <div class="text-center py-12">
+                <p class="text-red-400">${message}</p>
+                <a href="/perfil" class="text-accent hover:underline mt-4 inline-block">Volver a Mis Pedidos</a>
+            </div>
+        `;
+    }
+
+    function renderTracking(data: any) {
+        const { order, events } = data;
+
+        const statusLabels: Record<string, string> = {
+            processing: "En Preparación",
+            shipped: "Enviado",
+            in_transit: "En Tránsito",
+            out_for_delivery: "En Reparto",
+            delivered: "Entregado",
+        };
+
+        const statusColors: Record<string, string> = {
+            processing: "bg-yellow-500",
+            shipped: "bg-blue-500",
+            in_transit: "bg-purple-500",
+            out_for_delivery: "bg-orange-500",
+            delivered: "bg-green-500",
+        };
+
+        const statusSteps = [
+            "processing",
+            "shipped",
+            "in_transit",
+            "out_for_delivery",
+            "delivered",
+        ];
+        const currentIndex = statusSteps.indexOf(order.status);
+
+        // Format dates
+        const formatDate = (dateStr: string) => {
+            if (!dateStr) return "-";
+            return new Date(dateStr).toLocaleDateString("es-ES", {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+            });
+        };
+
+        const formatDateTime = (dateStr: string) => {
+            return new Date(dateStr).toLocaleString("es-ES", {
+                day: "numeric",
+                month: "short",
+                hour: "2-digit",
+                minute: "2-digit",
+            });
+        };
+
+        container!.innerHTML = `
+            <!-- Header -->
+            <div class="bg-slate-900 border border-slate-800 p-6 mb-6">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <p class="text-slate-400 text-sm">Número de seguimiento</p>
+                        <p class="text-white font-mono text-xl">${order.trackingNumber || "Pendiente"}</p>
+                    </div>
+                    <span class="px-3 py-1 text-sm font-medium ${statusColors[order.status]} text-white rounded-full">
+                        ${statusLabels[order.status] || order.status}
+                    </span>
+                </div>
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <p class="text-slate-400">Fecha del pedido</p>
+                        <p class="text-white">${formatDate(order.createdAt)}</p>
+                    </div>
+                    <div>
+                        <p class="text-slate-400">Entrega estimada</p>
+                        <p class="text-white">${formatDate(order.estimatedDelivery)}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="bg-slate-900 border border-slate-800 p-6 mb-6">
+                <h2 class="text-white font-bold mb-6">Estado del Envío</h2>
+                <div class="flex justify-between relative">
+                    <!-- Progress line -->
+                    <div class="absolute top-4 left-0 right-0 h-1 bg-slate-700"></div>
+                    <div class="absolute top-4 left-0 h-1 bg-accent transition-all" style="width: ${(currentIndex / (statusSteps.length - 1)) * 100}%"></div>
+                    
+                    ${statusSteps
+                        .map(
+                            (step, idx) => `
+                        <div class="relative z-10 flex flex-col items-center">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center ${idx <= currentIndex ? "bg-accent" : "bg-slate-700"} text-white text-sm font-bold">
+                                ${idx < currentIndex ? "✓" : idx + 1}
+                            </div>
+                            <p class="text-xs mt-2 ${idx <= currentIndex ? "text-white" : "text-slate-500"} text-center max-w-16">
+                                ${statusLabels[step]}
+                            </p>
+                        </div>
+                    `,
+                        )
+                        .join("")}
+                </div>
+            </div>
+
+            <!-- Timeline -->
+            <div class="bg-slate-900 border border-slate-800 p-6 mb-6">
+                <h2 class="text-white font-bold mb-6">Historial de Envío</h2>
+                <div class="space-y-4">
+                    ${
+                        events.length > 0
+                            ? events
+                                  .slice()
+                                  .reverse()
+                                  .map(
+                                      (event: any, idx: number) => `
+                        <div class="flex gap-4">
+                            <div class="flex flex-col items-center">
+                                <div class="w-3 h-3 rounded-full ${idx === 0 ? "bg-accent" : "bg-slate-600"}"></div>
+                                ${idx < events.length - 1 ? '<div class="w-0.5 h-full bg-slate-700 mt-1"></div>' : ""}
+                            </div>
+                            <div class="flex-1 pb-4">
+                                <p class="text-white font-medium">${event.description}</p>
+                                <p class="text-slate-400 text-sm">${event.location || ""}</p>
+                                <p class="text-slate-500 text-xs mt-1">${formatDateTime(event.created_at)}</p>
+                            </div>
+                        </div>
+                    `,
+                                  )
+                                  .join("")
+                            : `
+                        <p class="text-slate-400">No hay eventos de envío aún.</p>
+                    `
+                    }
+                </div>
+            </div>
+
+            <!-- Order Items -->
+            <div class="bg-slate-900 border border-slate-800 p-6">
+                <h2 class="text-white font-bold mb-4">Productos del Pedido</h2>
+                <div class="space-y-3">
+                    ${order.items
+                        .map(
+                            (item: any) => `
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-300">${item.name} <span class="text-slate-500">(Talla ${item.size})</span> x${item.quantity}</span>
+                            <span class="text-white">${(item.price / 100).toFixed(2)} €</span>
+                        </div>
+                    `,
+                        )
+                        .join("")}
+                    ${
+                        order.discountAmount > 0
+                            ? `
+                        <div class="flex justify-between text-sm border-t border-slate-700 pt-2">
+                            <span class="text-green-400">Descuento</span>
+                            <span class="text-green-400">-${(order.discountAmount / 100).toFixed(2)} €</span>
+                        </div>
+                    `
+                            : ""
+                    }
+                    <div class="flex justify-between font-bold border-t border-slate-700 pt-2">
+                        <span class="text-white">Total</span>
+                        <span class="text-white">${(order.totalAmount / 100).toFixed(2)} €</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+</script>

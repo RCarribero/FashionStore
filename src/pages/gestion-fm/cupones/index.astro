@@ -1,0 +1,565 @@
+---
+/**
+ * Admin Coupons Management
+ */
+export const prerender = false;
+
+import AdminLayout from "../../../modules/admin/layouts/AdminLayout.astro";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+    import.meta.env.PUBLIC_SUPABASE_URL,
+    import.meta.env.SUPABASE_SERVICE_ROLE_KEY,
+);
+
+const { data: coupons } = await supabase
+    .from("coupons")
+    .select("*, coupon_products(product_id)")
+    .order("created_at", { ascending: false });
+
+const { data: products } = await supabase
+    .from("products")
+    .select("id, name")
+    .order("name");
+
+const formatDate = (dateStr: string | null) => {
+    if (!dateStr) return "-";
+    return new Date(dateStr).toLocaleDateString("es-ES", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+    });
+};
+
+const formatDiscount = (type: string, value: number) => {
+    return type === "percentage"
+        ? `${value}%`
+        : `${(value / 100).toFixed(2)} EUR`;
+};
+---
+
+<AdminLayout title="Cupones y Promociones">
+    <div class="flex justify-between items-center mb-6">
+        <p class="text-slate-400">{coupons?.length || 0} cupones</p>
+        <button
+            id="addCoupon"
+            class="px-4 py-2 bg-accent hover:bg-red-700 text-white font-medium transition-colors"
+        >
+            + Nuevo Cupon
+        </button>
+    </div>
+
+    <div class="bg-slate-900 border border-slate-800 overflow-hidden">
+        <table class="w-full">
+            <thead class="bg-slate-800">
+                <tr>
+                    <th
+                        class="text-left px-6 py-3 text-xs font-medium text-slate-400 uppercase"
+                        >Codigo</th
+                    >
+                    <th
+                        class="text-left px-6 py-3 text-xs font-medium text-slate-400 uppercase"
+                        >Descuento</th
+                    >
+                    <th
+                        class="text-left px-6 py-3 text-xs font-medium text-slate-400 uppercase"
+                        >Usos</th
+                    >
+                    <th
+                        class="text-left px-6 py-3 text-xs font-medium text-slate-400 uppercase"
+                        >Validez</th
+                    >
+                    <th
+                        class="text-left px-6 py-3 text-xs font-medium text-slate-400 uppercase"
+                        >Estado</th
+                    >
+                    <th
+                        class="text-right px-6 py-3 text-xs font-medium text-slate-400 uppercase"
+                        >Acciones</th
+                    >
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800">
+                {
+                    coupons?.map((coupon) => (
+                        <tr class="hover:bg-slate-800/50">
+                            <td class="px-6 py-4">
+                                <span class="font-mono text-white font-bold bg-slate-800 px-2 py-1 rounded">
+                                    {coupon.code}
+                                </span>
+                                {coupon.description && (
+                                    <p class="text-slate-500 text-xs mt-1">
+                                        {coupon.description}
+                                    </p>
+                                )}
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="text-green-400 font-medium">
+                                    {formatDiscount(
+                                        coupon.discount_type,
+                                        coupon.discount_value,
+                                    )}
+                                </span>
+                                {coupon.min_purchase > 0 && (
+                                    <p class="text-slate-500 text-xs">
+                                        Min:{" "}
+                                        {(coupon.min_purchase / 100).toFixed(2)}{" "}
+                                        EUR
+                                    </p>
+                                )}
+                            </td>
+                            <td class="px-6 py-4 text-slate-300">
+                                {coupon.uses_count}
+                                {coupon.max_uses ? ` / ${coupon.max_uses}` : ""}
+                            </td>
+                            <td class="px-6 py-4 text-slate-400 text-sm">
+                                {formatDate(coupon.valid_from)} -{" "}
+                                {formatDate(coupon.valid_until)}
+                            </td>
+                            <td class="px-6 py-4">
+                                <button
+                                    data-toggle-active={coupon.id}
+                                    data-is-active={coupon.is_active}
+                                    class={`px-2 py-1 text-xs rounded ${coupon.is_active ? "bg-green-500/20 text-green-400" : "bg-slate-700 text-slate-400"}`}
+                                >
+                                    {coupon.is_active ? "Activo" : "Inactivo"}
+                                </button>
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <button
+                                    data-edit={JSON.stringify(coupon)}
+                                    class="text-accent hover:underline text-sm mr-3"
+                                >
+                                    Editar
+                                </button>
+                                <button
+                                    data-delete={coupon.id}
+                                    class="text-red-400 hover:underline text-sm"
+                                >
+                                    Eliminar
+                                </button>
+                            </td>
+                        </tr>
+                    ))
+                }
+                {
+                    (!coupons || coupons.length === 0) && (
+                        <tr>
+                            <td
+                                colspan="6"
+                                class="px-6 py-8 text-center text-slate-500"
+                            >
+                                No hay cupones creados
+                            </td>
+                        </tr>
+                    )
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Modal -->
+    <div
+        id="couponModal"
+        class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50"
+    >
+        <div
+            class="bg-slate-900 border border-slate-800 p-6 w-full max-w-lg mx-4 rounded-lg max-h-[90vh] overflow-y-auto"
+        >
+            <h3 id="modalTitle" class="text-xl font-bold text-white mb-6">
+                Nuevo Cupon
+            </h3>
+            <form id="couponForm" class="space-y-4">
+                <input type="hidden" id="couponId" />
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm text-slate-400 mb-1"
+                            >Codigo *</label
+                        >
+                        <input
+                            type="text"
+                            id="couponCode"
+                            required
+                            class="w-full bg-slate-800 border border-slate-700 text-white px-4 py-2 uppercase font-mono"
+                            placeholder="VERANO20"
+                        />
+                    </div>
+                    <div>
+                        <label class="block text-sm text-slate-400 mb-1"
+                            >Tipo</label
+                        >
+                        <select
+                            id="discountType"
+                            class="w-full bg-slate-800 border border-slate-700 text-white px-4 py-2"
+                        >
+                            <option value="percentage">Porcentaje (%)</option>
+                            <option value="fixed">Cantidad fija (EUR)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm text-slate-400 mb-1"
+                            >Valor descuento *</label
+                        >
+                        <input
+                            type="number"
+                            id="discountValue"
+                            required
+                            min="0"
+                            class="w-full bg-slate-800 border border-slate-700 text-white px-4 py-2"
+                            placeholder="20"
+                        />
+                    </div>
+                    <div>
+                        <label class="block text-sm text-slate-400 mb-1"
+                            >Compra minima (EUR)</label
+                        >
+                        <input
+                            type="number"
+                            id="minPurchase"
+                            min="0"
+                            step="0.01"
+                            class="w-full bg-slate-800 border border-slate-700 text-white px-4 py-2"
+                            placeholder="0"
+                        />
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm text-slate-400 mb-1"
+                        >Descripcion</label
+                    >
+                    <input
+                        type="text"
+                        id="description"
+                        class="w-full bg-slate-800 border border-slate-700 text-white px-4 py-2"
+                        placeholder="Descuento de verano"
+                    />
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm text-slate-400 mb-1"
+                            >Valido desde</label
+                        >
+                        <input
+                            type="date"
+                            id="validFrom"
+                            class="w-full bg-slate-800 border border-slate-700 text-white px-4 py-2"
+                        />
+                    </div>
+                    <div>
+                        <label class="block text-sm text-slate-400 mb-1"
+                            >Valido hasta</label
+                        >
+                        <input
+                            type="date"
+                            id="validUntil"
+                            class="w-full bg-slate-800 border border-slate-700 text-white px-4 py-2"
+                        />
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm text-slate-400 mb-1"
+                        >Usos maximos (vacio = ilimitado)</label
+                    >
+                    <input
+                        type="number"
+                        id="maxUses"
+                        min="1"
+                        class="w-full bg-slate-800 border border-slate-700 text-white px-4 py-2"
+                        placeholder="100"
+                    />
+                </div>
+
+                <!-- Product selection -->
+                <div class="border-t border-slate-800 pt-4 mt-4">
+                    <label class="block text-sm text-slate-400 mb-2"
+                        >Aplica a</label
+                    >
+                    <div class="flex gap-4 mb-3">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input
+                                type="radio"
+                                name="appliesTo"
+                                value="all"
+                                id="appliesToAll"
+                                checked
+                                class="accent-accent"
+                            />
+                            <span class="text-white">Todos los productos</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input
+                                type="radio"
+                                name="appliesTo"
+                                value="specific"
+                                id="appliesToSpecific"
+                                class="accent-accent"
+                            />
+                            <span class="text-white">Productos especificos</span
+                            >
+                        </label>
+                    </div>
+
+                    <div id="productSelection" class="hidden">
+                        <div
+                            class="bg-slate-800 border border-slate-700 rounded max-h-48 overflow-y-auto p-2"
+                        >
+                            {
+                                products?.map((product) => (
+                                    <label class="flex items-center gap-2 p-2 hover:bg-slate-700 rounded cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            data-product-id={product.id}
+                                            class="product-checkbox accent-accent"
+                                        />
+                                        <span class="text-white text-sm">
+                                            {product.name}
+                                        </span>
+                                    </label>
+                                ))
+                            }
+                        </div>
+                        <p class="text-slate-500 text-xs mt-2">
+                            Selecciona los productos a los que aplica el cupon
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                    <button
+                        type="submit"
+                        class="flex-1 bg-accent hover:bg-red-700 text-white py-3 font-medium rounded transition-colors"
+                    >
+                        Guardar
+                    </button>
+                    <button
+                        type="button"
+                        id="closeModal"
+                        class="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded transition-colors"
+                    >
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</AdminLayout>
+
+<script>
+    const modal = document.getElementById("couponModal");
+    const form = document.getElementById("couponForm") as HTMLFormElement;
+    const productSelection = document.getElementById("productSelection");
+    const appliesToAll = document.getElementById(
+        "appliesToAll",
+    ) as HTMLInputElement;
+    const appliesToSpecific = document.getElementById(
+        "appliesToSpecific",
+    ) as HTMLInputElement;
+
+    // Toggle product selection visibility
+    appliesToAll?.addEventListener("change", () => {
+        productSelection?.classList.add("hidden");
+    });
+    appliesToSpecific?.addEventListener("change", () => {
+        productSelection?.classList.remove("hidden");
+    });
+
+    function openModal(coupon?: any) {
+        const title = document.getElementById("modalTitle");
+        const fields = {
+            id: document.getElementById("couponId") as HTMLInputElement,
+            code: document.getElementById("couponCode") as HTMLInputElement,
+            discountType: document.getElementById(
+                "discountType",
+            ) as HTMLSelectElement,
+            discountValue: document.getElementById(
+                "discountValue",
+            ) as HTMLInputElement,
+            minPurchase: document.getElementById(
+                "minPurchase",
+            ) as HTMLInputElement,
+            description: document.getElementById(
+                "description",
+            ) as HTMLInputElement,
+            validFrom: document.getElementById("validFrom") as HTMLInputElement,
+            validUntil: document.getElementById(
+                "validUntil",
+            ) as HTMLInputElement,
+            maxUses: document.getElementById("maxUses") as HTMLInputElement,
+        };
+
+        // Reset product checkboxes
+        document.querySelectorAll(".product-checkbox").forEach((cb) => {
+            (cb as HTMLInputElement).checked = false;
+        });
+        appliesToAll.checked = true;
+        productSelection?.classList.add("hidden");
+
+        if (coupon) {
+            title!.textContent = "Editar Cupon";
+            fields.id.value = coupon.id;
+            fields.code.value = coupon.code;
+            fields.discountType.value = coupon.discount_type;
+            fields.discountValue.value =
+                coupon.discount_type === "fixed"
+                    ? (coupon.discount_value / 100).toString()
+                    : coupon.discount_value.toString();
+            fields.minPurchase.value = coupon.min_purchase
+                ? (coupon.min_purchase / 100).toString()
+                : "";
+            fields.description.value = coupon.description || "";
+            fields.validFrom.value = coupon.valid_from
+                ? coupon.valid_from.split("T")[0]
+                : "";
+            fields.validUntil.value = coupon.valid_until
+                ? coupon.valid_until.split("T")[0]
+                : "";
+            fields.maxUses.value = coupon.max_uses || "";
+
+            // Set product selection
+            if (coupon.applies_to === "specific") {
+                appliesToSpecific.checked = true;
+                productSelection?.classList.remove("hidden");
+
+                // Check the products that are linked
+                const linkedProducts =
+                    coupon.coupon_products?.map((cp: any) => cp.product_id) ||
+                    [];
+                document.querySelectorAll(".product-checkbox").forEach((cb) => {
+                    const productId = cb.getAttribute("data-product-id");
+                    if (linkedProducts.includes(productId)) {
+                        (cb as HTMLInputElement).checked = true;
+                    }
+                });
+            }
+        } else {
+            title!.textContent = "Nuevo Cupon";
+            form.reset();
+            fields.id.value = "";
+        }
+
+        modal?.classList.remove("hidden");
+        modal?.classList.add("flex");
+    }
+
+    function hideModal() {
+        modal?.classList.add("hidden");
+        modal?.classList.remove("flex");
+    }
+
+    document
+        .getElementById("addCoupon")
+        ?.addEventListener("click", () => openModal());
+    document.getElementById("closeModal")?.addEventListener("click", hideModal);
+    modal?.addEventListener("click", (e) => {
+        if (e.target === modal) hideModal();
+    });
+
+    document.querySelectorAll("[data-edit]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            const coupon = JSON.parse(btn.getAttribute("data-edit") || "{}");
+            openModal(coupon);
+        });
+    });
+
+    document.querySelectorAll("[data-delete]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+            if (confirm("¿Eliminar este cupon?")) {
+                const id = btn.getAttribute("data-delete");
+                const res = await fetch(`/api/admin/coupons/${id}`, {
+                    method: "DELETE",
+                });
+                if (res.ok) window.location.reload();
+                else alert("Error al eliminar");
+            }
+        });
+    });
+
+    document.querySelectorAll("[data-toggle-active]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+            const id = btn.getAttribute("data-toggle-active");
+            const isActive = btn.getAttribute("data-is-active") === "true";
+            const res = await fetch(`/api/admin/coupons/${id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ is_active: !isActive }),
+            });
+            if (res.ok) window.location.reload();
+        });
+    });
+
+    form?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const id = (document.getElementById("couponId") as HTMLInputElement)
+            .value;
+        const discountType = (
+            document.getElementById("discountType") as HTMLSelectElement
+        ).value;
+        const discountValueRaw = parseFloat(
+            (document.getElementById("discountValue") as HTMLInputElement)
+                .value,
+        );
+        const discountValue =
+            discountType === "fixed"
+                ? Math.round(discountValueRaw * 100)
+                : discountValueRaw;
+        const minPurchaseRaw = (
+            document.getElementById("minPurchase") as HTMLInputElement
+        ).value;
+
+        // Get selected products
+        const appliesTo = appliesToSpecific.checked ? "specific" : "all";
+        const selectedProducts: string[] = [];
+        if (appliesTo === "specific") {
+            document
+                .querySelectorAll(".product-checkbox:checked")
+                .forEach((cb) => {
+                    selectedProducts.push(cb.getAttribute("data-product-id")!);
+                });
+        }
+
+        const data = {
+            code: (
+                document.getElementById("couponCode") as HTMLInputElement
+            ).value.toUpperCase(),
+            discount_type: discountType,
+            discount_value: discountValue,
+            min_purchase: minPurchaseRaw
+                ? Math.round(parseFloat(minPurchaseRaw) * 100)
+                : 0,
+            description:
+                (document.getElementById("description") as HTMLInputElement)
+                    .value || null,
+            valid_from:
+                (document.getElementById("validFrom") as HTMLInputElement)
+                    .value || null,
+            valid_until:
+                (document.getElementById("validUntil") as HTMLInputElement)
+                    .value || null,
+            max_uses:
+                (document.getElementById("maxUses") as HTMLInputElement)
+                    .value || null,
+            applies_to: appliesTo,
+            product_ids: selectedProducts,
+        };
+
+        const res = await fetch("/api/admin/coupons" + (id ? `/${id}` : ""), {
+            method: id ? "PUT" : "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+        });
+
+        if (res.ok) window.location.reload();
+        else {
+            const err = await res.json();
+            alert("Error: " + (err.error || "Error al guardar"));
+        }
+    });
+</script>

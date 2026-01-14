@@ -1,0 +1,268 @@
+---
+/**
+ * Admin Categories List
+ */
+export const prerender = false;
+
+import AdminLayout from "../../../modules/admin/layouts/AdminLayout.astro";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+    import.meta.env.PUBLIC_SUPABASE_URL,
+    import.meta.env.SUPABASE_SERVICE_ROLE_KEY,
+);
+
+const { data: categories } = await supabase
+    .from("categories")
+    .select("*, products(count)")
+    .order("name");
+---
+
+<AdminLayout title="Categorias">
+    <div class="flex justify-between items-center mb-6">
+        <p class="text-slate-400">{categories?.length || 0} categorias</p>
+        <button
+            id="addCategory"
+            class="px-4 py-2 bg-accent hover:bg-red-700 text-white font-medium transition-colors"
+        >
+            + Nueva Categoria
+        </button>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {
+            categories?.map((category) => (
+                <div class="bg-slate-900 border border-slate-800 p-6 relative group">
+                    {category.image && (
+                        <img
+                            src={category.image}
+                            alt=""
+                            class="w-full h-32 object-cover mb-4 rounded"
+                        />
+                    )}
+                    <h3 class="text-lg font-bold text-white">
+                        {category.name}
+                    </h3>
+                    <p class="text-slate-400 text-sm mt-1">{category.slug}</p>
+                    <p class="text-slate-500 text-xs mt-2">
+                        {category.products?.[0]?.count || 0} productos
+                    </p>
+
+                    <div class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                        <button
+                            data-edit={JSON.stringify(category)}
+                            class="p-2 bg-slate-800 hover:bg-slate-700 text-white rounded"
+                        >
+                            <svg
+                                class="w-4 h-4"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                                />
+                            </svg>
+                        </button>
+                        <button
+                            data-delete={category.id}
+                            class="p-2 bg-red-500/20 hover:bg-red-500/40 text-red-400 rounded"
+                        >
+                            <svg
+                                class="w-4 h-4"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            ))
+        }
+    </div>
+
+    <!-- Modal -->
+    <div
+        id="categoryModal"
+        class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50"
+    >
+        <div
+            class="bg-slate-900 border border-slate-800 p-6 w-full max-w-md mx-4"
+        >
+            <h3 id="modalTitle" class="text-lg font-bold text-white mb-4">
+                Nueva Categoria
+            </h3>
+            <form id="categoryForm" class="space-y-4">
+                <input type="hidden" id="categoryId" />
+                <div>
+                    <label class="block text-sm text-slate-400 mb-1"
+                        >Nombre</label
+                    >
+                    <input
+                        type="text"
+                        id="categoryName"
+                        required
+                        class="w-full bg-slate-800 border border-slate-700 text-white px-4 py-2"
+                    />
+                </div>
+                <div>
+                    <label class="block text-sm text-slate-400 mb-1">Slug</label
+                    >
+                    <input
+                        type="text"
+                        id="categorySlug"
+                        required
+                        class="w-full bg-slate-800 border border-slate-700 text-white px-4 py-2"
+                    />
+                </div>
+                <div>
+                    <label class="block text-sm text-slate-400 mb-1"
+                        >Imagen URL</label
+                    >
+                    <input
+                        type="url"
+                        id="categoryImage"
+                        class="w-full bg-slate-800 border border-slate-700 text-white px-4 py-2"
+                    />
+                </div>
+                <div class="flex gap-3">
+                    <button
+                        type="submit"
+                        class="flex-1 bg-accent hover:bg-red-700 text-white py-2 font-medium"
+                        >Guardar</button
+                    >
+                    <button
+                        type="button"
+                        id="closeModal"
+                        class="px-4 py-2 border border-slate-700 text-white hover:bg-slate-800"
+                        >Cancelar</button
+                    >
+                </div>
+            </form>
+        </div>
+    </div>
+</AdminLayout>
+
+<script>
+    const modal = document.getElementById("categoryModal");
+    const form = document.getElementById("categoryForm") as HTMLFormElement;
+
+    function openModal(category?: any) {
+        const title = document.getElementById("modalTitle");
+        const idInput = document.getElementById(
+            "categoryId",
+        ) as HTMLInputElement;
+        const nameInput = document.getElementById(
+            "categoryName",
+        ) as HTMLInputElement;
+        const slugInput = document.getElementById(
+            "categorySlug",
+        ) as HTMLInputElement;
+        const imageInput = document.getElementById(
+            "categoryImage",
+        ) as HTMLInputElement;
+
+        if (category) {
+            title!.textContent = "Editar Categoria";
+            idInput.value = category.id;
+            nameInput.value = category.name;
+            slugInput.value = category.slug;
+            imageInput.value = category.image || "";
+        } else {
+            title!.textContent = "Nueva Categoria";
+            form.reset();
+            idInput.value = "";
+        }
+
+        modal?.classList.remove("hidden");
+        modal?.classList.add("flex");
+    }
+
+    document
+        .getElementById("addCategory")
+        ?.addEventListener("click", () => openModal());
+    document.getElementById("closeModal")?.addEventListener("click", () => {
+        modal?.classList.add("hidden");
+        modal?.classList.remove("flex");
+    });
+
+    document.querySelectorAll("[data-edit]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            const category = JSON.parse(btn.getAttribute("data-edit") || "{}");
+            openModal(category);
+        });
+    });
+
+    document.querySelectorAll("[data-delete]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+            if (confirm("¿Eliminar esta categoria?")) {
+                const id = btn.getAttribute("data-delete");
+                const res = await fetch(`/api/admin/categories/${id}`, {
+                    method: "DELETE",
+                });
+                if (res.ok) window.location.reload();
+            }
+        });
+    });
+
+    form?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const id = (document.getElementById("categoryId") as HTMLInputElement)
+            .value;
+        const data = {
+            name: (document.getElementById("categoryName") as HTMLInputElement)
+                .value,
+            slug: (document.getElementById("categorySlug") as HTMLInputElement)
+                .value,
+            image:
+                (document.getElementById("categoryImage") as HTMLInputElement)
+                    .value || null,
+        };
+
+        const res = await fetch(
+            "/api/admin/categories" + (id ? `/${id}` : ""),
+            {
+                method: id ? "PUT" : "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data),
+            },
+        );
+
+        if (res.ok) window.location.reload();
+        else {
+            const errorData = await res.json();
+            alert("Error: " + (errorData.error || "Error al guardar"));
+        }
+    });
+
+    // Auto-generate slug from name
+    document.getElementById("categoryName")?.addEventListener("input", (e) => {
+        const slugInput = document.getElementById(
+            "categorySlug",
+        ) as HTMLInputElement;
+        if (!slugInput.value || slugInput.dataset.auto !== "false") {
+            slugInput.value = (e.target as HTMLInputElement).value
+                .toLowerCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .replace(/[^a-z0-9]+/g, "-")
+                .replace(/^-|-$/g, "");
+            slugInput.dataset.auto = "true";
+        }
+    });
+    document
+        .getElementById("categorySlug")
+        ?.addEventListener("input", function () {
+            (this as HTMLInputElement).dataset.auto = "false";
+        });
+</script>

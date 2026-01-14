@@ -1,112 +1,225 @@
 ---
 /**
- * Admin Layout
- * Protected layout for admin pages
+ * Admin Layout - Base layout for admin pages
  */
-import BaseLayout from '../../../shared/layouts/BaseLayout.astro';
-import { getSession } from '../../auth';
-import { ROUTES, ADMIN_NAV } from '../../../config';
+import BaseLayout from "../../../shared/layouts/BaseLayout.astro";
 
 interface Props {
   title: string;
 }
 
 const { title } = Astro.props;
-const session = await getSession(Astro.request);
-const isAuthenticated = !!session;
-const currentPath = Astro.url.pathname;
 ---
 
-<BaseLayout title={`Admin - ${title}`}>
-  {!isAuthenticated ? (
-    <div class="min-h-screen flex items-center justify-center bg-cream-50">
-      <div class="text-center">
-        <h1 class="font-display text-2xl text-navy-900 mb-4">Acceso Restringido</h1>
-        <p class="text-charcoal-600 mb-6">Debes iniciar sesion para acceder.</p>
-        <a href={ROUTES.AUTH.LOGIN} class="btn-primary">Iniciar Sesion</a>
+<BaseLayout title={`${title} | Admin - FashionMarket`}>
+  <div class="min-h-screen bg-slate-950 flex">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-slate-900 border-r border-slate-800 fixed h-full">
+      <div class="p-6 border-b border-slate-800">
+        <a
+          href="/gestion-fm"
+          class="font-display text-xl font-black text-white"
+        >
+          FASHION<span class="text-accent">MARKET</span>
+          <span class="block text-xs text-slate-500 font-normal mt-1"
+            >Panel de Administracion</span
+          >
+        </a>
       </div>
-    </div>
-  ) : (
-    <div class="min-h-screen flex bg-charcoal-50">
-      
-      <!-- Sidebar -->
-      <aside class="w-64 bg-navy-950 text-cream-100 flex flex-col">
-        <div class="p-6 border-b border-navy-800">
-          <a href={ROUTES.ADMIN.DASHBOARD} class="font-display text-xl text-cream-50">
-            Fashion<span class="text-leather-400">Market</span>
-          </a>
-          <p class="text-xs text-cream-400 mt-1">Panel de Administracion</p>
-        </div>
-        
-        <nav class="flex-1 p-4">
-          <ul class="space-y-1">
-            {ADMIN_NAV.map((item) => {
-              const isActive = currentPath === item.href || 
-                (item.href !== ROUTES.ADMIN.DASHBOARD && currentPath.startsWith(item.href));
-              
-              return (
-                <li>
-                  <a 
-                    href={item.href}
-                    class:list={[
-                      'flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors',
-                      isActive ? 'bg-navy-800 text-cream-50' : 'text-cream-300 hover:bg-navy-800/50'
-                    ]}
-                  >
-                    {item.icon === 'home' && (
-                      <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                      </svg>
-                    )}
-                    {item.icon === 'box' && (
-                      <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                      </svg>
-                    )}
-                    {item.icon === 'folder' && (
-                      <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                      </svg>
-                    )}
-                    {item.icon === 'shopping-bag' && (
-                      <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                      </svg>
-                    )}
-                    {item.name}
-                  </a>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
-        
-        <div class="p-4 border-t border-navy-800">
-          <div class="flex items-center gap-3 px-4 py-3">
-            <div class="h-8 w-8 bg-leather-500 rounded-full flex items-center justify-center text-cream-50 text-sm font-medium">
-              {session?.user?.email?.charAt(0).toUpperCase() || 'A'}
-            </div>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm text-cream-50 truncate">{session?.user?.email}</p>
-            </div>
-          </div>
-          <form action={ROUTES.API.AUTH.LOGOUT} method="POST" class="mt-2">
-            <button type="submit" class="w-full px-4 py-2 text-sm text-cream-300 hover:text-cream-50 hover:bg-navy-800/50 rounded-lg transition-colors text-left">
-              Cerrar sesion
-            </button>
-          </form>
-        </div>
-      </aside>
-      
-      <!-- Main -->
-      <div class="flex-1 flex flex-col">
-        <header class="h-16 bg-white border-b border-charcoal-100 flex items-center px-6">
-          <h1 class="font-display text-xl text-navy-900">{title}</h1>
-        </header>
-        <main class="flex-1 p-6 overflow-auto">
-          <slot />
-        </main>
+
+      <nav class="p-4">
+        <ul class="space-y-1">
+          <li>
+            <a
+              href="/gestion-fm"
+              class="flex items-center gap-3 px-4 py-3 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors rounded"
+            >
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+                ></path>
+              </svg>
+              Dashboard
+            </a>
+          </li>
+          <li>
+            <a
+              href="/gestion-fm/productos"
+              class="flex items-center gap-3 px-4 py-3 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors rounded"
+            >
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                ></path>
+              </svg>
+              Productos
+            </a>
+          </li>
+          <li>
+            <a
+              href="/gestion-fm/categorias"
+              class="flex items-center gap-3 px-4 py-3 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors rounded"
+            >
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+                ></path>
+              </svg>
+              Categorias
+            </a>
+          </li>
+          <li>
+            <a
+              href="/gestion-fm/pedidos"
+              class="flex items-center gap-3 px-4 py-3 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors rounded"
+            >
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+              </svg>
+              Pedidos
+            </a>
+          </li>
+          <li>
+            <a
+              href="/gestion-fm/usuarios"
+              class="flex items-center gap-3 px-4 py-3 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors rounded"
+            >
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                ></path>
+              </svg>
+              Usuarios
+            </a>
+          </li>
+          <li>
+            <a
+              href="/gestion-fm/cupones"
+              class="flex items-center gap-3 px-4 py-3 text-slate-300 hover:bg-slate-800 hover:text-white transition-colors rounded"
+            >
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+                ></path>
+              </svg>
+              Cupones
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <div
+        class="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-800"
+      >
+        <a
+          href="/"
+          class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors rounded"
+        >
+          <svg
+            class="w-5 h-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M11 17l-5-5m0 0l5-5m-5 5h12"></path>
+          </svg>
+          Volver a la Tienda
+        </a>
       </div>
-    </div>
-  )}
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 ml-64">
+      <header class="bg-slate-900 border-b border-slate-800 px-8 py-4">
+        <h1 class="text-xl font-bold text-white">{title}</h1>
+      </header>
+      <div class="p-8">
+        <slot />
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Check admin access on load
+    import { getCurrentUser } from "../../../modules/auth/services/auth-client.service";
+    import { createClient } from "@supabase/supabase-js";
+
+    const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+    const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+
+    async function checkAdminAccess() {
+      const user = await getCurrentUser();
+
+      if (!user) {
+        window.location.href = "/login?redirect=/gestion-fm";
+        return;
+      }
+
+      const supabase = createClient(supabaseUrl, supabaseKey);
+      const { data: profile } = await supabase
+        .from("user_profiles")
+        .select("is_admin")
+        .eq("id", user.id)
+        .single();
+
+      if (!profile?.is_admin) {
+        window.location.href = "/?error=no_admin_access";
+      }
+    }
+
+    checkAdminAccess();
+  </script>
 </BaseLayout>

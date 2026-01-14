@@ -11,6 +11,9 @@ export const ROUTES = {
     CATEGORY: (slug: string) => `/categoria/${slug}`,
 
     // Auth Routes
+    LOGIN: '/login',
+    REGISTER: '/register',
+    PROFILE: '/perfil',
     AUTH: {
         LOGIN: '/admin/login',
         LOGOUT: '/api/auth/logout',
@@ -42,9 +45,10 @@ export const ROUTES = {
 // Navigation items for store header
 export const STORE_NAV = [
     { name: 'Inicio', href: ROUTES.HOME },
-    { name: 'Camisas', href: ROUTES.CATEGORY('camisas') },
+    { name: 'Zapatillas', href: ROUTES.CATEGORY('zapatillas') },
+    { name: 'Camisetas', href: ROUTES.CATEGORY('camisetas') },
     { name: 'Pantalones', href: ROUTES.CATEGORY('pantalones') },
-    { name: 'Trajes', href: ROUTES.CATEGORY('trajes') },
+    { name: 'Sudaderas', href: ROUTES.CATEGORY('sudaderas') },
 ];
 
 // Navigation items for admin sidebar
