@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -11,91 +11,10 @@
   }
 
   body {
-    @apply font-body text-charcoal-900 bg-cream-50;
+    @apply font-sans text-white bg-black;
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-display font-semibold text-navy-900;
-  }
-
-  /* Custom selection color */
   ::selection {
-    @apply bg-navy-200 text-navy-900;
-  }
-}
-
-@layer components {
-  /* Premium button styles */
-  .btn-primary {
-    @apply inline-flex items-center justify-center px-6 py-3 
-           bg-navy-900 text-cream-50 font-medium
-           transition-all duration-200 ease-out
-           hover:bg-navy-800 hover:shadow-elegant
-           active:transform active:scale-[0.98]
-           disabled:opacity-50 disabled:cursor-not-allowed;
-  }
-
-  .btn-secondary {
-    @apply inline-flex items-center justify-center px-6 py-3 
-           bg-transparent text-navy-900 font-medium
-           border border-navy-900
-           transition-all duration-200 ease-out
-           hover:bg-navy-900 hover:text-cream-50
-           active:transform active:scale-[0.98]
-           disabled:opacity-50 disabled:cursor-not-allowed;
-  }
-
-  .btn-ghost {
-    @apply inline-flex items-center justify-center px-4 py-2 
-           text-charcoal-600 font-medium
-           transition-colors duration-200
-           hover:text-navy-900 hover:bg-navy-50
-           active:bg-navy-100;
-  }
-
-  /* Form inputs */
-  .input {
-    @apply w-full px-4 py-3 
-           bg-white border border-charcoal-200
-           text-charcoal-900 placeholder:text-charcoal-400
-           transition-all duration-200
-           focus:outline-none focus:border-navy-500 focus:ring-2 focus:ring-navy-100;
-  }
-
-  /* Card component */
-  .card {
-    @apply bg-white shadow-elegant overflow-hidden
-           transition-all duration-300 ease-out
-           hover:shadow-elegant-lg;
-  }
-
-  /* Product grid */
-  .product-grid {
-    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6;
-  }
-
-  /* Container with max-width */
-  .container-narrow {
-    @apply max-w-6xl mx-auto px-4 sm:px-6 lg:px-8;
-  }
-
-  .container-wide {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
-  }
-}
-
-@layer utilities {
-  /* Text balance for headings */
-  .text-balance {
-    text-wrap: balance;
-  }
-
-  /* Hide scrollbar but allow scrolling */
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
+    @apply bg-accent text-white;
   }
 }

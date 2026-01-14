@@ -1,0 +1,172 @@
+---
+/**
+ * Returns and Refunds Page
+ */
+import StoreLayout from "../modules/store/layouts/StoreLayout.astro";
+---
+
+<StoreLayout title="Devoluciones | FashionMarket">
+    <div class="min-h-screen bg-slate-950 py-12">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h1 class="font-display text-4xl text-white mb-8">
+                Devoluciones y Cambios
+            </h1>
+
+            <div class="grid gap-6">
+                <!-- Policy Overview -->
+                <div class="bg-slate-900 border border-slate-800 p-6">
+                    <h2 class="text-xl font-bold text-white mb-4">
+                        Nuestra Politica
+                    </h2>
+                    <p class="text-slate-300 mb-4">
+                        En FashionMarket queremos que estes 100% satisfecho con
+                        tu compra. Por eso ofrecemos:
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="text-center p-4 bg-slate-800">
+                            <p class="text-3xl font-bold text-accent mb-2">
+                                30
+                            </p>
+                            <p class="text-slate-300">Dias para devolver</p>
+                        </div>
+                        <div class="text-center p-4 bg-slate-800">
+                            <p class="text-3xl font-bold text-accent mb-2">
+                                100%
+                            </p>
+                            <p class="text-slate-300">Reembolso garantizado</p>
+                        </div>
+                        <div class="text-center p-4 bg-slate-800">
+                            <p class="text-3xl font-bold text-accent mb-2">
+                                GRATIS
+                            </p>
+                            <p class="text-slate-300">Cambios de talla</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- How to Return -->
+                <div class="bg-slate-900 border border-slate-800 p-6">
+                    <h2 class="text-xl font-bold text-white mb-4">
+                        Como Realizar una Devolucion
+                    </h2>
+                    <ol class="space-y-4">
+                        <li class="flex gap-4">
+                            <span
+                                class="flex-shrink-0 w-8 h-8 bg-accent text-white flex items-center justify-center font-bold"
+                                >1</span
+                            >
+                            <div>
+                                <p class="font-medium text-white">
+                                    Inicia tu solicitud
+                                </p>
+                                <p class="text-slate-400 text-sm">
+                                    Accede a tu cuenta, selecciona el pedido y
+                                    haz clic en "Devolver articulo".
+                                </p>
+                            </div>
+                        </li>
+                        <li class="flex gap-4">
+                            <span
+                                class="flex-shrink-0 w-8 h-8 bg-accent text-white flex items-center justify-center font-bold"
+                                >2</span
+                            >
+                            <div>
+                                <p class="font-medium text-white">
+                                    Prepara el paquete
+                                </p>
+                                <p class="text-slate-400 text-sm">
+                                    Empaqueta el articulo en su bolsa o caja
+                                    original con todas las etiquetas.
+                                </p>
+                            </div>
+                        </li>
+                        <li class="flex gap-4">
+                            <span
+                                class="flex-shrink-0 w-8 h-8 bg-accent text-white flex items-center justify-center font-bold"
+                                >3</span
+                            >
+                            <div>
+                                <p class="font-medium text-white">
+                                    Envia el paquete
+                                </p>
+                                <p class="text-slate-400 text-sm">
+                                    Llevalo a cualquier punto de recogida o
+                                    programa una recogida a domicilio.
+                                </p>
+                            </div>
+                        </li>
+                        <li class="flex gap-4">
+                            <span
+                                class="flex-shrink-0 w-8 h-8 bg-accent text-white flex items-center justify-center font-bold"
+                                >4</span
+                            >
+                            <div>
+                                <p class="font-medium text-white">
+                                    Recibe tu reembolso
+                                </p>
+                                <p class="text-slate-400 text-sm">
+                                    Procesamos el reembolso en 3-5 dias habiles
+                                    tras recibir el articulo.
+                                </p>
+                            </div>
+                        </li>
+                    </ol>
+                </div>
+
+                <!-- Conditions -->
+                <div class="bg-slate-900 border border-slate-800 p-6">
+                    <h2 class="text-xl font-bold text-white mb-4">
+                        Condiciones de Devolucion
+                    </h2>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <h3 class="font-medium text-green-400 mb-2">
+                                Aceptamos
+                            </h3>
+                            <ul
+                                class="list-disc list-inside text-slate-300 space-y-1 text-sm"
+                            >
+                                <li>Articulos sin usar y con etiquetas</li>
+                                <li>Embalaje original o similar</li>
+                                <li>Solicitudes dentro de 30 dias</li>
+                                <li>Cambios por talla diferente</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 class="font-medium text-red-400 mb-2">
+                                No Aceptamos
+                            </h3>
+                            <ul
+                                class="list-disc list-inside text-slate-300 space-y-1 text-sm"
+                            >
+                                <li>Articulos usados o lavados</li>
+                                <li>Sin etiquetas originales</li>
+                                <li>Ropa interior o banadores</li>
+                                <li>Pasados 30 dias de la compra</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact -->
+                <div
+                    class="bg-slate-900 border border-slate-800 p-6 text-center"
+                >
+                    <h2 class="text-xl font-bold text-white mb-4">
+                        ¿Necesitas Ayuda?
+                    </h2>
+                    <p class="text-slate-300 mb-4">
+                        Nuestro equipo de atencion al cliente esta disponible
+                        para ayudarte.
+                    </p>
+                    <a
+                        href="/contacto"
+                        class="inline-block px-6 py-3 bg-accent hover:bg-red-700 text-white font-bold transition-colors"
+                    >
+                        Contactar Soporte
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</StoreLayout>

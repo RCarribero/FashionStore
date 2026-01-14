@@ -1,10 +1,11 @@
 ---
 /**
- * Store Layout
- * Public store layout with header and footer
+ * Store Layout - Nike/JD/Adidas Inspired Design
+ * Modern sportswear aesthetic with animated promo banner
  */
 import BaseLayout from "../../../shared/layouts/BaseLayout.astro";
 import CartSlideOver, { CartTrigger } from "../components/CartSlideOver";
+import UserButton from "../components/UserButton";
 import { ROUTES, STORE_NAV } from "../../../config";
 
 interface Props {
@@ -17,32 +18,62 @@ const currentPath = Astro.url.pathname;
 ---
 
 <BaseLayout title={title} description={description}>
-    <div class="min-h-screen flex flex-col">
+    <div class="min-h-screen flex flex-col bg-black">
+        <!-- Promo Banner - Animated Ticker -->
+        <div class="bg-black text-white py-2 overflow-hidden">
+            <div class="animate-marquee whitespace-nowrap flex">
+                <span class="mx-8 text-sm font-medium tracking-wide"
+                    >ENVIO GRATIS EN PEDIDOS +100</span
+                >
+                <span class="mx-8 text-sm text-accent font-bold"
+                    >NUEVA COLECCION 2026</span
+                >
+                <span class="mx-8 text-sm font-medium tracking-wide"
+                    >DEVOLUCIONES GRATUITAS 30 DIAS</span
+                >
+                <span class="mx-8 text-sm text-accent font-bold"
+                    >-20% EN TU PRIMERA COMPRA</span
+                >
+                <span class="mx-8 text-sm font-medium tracking-wide"
+                    >ENVIO GRATIS EN PEDIDOS +100</span
+                >
+                <span class="mx-8 text-sm text-accent font-bold"
+                    >NUEVA COLECCION 2026</span
+                >
+                <span class="mx-8 text-sm font-medium tracking-wide"
+                    >DEVOLUCIONES GRATUITAS 30 DIAS</span
+                >
+                <span class="mx-8 text-sm text-accent font-bold"
+                    >-20% EN TU PRIMERA COMPRA</span
+                >
+            </div>
+        </div>
+
         <!-- Header -->
         <header
-            class="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-charcoal-100"
+            class="sticky top-0 z-50 bg-black border-b border-slate-800 transition-all duration-300"
         >
-            <div class="container-wide">
-                <div class="flex items-center justify-between h-16">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16 lg:h-20">
                     <!-- Logo -->
                     <a
                         href={ROUTES.HOME}
-                        class="font-display text-xl text-navy-900"
+                        class="font-display text-2xl lg:text-3xl font-black text-white tracking-tight hover:text-accent transition-colors duration-200"
                     >
-                        Fashion<span class="text-leather-600">Market</span>
+                        FASHION<span class="text-accent">MARKET</span>
                     </a>
 
-                    <!-- Nav -->
-                    <nav class="hidden md:flex items-center gap-8">
+                    <!-- Nav - Desktop -->
+                    <nav class="hidden lg:flex items-center gap-8">
                         {
                             STORE_NAV.map((item) => (
                                 <a
                                     href={item.href}
                                     class:list={[
-                                        "text-sm font-medium transition-colors",
+                                        "relative text-sm font-semibold uppercase tracking-wider transition-colors duration-200 py-2",
                                         currentPath === item.href
-                                            ? "text-navy-900"
-                                            : "text-charcoal-600 hover:text-navy-900",
+                                            ? "text-white after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-accent"
+                                            : "text-slate-400 hover:text-white",
                                     ]}
                                 >
                                     {item.name}
@@ -52,28 +83,108 @@ const currentPath = Astro.url.pathname;
                     </nav>
 
                     <!-- Actions -->
-                    <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2 lg:gap-4">
+                        <!-- Search Form -->
+                        <div
+                            id="searchContainer"
+                            class="hidden absolute top-full right-0 left-0 mt-2 px-4 sm:px-6 lg:px-8"
+                        >
+                            <form
+                                id="searchForm"
+                                class="max-w-md ml-auto bg-slate-900 border border-slate-700 p-4 shadow-xl"
+                            >
+                                <div class="flex gap-2">
+                                    <input
+                                        type="text"
+                                        id="searchInput"
+                                        placeholder="Buscar productos..."
+                                        class="flex-1 px-4 py-2 bg-slate-800 border border-slate-700 text-white placeholder:text-slate-500 focus:outline-none focus:border-accent"
+                                    />
+                                    <button
+                                        type="submit"
+                                        class="px-6 py-2 bg-accent hover:bg-red-700 text-white font-bold uppercase text-sm transition-colors"
+                                    >
+                                        Buscar
+                                    </button>
+                                    <button
+                                        type="button"
+                                        id="closeSearch"
+                                        class="px-3 py-2 text-slate-400 hover:text-white transition-colors"
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        <!-- Search Icon -->
                         <button
                             type="button"
-                            class="p-2 text-charcoal-600 hover:text-navy-900"
+                            id="searchButton"
+                            class="p-2 lg:p-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-full transition-all duration-200"
                         >
                             <svg
-                                class="h-5 w-5"
+                                class="h-5 w-5 lg:h-6 lg:w-6"
                                 fill="none"
                                 viewBox="0 0 24 24"
                                 stroke="currentColor"
+                                stroke-width="2"
                             >
                                 <path
                                     stroke-linecap="round"
                                     stroke-linejoin="round"
-                                    stroke-width="1.5"
                                     d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
                                 ></path>
                             </svg>
                         </button>
+                        <!-- User -->
+                        <UserButton client:load />
+                        <!-- Cart -->
                         <CartTrigger client:load />
+                        <!-- Mobile Menu -->
+                        <button
+                            type="button"
+                            class="lg:hidden p-2 text-slate-400 hover:text-white"
+                            id="mobile-menu-btn"
+                        >
+                            <svg
+                                class="h-6 w-6"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                stroke-width="2"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+                                ></path>
+                            </svg>
+                        </button>
                     </div>
                 </div>
+            </div>
+
+            <!-- Mobile Nav -->
+            <div class="hidden lg:hidden" id="mobile-menu">
+                <nav
+                    class="px-4 py-4 space-y-2 bg-white border-t border-slate-100"
+                >
+                    {
+                        STORE_NAV.map((item) => (
+                            <a
+                                href={item.href}
+                                class:list={[
+                                    "block py-3 px-4 text-base font-semibold uppercase tracking-wide",
+                                    currentPath === item.href
+                                        ? "text-accent bg-slate-50"
+                                        : "text-slate-700 hover:text-black hover:bg-slate-50",
+                                ]}
+                            >
+                                {item.name}
+                            </a>
+                        ))
+                    }
+                </nav>
             </div>
         </header>
 
@@ -83,32 +194,69 @@ const currentPath = Astro.url.pathname;
         </main>
 
         <!-- Footer -->
-        <footer class="bg-navy-950 text-cream-100 py-16">
-            <div class="container-wide">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
+        <footer class="bg-black text-white">
+            <!-- Newsletter -->
+            <div class="border-b border-slate-800">
+                <div
+                    class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16"
+                >
+                    <div class="lg:flex lg:items-center lg:justify-between">
+                        <div class="mb-6 lg:mb-0">
+                            <h3
+                                class="font-display text-2xl lg:text-3xl font-bold"
+                            >
+                                UNETE AL CLUB
+                            </h3>
+                            <p class="mt-2 text-slate-400">
+                                Recibe ofertas exclusivas y novedades
+                                directamente en tu email.
+                            </p>
+                        </div>
+                        <form class="flex gap-2 max-w-md w-full lg:w-auto">
+                            <input
+                                type="email"
+                                placeholder="Tu email"
+                                class="flex-1 px-4 py-3 bg-slate-900 border border-slate-700 text-white placeholder:text-slate-500 focus:outline-none focus:border-accent transition-colors"
+                            />
+                            <button
+                                type="submit"
+                                class="px-6 py-3 bg-accent hover:bg-accent-600 text-white font-bold uppercase tracking-wider transition-colors duration-200"
+                            >
+                                Unirme
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Links -->
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12">
                     <!-- Brand -->
-                    <div class="md:col-span-1">
-                        <span class="font-display text-2xl text-cream-50">
-                            Fashion<span class="text-leather-400">Market</span>
+                    <div class="col-span-2 md:col-span-1">
+                        <span class="font-display text-2xl font-black">
+                            FASHION<span class="text-accent">MARKET</span>
                         </span>
-                        <p class="mt-4 text-cream-400 text-sm">
-                            Moda masculina premium. Piezas atemporales para el
-                            hombre moderno.
+                        <p class="mt-4 text-slate-400 text-sm leading-relaxed">
+                            Moda premium para el hombre moderno. Estilo, calidad
+                            y actitud.
                         </p>
                     </div>
 
                     <!-- Links -->
                     <div>
-                        <h3 class="font-display text-lg text-cream-50 mb-4">
+                        <h4
+                            class="font-bold text-sm uppercase tracking-wider mb-4"
+                        >
                             Tienda
-                        </h3>
-                        <ul class="space-y-2 text-sm text-cream-400">
+                        </h4>
+                        <ul class="space-y-3 text-sm text-slate-400">
                             {
                                 STORE_NAV.slice(1).map((item) => (
                                     <li>
                                         <a
                                             href={item.href}
-                                            class="hover:text-cream-50"
+                                            class="hover:text-white transition-colors"
                                         >
                                             {item.name}
                                         </a>
@@ -119,21 +267,37 @@ const currentPath = Astro.url.pathname;
                     </div>
 
                     <div>
-                        <h3 class="font-display text-lg text-cream-50 mb-4">
+                        <h4
+                            class="font-bold text-sm uppercase tracking-wider mb-4"
+                        >
                             Ayuda
-                        </h3>
-                        <ul class="space-y-2 text-sm text-cream-400">
+                        </h4>
+                        <ul class="space-y-3 text-sm text-slate-400">
                             <li>
-                                <a href="#" class="hover:text-cream-50">Envio</a
+                                <a
+                                    href="/envio"
+                                    class="hover:text-white transition-colors"
+                                    >Envio</a
                                 >
                             </li>
                             <li>
-                                <a href="#" class="hover:text-cream-50"
+                                <a
+                                    href="/devoluciones"
+                                    class="hover:text-white transition-colors"
                                     >Devoluciones</a
                                 >
                             </li>
                             <li>
-                                <a href="#" class="hover:text-cream-50"
+                                <a
+                                    href="/productos"
+                                    class="hover:text-white transition-colors"
+                                    >Tallas</a
+                                >
+                            </li>
+                            <li>
+                                <a
+                                    href="/contacto"
+                                    class="hover:text-white transition-colors"
                                     >Contacto</a
                                 >
                             </li>
@@ -141,33 +305,93 @@ const currentPath = Astro.url.pathname;
                     </div>
 
                     <div>
-                        <h3 class="font-display text-lg text-cream-50 mb-4">
+                        <h4
+                            class="font-bold text-sm uppercase tracking-wider mb-4"
+                        >
                             Legal
-                        </h3>
-                        <ul class="space-y-2 text-sm text-cream-400">
+                        </h4>
+                        <ul class="space-y-3 text-sm text-slate-400">
                             <li>
-                                <a href="#" class="hover:text-cream-50"
+                                <a
+                                    href="/privacidad"
+                                    class="hover:text-white transition-colors"
                                     >Privacidad</a
                                 >
                             </li>
                             <li>
-                                <a href="#" class="hover:text-cream-50"
+                                <a
+                                    href="/terminos"
+                                    class="hover:text-white transition-colors"
                                     >Terminos</a
+                                >
+                            </li>
+                            <li>
+                                <a
+                                    href="/cookies"
+                                    class="hover:text-white transition-colors"
+                                    >Cookies</a
                                 >
                             </li>
                         </ul>
                     </div>
                 </div>
+            </div>
 
-                <div
-                    class="mt-12 pt-8 border-t border-navy-800 text-center text-sm text-cream-500"
-                >
-                    &copy; {new Date().getFullYear()} FashionMarket. Todos los derechos
-                    reservados.
+            <!-- Bottom -->
+            <div class="border-t border-slate-800">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                    <div
+                        class="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+                    >
+                        <p class="text-sm text-slate-500">
+                            &copy; {new Date().getFullYear()} FashionMarket. Todos
+                            los derechos reservados.
+                        </p>
+                        <div class="flex items-center gap-4">
+                            <img
+                                src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Stripe_Logo%2C_revised_2016.svg/512px-Stripe_Logo%2C_revised_2016.svg.png"
+                                alt="Stripe"
+                                class="h-6 opacity-50"
+                            />
+                        </div>
+                    </div>
                 </div>
             </div>
         </footer>
-
-        <CartSlideOver client:load />
     </div>
+
+    <!-- Scripts -->
+    <script>
+        // Search functionality
+        const searchButton = document.getElementById("searchButton");
+        const searchContainer = document.getElementById("searchContainer");
+        const searchForm = document.getElementById("searchForm");
+        const searchInput = document.getElementById("searchInput");
+        const closeSearch = document.getElementById("closeSearch");
+
+        searchButton?.addEventListener("click", () => {
+            searchContainer?.classList.toggle("hidden");
+            searchInput?.focus();
+        });
+
+        closeSearch?.addEventListener("click", () => {
+            searchContainer?.classList.add("hidden");
+            if (searchInput) searchInput.value = "";
+        });
+
+        searchForm?.addEventListener("submit", (e) => {
+            e.preventDefault();
+            const query = searchInput?.value.trim();
+            if (query) {
+                window.location.href = `/buscar?q=${encodeURIComponent(query)}`;
+            }
+        });
+
+        // Mobile Menu
+        const menuBtn = document.getElementById("mobile-menu-btn");
+        const mobileMenu = document.getElementById("mobile-menu");
+        menuBtn?.addEventListener("click", () => {
+            mobileMenu?.classList.toggle("hidden");
+        });
+    </script>
 </BaseLayout>

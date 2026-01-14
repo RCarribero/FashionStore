@@ -1,0 +1,152 @@
+---
+/**
+ * Admin Users List
+ */
+export const prerender = false;
+
+import AdminLayout from "../../../modules/admin/layouts/AdminLayout.astro";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+    import.meta.env.PUBLIC_SUPABASE_URL,
+    import.meta.env.SUPABASE_SERVICE_ROLE_KEY,
+);
+
+const { data: profiles } = await supabase
+    .from("user_profiles")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+const formatDate = (dateStr: string) =>
+    new Date(dateStr).toLocaleDateString("es-ES", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+    });
+---
+
+<AdminLayout title="Usuarios">
+    <div class="flex justify-between items-center mb-6">
+        <p class="text-slate-400">{profiles?.length || 0} usuarios</p>
+    </div>
+
+    <div class="bg-slate-900 border border-slate-800 overflow-hidden">
+        <table class="w-full">
+            <thead class="bg-slate-800">
+                <tr>
+                    <th
+                        class="text-left px-6 py-3 text-xs font-medium text-slate-400 uppercase"
+                        >Usuario</th
+                    >
+                    <th
+                        class="text-left px-6 py-3 text-xs font-medium text-slate-400 uppercase"
+                        >Registro</th
+                    >
+                    <th
+                        class="text-left px-6 py-3 text-xs font-medium text-slate-400 uppercase"
+                        >Compras</th
+                    >
+                    <th
+                        class="text-left px-6 py-3 text-xs font-medium text-slate-400 uppercase"
+                        >Admin</th
+                    >
+                    <th
+                        class="text-right px-6 py-3 text-xs font-medium text-slate-400 uppercase"
+                        >Acciones</th
+                    >
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800">
+                {
+                    profiles?.map((profile) => (
+                        <tr class="hover:bg-slate-800/50">
+                            <td class="px-6 py-4">
+                                <div>
+                                    <p class="text-white font-medium">
+                                        {profile.first_name || ""}{" "}
+                                        {profile.last_name || ""}
+                                        {!profile.first_name &&
+                                            !profile.last_name && (
+                                                <span class="text-slate-500">
+                                                    Sin nombre
+                                                </span>
+                                            )}
+                                    </p>
+                                    <p class="text-slate-500 text-xs font-mono">
+                                        {profile.id.slice(0, 8)}...
+                                    </p>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 text-slate-400 text-sm">
+                                {formatDate(profile.created_at)}
+                            </td>
+                            <td class="px-6 py-4">
+                                <span
+                                    class={`px-2 py-1 text-xs rounded ${profile.has_made_purchase ? "bg-green-500/20 text-green-400" : "bg-slate-700 text-slate-400"}`}
+                                >
+                                    {profile.has_made_purchase ? "Si" : "No"}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <button
+                                    data-toggle-admin={profile.id}
+                                    data-is-admin={profile.is_admin}
+                                    class={`px-2 py-1 text-xs rounded ${profile.is_admin ? "bg-accent/20 text-accent" : "bg-slate-700 text-slate-400"}`}
+                                >
+                                    {profile.is_admin ? "Admin" : "Usuario"}
+                                </button>
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <button
+                                    data-copy={profile.id}
+                                    class="text-accent hover:underline text-sm"
+                                >
+                                    Copiar ID
+                                </button>
+                            </td>
+                        </tr>
+                    ))
+                }
+            </tbody>
+        </table>
+    </div>
+</AdminLayout>
+
+<script>
+    // Toggle admin status
+    document.querySelectorAll("[data-toggle-admin]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+            const userId = btn.getAttribute("data-toggle-admin");
+            const isAdmin = btn.getAttribute("data-is-admin") === "true";
+
+            if (
+                !confirm(
+                    `¿${isAdmin ? "Quitar" : "Dar"} permisos de admin a este usuario?`,
+                )
+            )
+                return;
+
+            const res = await fetch("/api/admin/users/toggle-admin", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ userId, isAdmin: !isAdmin }),
+            });
+
+            if (res.ok) window.location.reload();
+            else alert("Error al actualizar");
+        });
+    });
+
+    // Copy ID
+    document.querySelectorAll("[data-copy]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            const id = btn.getAttribute("data-copy");
+            navigator.clipboard.writeText(id || "");
+            alert("ID copiado");
+        });
+    });
+</script>
+
+
+
+

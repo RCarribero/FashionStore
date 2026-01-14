@@ -1,6 +1,6 @@
 ---
 /**
- * Product Catalog Page Template
+ * Product Catalog Page - Nike/JD/Adidas Inspired Design
  */
 import StoreLayout from "../layouts/StoreLayout.astro";
 import { supabase } from "../../auth";
@@ -45,6 +45,7 @@ const { data: categories } = await supabase
     .order("name");
 
 const SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
+const hasFilters = minPrice || maxPrice || selectedSizes.length > 0;
 ---
 
 <StoreLayout
@@ -52,37 +53,37 @@ const SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
     description="Explora nuestra coleccion completa de moda masculina premium"
 >
     <!-- Hero -->
-    <section class="bg-navy-950 text-cream-50 py-16 lg:py-20">
-        <div class="container-wide text-center">
-            <h1 class="font-display text-display-lg lg:text-display-xl">
-                Nuestra Coleccion
+    <section class="bg-black text-white py-16 lg:py-24">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 class="font-display text-display-lg lg:text-display-xl uppercase">
+                Nuestra <span class="text-accent">Coleccion</span>
             </h1>
-            <p class="mt-4 text-cream-300 max-w-2xl mx-auto">
-                Piezas atemporales disenadas para el hombre moderno. Calidad
-                premium, estilo sofisticado.
+            <p class="mt-4 text-slate-400 max-w-2xl mx-auto text-lg">
+                Piezas premium para el hombre moderno. Encuentra tu estilo.
             </p>
         </div>
     </section>
 
     <!-- Catalog -->
-    <div class="min-h-screen bg-cream-50 border-t border-charcoal-100">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="bg-slate-950 min-h-screen">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
             <div class="flex flex-col lg:flex-row gap-8">
-                <!-- Sidebar -->
-                <aside class="lg:w-64 flex-shrink-0">
-                    <div class="space-y-8">
+                <!-- Sidebar Filters -->
+                <aside class="lg:w-72 flex-shrink-0">
+                    <div class="lg:sticky lg:top-24 space-y-6">
                         <!-- Categories -->
-                        <div class="bg-white p-6 border border-charcoal-100">
-                            <h3 class="font-display text-lg text-navy-900 mb-4">
+                        <div class="bg-slate-900 p-6 border border-slate-800">
+                            <h3 class="font-bold text-white uppercase tracking-wider text-sm mb-4">
                                 Categorias
                             </h3>
                             <ul class="space-y-2">
                                 <li>
                                     <a
                                         href={ROUTES.PRODUCTS}
-                                        class="block py-2 text-navy-900 font-medium"
+                                        class="flex items-center gap-3 py-2 text-white font-medium hover:text-accent transition-colors"
                                     >
-                                        Todas las categorias
+                                        <span class="w-1.5 h-1.5 bg-accent rounded-full"></span>
+                                        Todas
                                     </a>
                                 </li>
                                 {
@@ -90,8 +91,9 @@ const SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
                                         <li>
                                             <a
                                                 href={ROUTES.CATEGORY(cat.slug)}
-                                                class="block py-2 text-charcoal-600 hover:text-navy-900"
+                                                class="flex items-center gap-3 py-2 text-slate-400 hover:text-white transition-colors group"
                                             >
+                                                <span class="w-1.5 h-1.5 bg-slate-600 group-hover:bg-accent rounded-full transition-colors"></span>
                                                 {cat.name}
                                             </a>
                                         </li>
@@ -101,17 +103,15 @@ const SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
                         </div>
 
                         <!-- Filters -->
-                        <div class="bg-white p-6 border border-charcoal-100">
-                            <h3 class="font-display text-lg text-navy-900 mb-4">
+                        <div class="bg-slate-900 p-6 border border-slate-800">
+                            <h3 class="font-bold text-white uppercase tracking-wider text-sm mb-4">
                                 Filtros
                             </h3>
                             <form action={ROUTES.PRODUCTS} method="GET">
                                 <!-- Price -->
                                 <div class="mb-6">
-                                    <h4
-                                        class="text-sm font-medium text-navy-900 mb-2"
-                                    >
-                                        Precio (€)
+                                    <h4 class="text-sm font-semibold text-white mb-3">
+                                        Precio (EUR)
                                     </h4>
                                     <div class="flex items-center gap-2">
                                         <input
@@ -119,40 +119,36 @@ const SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
                                             name="minPrice"
                                             placeholder="Min"
                                             value={minPrice}
-                                            class="w-full px-3 py-2 border border-charcoal-200 text-sm focus:border-navy-900 outline-none"
+                                            class="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 text-white text-sm focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all"
                                         />
-                                        <span class="text-charcoal-400">-</span>
+                                        <span class="text-slate-500">-</span>
                                         <input
                                             type="number"
                                             name="maxPrice"
                                             placeholder="Max"
                                             value={maxPrice}
-                                            class="w-full px-3 py-2 border border-charcoal-200 text-sm focus:border-navy-900 outline-none"
+                                            class="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 text-white text-sm focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all"
                                         />
                                     </div>
                                 </div>
 
                                 <!-- Sizes -->
                                 <div class="mb-6">
-                                    <h4
-                                        class="text-sm font-medium text-navy-900 mb-2"
-                                    >
+                                    <h4 class="text-sm font-semibold text-white mb-3">
                                         Talla
                                     </h4>
-                                    <div class="space-y-2">
+                                    <div class="grid grid-cols-3 gap-2">
                                         {
                                             SIZES.map((size) => (
-                                                <label class="flex items-center gap-2 cursor-pointer">
+                                                <label class="relative cursor-pointer">
                                                     <input
                                                         type="checkbox"
                                                         name="size"
                                                         value={size}
-                                                        checked={selectedSizes.includes(
-                                                            size,
-                                                        )}
-                                                        class="rounded border-charcoal-300 text-navy-900 focus:ring-navy-900"
+                                                        checked={selectedSizes.includes(size)}
+                                                        class="peer sr-only"
                                                     />
-                                                    <span class="text-sm text-charcoal-600">
+                                                    <span class="flex items-center justify-center py-2 text-sm font-medium border border-slate-700 text-slate-400 peer-checked:border-accent peer-checked:bg-accent peer-checked:text-white transition-all hover:border-slate-500">
                                                         {size}
                                                     </span>
                                                 </label>
@@ -163,19 +159,17 @@ const SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
 
                                 <button
                                     type="submit"
-                                    class="btn-primary w-full text-sm"
+                                    class="w-full py-3 bg-black hover:bg-accent text-white font-bold text-sm uppercase tracking-wider transition-colors"
                                 >
                                     Aplicar Filtros
                                 </button>
                                 {
-                                    (minPrice ||
-                                        maxPrice ||
-                                        selectedSizes.length > 0) && (
+                                    hasFilters && (
                                         <a
                                             href={ROUTES.PRODUCTS}
-                                            class="block text-center mt-3 text-sm text-charcoal-500 hover:text-navy-900 underline"
+                                            class="block text-center mt-3 text-sm text-slate-400 hover:text-white underline"
                                         >
-                                            Limpiar
+                                            Limpiar filtros
                                         </a>
                                     )
                                 }
@@ -186,94 +180,98 @@ const SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
 
                 <!-- Products Grid -->
                 <div class="flex-1">
-                    <div class="flex items-center justify-between mb-8">
-                        <h2 class="font-display text-2xl text-navy-900">
+                    <!-- Header -->
+                    <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-800">
+                        <h2 class="font-bold text-xl text-white uppercase tracking-wide">
                             Todos los Productos
                         </h2>
-                        <p class="text-charcoal-500">
+                        <span class="text-slate-400 text-sm">
                             {products?.length || 0} productos
-                        </p>
+                        </span>
                     </div>
 
                     {
                         products && products.length > 0 ? (
-                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {products.map((product: Product) => (
+                            <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+                                {products.map((product: Product, index: number) => (
                                     <a
-                                        href={ROUTES.PRODUCT_DETAIL(
-                                            product.slug,
-                                        )}
-                                        class="group bg-white border border-charcoal-100 hover:border-charcoal-200 transition-colors"
+                                        href={ROUTES.PRODUCT_DETAIL(product.slug)}
+                                        class="group bg-slate-900 border border-slate-800 hover:border-accent transition-all duration-300"
                                     >
-                                        <article>
-                                            <div class="aspect-[3/4] bg-charcoal-100 overflow-hidden">
-                                                {product.images[0] ? (
-                                                    <img
-                                                        src={product.images[0]}
-                                                        alt={product.name}
-                                                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                                        loading="lazy"
-                                                    />
-                                                ) : (
-                                                    <div class="w-full h-full flex items-center justify-center text-charcoal-300">
-                                                        <svg
-                                                            class="h-12 w-12"
-                                                            fill="none"
-                                                            viewBox="0 0 24 24"
-                                                            stroke="currentColor"
-                                                        >
-                                                            <path
-                                                                stroke-linecap="round"
-                                                                stroke-linejoin="round"
-                                                                stroke-width="1"
-                                                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                                                            />
-                                                        </svg>
-                                                    </div>
+                                        <div class="relative aspect-[3/4] bg-slate-100 overflow-hidden">
+                                            {product.images[0] ? (
+                                                <img
+                                                    src={product.images[0]}
+                                                    alt={product.name}
+                                                    class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                                    loading="lazy"
+                                                />
+                                            ) : (
+                                                <div class="w-full h-full flex items-center justify-center text-slate-300">
+                                                    <svg class="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                    </svg>
+                                                </div>
+                                            )}
+                                            
+                                            <!-- Quick View Overlay -->
+                                            <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
+                                                <span class="px-4 py-2 bg-white text-black font-bold text-xs uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-4 group-hover:translate-y-0">
+                                                    Ver Producto
+                                                </span>
+                                            </div>
+
+                                            {/* Sale badge for some products */}
+                                            {index % 4 === 0 && (
+                                                <span class="absolute top-3 left-3 px-2 py-1 bg-accent text-white text-xs font-bold uppercase">
+                                                    -20%
+                                                </span>
+                                            )}
+                                            
+                                            {/* Out of stock */}
+                                            {product.stock === 0 && (
+                                                <div class="absolute inset-0 bg-black/80 flex items-center justify-center">
+                                                    <span class="px-4 py-2 bg-accent text-white text-xs font-bold uppercase">
+                                                        Agotado
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div class="p-4">
+                                            <h3 class="font-semibold text-white group-hover:text-accent transition-colors line-clamp-1">
+                                                {product.name}
+                                            </h3>
+                                            <div class="mt-2 flex items-center gap-2">
+                                                <span class="font-bold text-white">
+                                                    {formatPrice(product.price)}
+                                                </span>
+                                                {index % 4 === 0 && (
+                                                    <span class="text-sm text-slate-500 line-through">
+                                                        {formatPrice(product.price * 1.25)}
+                                                    </span>
                                                 )}
                                             </div>
-                                            <div class="p-4">
-                                                <h3 class="font-display text-lg text-navy-900 group-hover:text-leather-600 transition-colors">
-                                                    {product.name}
-                                                </h3>
-                                                <div class="mt-2 flex items-center justify-between">
-                                                    <p class="font-medium text-navy-900">
-                                                        {formatPrice(
-                                                            product.price,
-                                                        )}
-                                                    </p>
-                                                    {product.stock === 0 && (
-                                                        <span class="text-xs text-red-600">
-                                                            Agotado
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </article>
+                                        </div>
                                     </a>
                                 ))}
                             </div>
                         ) : (
-                            <div class="text-center py-16">
-                                <svg
-                                    class="mx-auto h-16 w-16 text-charcoal-300"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                >
-                                    <path
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="1"
-                                        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                                    />
+                            <div class="text-center py-20">
+                                <svg class="mx-auto h-20 w-20 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                                 </svg>
-                                <h3 class="mt-4 font-display text-xl text-navy-900">
-                                    No hay productos disponibles
+                                <h3 class="mt-6 font-display text-2xl text-white">
+                                    No hay productos
                                 </h3>
-                                <p class="mt-2 text-charcoal-500">
-                                    Intenta ajustar tus filtros o vuelve pronto.
+                                <p class="mt-2 text-slate-400">
+                                    Intenta ajustar tus filtros o vuelve mas tarde.
                                 </p>
+                                <a
+                                    href={ROUTES.PRODUCTS}
+                                    class="inline-block mt-6 px-8 py-3 bg-accent hover:bg-red-700 text-white font-bold uppercase tracking-wider transition-colors"
+                                >
+                                    Ver Todo
+                                </a>
                             </div>
                         )
                     }

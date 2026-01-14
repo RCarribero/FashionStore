@@ -1,0 +1,234 @@
+---
+/**
+ * New Product Form
+ */
+export const prerender = false;
+
+import AdminLayout from "../../../modules/admin/layouts/AdminLayout.astro";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+    import.meta.env.PUBLIC_SUPABASE_URL,
+    import.meta.env.SUPABASE_SERVICE_ROLE_KEY,
+);
+
+const { data: categories } = await supabase
+    .from("categories")
+    .select("id, name")
+    .order("name");
+---
+
+<AdminLayout title="Nuevo Producto">
+    <div class="max-w-2xl">
+        <form id="productForm" class="space-y-6">
+            <div class="bg-slate-900 border border-slate-800 p-6 space-y-4">
+                <h2 class="text-lg font-bold text-white mb-4">
+                    Informacion Basica
+                </h2>
+
+                <div>
+                    <label class="block text-sm text-slate-400 mb-1"
+                        >Nombre *</label
+                    >
+                    <input
+                        type="text"
+                        id="name"
+                        required
+                        class="w-full bg-slate-800 border border-slate-700 text-white px-4 py-3"
+                    />
+                </div>
+
+                <div>
+                    <label class="block text-sm text-slate-400 mb-1"
+                        >Slug *</label
+                    >
+                    <input
+                        type="text"
+                        id="slug"
+                        required
+                        class="w-full bg-slate-800 border border-slate-700 text-white px-4 py-3"
+                    />
+                </div>
+
+                <div>
+                    <label class="block text-sm text-slate-400 mb-1"
+                        >Descripcion</label
+                    >
+                    <textarea
+                        id="description"
+                        rows="3"
+                        class="w-full bg-slate-800 border border-slate-700 text-white px-4 py-3 resize-none"
+                    ></textarea>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm text-slate-400 mb-1"
+                            >Precio (EUR) *</label
+                        >
+                        <input
+                            type="number"
+                            id="price"
+                            step="0.01"
+                            min="0"
+                            required
+                            class="w-full bg-slate-800 border border-slate-700 text-white px-4 py-3"
+                        />
+                    </div>
+                    <div>
+                        <label class="block text-sm text-slate-400 mb-1"
+                            >Categoria *</label
+                        >
+                        <select
+                            id="category"
+                            required
+                            class="w-full bg-slate-800 border border-slate-700 text-white px-4 py-3"
+                        >
+                            <option value="">Seleccionar...</option>
+                            {
+                                categories?.map((cat) => (
+                                    <option value={cat.id}>{cat.name}</option>
+                                ))
+                            }
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 p-6 space-y-4">
+                <h2 class="text-lg font-bold text-white mb-4">Imagenes</h2>
+
+                <div>
+                    <label class="block text-sm text-slate-400 mb-1"
+                        >URLs de imagenes (una por linea)</label
+                    >
+                    <textarea
+                        id="images"
+                        rows="4"
+                        placeholder="https://..."
+                        class="w-full bg-slate-800 border border-slate-700 text-white px-4 py-3 resize-none font-mono text-sm"
+                    ></textarea>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 p-6 space-y-4">
+                <h2 class="text-lg font-bold text-white mb-4">
+                    Stock por Talla
+                </h2>
+
+                <div class="grid grid-cols-3 md:grid-cols-6 gap-3">
+                    {
+                        ["XS", "S", "M", "L", "XL", "XXL"].map((size) => (
+                            <div>
+                                <label class="block text-sm text-slate-400 mb-1 text-center">
+                                    {size}
+                                </label>
+                                <input
+                                    type="number"
+                                    data-size={size}
+                                    min="0"
+                                    value="10"
+                                    class="w-full bg-slate-800 border border-slate-700 text-white px-2 py-2 text-center"
+                                />
+                            </div>
+                        ))
+                    }
+                </div>
+            </div>
+
+            <div class="flex gap-4">
+                <button
+                    type="submit"
+                    class="flex-1 bg-accent hover:bg-red-700 text-white py-3 font-bold transition-colors"
+                >
+                    Crear Producto
+                </button>
+                <a
+                    href="/gestion-fm/productos"
+                    class="px-6 py-3 border border-slate-700 text-white hover:bg-slate-800 transition-colors text-center"
+                >
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</AdminLayout>
+
+<script>
+    const form = document.getElementById("productForm") as HTMLFormElement;
+
+    // Auto-generate slug
+    document.getElementById("name")?.addEventListener("input", (e) => {
+        const slugInput = document.getElementById("slug") as HTMLInputElement;
+        if (!slugInput.dataset.manual) {
+            slugInput.value = (e.target as HTMLInputElement).value
+                .toLowerCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .replace(/[^a-z0-9]+/g, "-")
+                .replace(/^-|-$/g, "");
+        }
+    });
+    document.getElementById("slug")?.addEventListener("input", function () {
+        (this as HTMLInputElement).dataset.manual = "true";
+    });
+
+    form?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const name = (document.getElementById("name") as HTMLInputElement)
+            .value;
+        const slug = (document.getElementById("slug") as HTMLInputElement)
+            .value;
+        const description = (
+            document.getElementById("description") as HTMLTextAreaElement
+        ).value;
+        const price =
+            parseFloat(
+                (document.getElementById("price") as HTMLInputElement).value,
+            ) * 100;
+        const category_id = (
+            document.getElementById("category") as HTMLSelectElement
+        ).value;
+        const imagesText = (
+            document.getElementById("images") as HTMLTextAreaElement
+        ).value;
+        const images = imagesText
+            .split("\n")
+            .map((url) => url.trim())
+            .filter(Boolean);
+
+        const variants: { size: string; stock: number }[] = [];
+        document.querySelectorAll("[data-size]").forEach((input) => {
+            variants.push({
+                size: input.getAttribute("data-size")!,
+                stock: parseInt((input as HTMLInputElement).value) || 0,
+            });
+        });
+
+        const totalStock = variants.reduce((sum, v) => sum + v.stock, 0);
+
+        const res = await fetch("/api/admin/products", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                name,
+                slug,
+                description,
+                price,
+                category_id,
+                images,
+                stock: totalStock,
+                variants,
+            }),
+        });
+
+        if (res.ok) {
+            window.location.href = "/gestion-fm/productos";
+        } else {
+            const data = await res.json();
+            alert("Error: " + (data.error || "Error al crear producto"));
+        }
+    });
+</script>
+

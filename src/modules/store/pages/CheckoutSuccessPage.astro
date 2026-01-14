@@ -1,6 +1,6 @@
 ---
 /**
- * Checkout Success Page
+ * Checkout Success Page - Nike/JD/Adidas Style
  */
 import StoreLayout from "../../store/layouts/StoreLayout.astro";
 import { ROUTES } from "../../../config";
@@ -11,48 +11,138 @@ const sessionId = Astro.url.searchParams.get("session_id");
 ---
 
 <StoreLayout title="Pedido Confirmado">
-    <div class="container-wide py-24">
-        <div class="max-w-lg mx-auto text-center">
-            <!-- Success Icon -->
-            <div
-                class="mx-auto w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-8"
-            >
-                <svg
-                    class="h-10 w-10 text-green-600"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
+    <div class="min-h-[70vh] flex items-center justify-center bg-slate-50">
+        <div class="max-w-lg mx-auto text-center px-4 py-16">
+            <!-- Success Animation -->
+            <div class="relative mx-auto w-24 h-24 mb-8">
+                <div
+                    class="absolute inset-0 bg-green-500/20 rounded-full animate-ping"
                 >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M5 13l4 4L19 7"></path>
-                </svg>
+                </div>
+                <div
+                    class="relative w-24 h-24 bg-green-500 rounded-full flex items-center justify-center"
+                >
+                    <svg
+                        class="h-12 w-12 text-white"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="3"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
             </div>
 
-            <h1 class="font-display text-display-md text-navy-900">
-                Gracias por tu compra
+            <h1
+                class="font-display text-3xl lg:text-4xl font-bold text-black uppercase tracking-tight"
+            >
+                Pedido Confirmado
             </h1>
 
-            <p class="mt-4 text-charcoal-600">
-                Tu pedido ha sido procesado correctamente. Recibiras un email de
-                confirmacion con los detalles del envio.
+            <p class="mt-4 text-slate-600 text-lg">
+                Gracias por tu compra. Recibiras un email de confirmacion con
+                los detalles del envio.
             </p>
 
             {
                 sessionId && (
-                    <p class="mt-4 text-sm text-charcoal-400">
-                        ID de sesion: {sessionId.slice(0, 20)}...
-                    </p>
+                    <div class="mt-6 inline-flex items-center gap-2 px-4 py-2 bg-slate-100 text-sm text-slate-500">
+                        <span>Referencia:</span>
+                        <code class="font-mono text-black">
+                            {sessionId.slice(0, 12).toUpperCase()}
+                        </code>
+                    </div>
                 )
             }
 
-            <div class="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-                <a href={ROUTES.PRODUCTS} class="btn-primary">
-                    Seguir comprando
+            <!-- Order Timeline Preview -->
+            <div class="mt-10 text-left bg-white p-6 border border-slate-200">
+                <h3
+                    class="font-bold text-sm uppercase tracking-wider text-black mb-4"
+                >
+                    Proximos Pasos
+                </h3>
+                <div class="space-y-4">
+                    <div class="flex items-start gap-4">
+                        <div
+                            class="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0"
+                        >
+                            <svg
+                                class="w-4 h-4 text-white"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                stroke-width="2"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-black">
+                                Pedido recibido
+                            </p>
+                            <p class="text-sm text-slate-500">
+                                Hemos recibido tu pedido correctamente
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4">
+                        <div
+                            class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center flex-shrink-0"
+                        >
+                            <span class="text-sm font-bold text-slate-500"
+                                >2</span
+                            >
+                        </div>
+                        <div>
+                            <p class="font-semibold text-slate-400">
+                                Preparando envio
+                            </p>
+                            <p class="text-sm text-slate-400">
+                                Tu pedido sera preparado en 24-48h
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4">
+                        <div
+                            class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center flex-shrink-0"
+                        >
+                            <span class="text-sm font-bold text-slate-500"
+                                >3</span
+                            >
+                        </div>
+                        <div>
+                            <p class="font-semibold text-slate-400">
+                                En camino
+                            </p>
+                            <p class="text-sm text-slate-400">
+                                Recibiras tu pedido en 2-5 dias laborables
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 flex flex-col sm:flex-row gap-3">
+                <a
+                    href={ROUTES.PRODUCTS}
+                    class="flex-1 py-4 bg-black hover:bg-accent text-white font-bold uppercase tracking-wider text-center transition-colors"
+                >
+                    Seguir Comprando
                 </a>
-                <a href={ROUTES.HOME} class="btn-ghost"> Volver al inicio </a>
+                <a
+                    href={ROUTES.HOME}
+                    class="flex-1 py-4 border-2 border-black text-black font-bold uppercase tracking-wider text-center hover:bg-black hover:text-white transition-colors"
+                >
+                    Volver al Inicio
+                </a>
             </div>
         </div>
     </div>

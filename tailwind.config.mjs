@@ -4,89 +4,79 @@ export default {
     theme: {
         extend: {
             colors: {
-                // Primary palette - Sophisticated navy and charcoal
-                navy: {
-                    50: '#f0f4f8',
-                    100: '#d9e2ec',
-                    200: '#bcccdc',
-                    300: '#9fb3c8',
-                    400: '#829ab1',
-                    500: '#627d98',
-                    600: '#486581',
-                    700: '#334e68',
-                    800: '#243b53',
-                    900: '#102a43',
-                    950: '#0a1929',
+                // Primary - Pure black and white
+                primary: {
+                    DEFAULT: '#000000',
+                    50: '#f8f8f8',
+                    100: '#f0f0f0',
+                    200: '#e0e0e0',
+                    300: '#c0c0c0',
+                    400: '#909090',
+                    500: '#606060',
+                    600: '#404040',
+                    700: '#303030',
+                    800: '#202020',
+                    900: '#101010',
+                    950: '#000000',
                 },
-                charcoal: {
-                    50: '#f7f7f7',
-                    100: '#e3e3e3',
-                    200: '#c8c8c8',
-                    300: '#a4a4a4',
-                    400: '#818181',
-                    500: '#666666',
-                    600: '#515151',
-                    700: '#434343',
-                    800: '#383838',
-                    900: '#313131',
-                    950: '#1a1a1a',
+                // Accent - Electric red for CTAs and highlights
+                accent: {
+                    DEFAULT: '#FF0000',
+                    50: '#fff0f0',
+                    100: '#ffe0e0',
+                    200: '#ffc0c0',
+                    300: '#ff9090',
+                    400: '#ff5050',
+                    500: '#FF0000',
+                    600: '#e00000',
+                    700: '#b80000',
+                    800: '#900000',
+                    900: '#700000',
+                    950: '#400000',
                 },
-                // Accent colors
-                leather: {
-                    50: '#fdf8f6',
-                    100: '#f8ebe4',
-                    200: '#f2d5c4',
-                    300: '#e8b89a',
-                    400: '#dc9468',
-                    500: '#d17a4a',
-                    600: '#c3653f',
-                    700: '#a25036',
-                    800: '#844331',
-                    900: '#6c3a2b',
-                    950: '#3a1c14',
+                // Success - Neon green for stock/available
+                success: {
+                    DEFAULT: '#00FF87',
+                    50: '#f0fff7',
+                    100: '#d0ffec',
+                    200: '#a0ffd9',
+                    300: '#60ffc0',
+                    400: '#20ffa0',
+                    500: '#00FF87',
+                    600: '#00d970',
+                    700: '#00b05a',
+                    800: '#008845',
+                    900: '#006030',
+                    950: '#003820',
                 },
-                gold: {
-                    50: '#fdfde9',
-                    100: '#fafbc5',
-                    200: '#f7f58f',
-                    300: '#f0e94f',
-                    400: '#e6d71f',
-                    500: '#d6bf12',
-                    600: '#b9960d',
-                    700: '#946e0e',
-                    800: '#7a5713',
-                    900: '#684716',
-                    950: '#3d2608',
-                },
-                // Neutral off-whites
-                cream: {
-                    50: '#fefdfb',
-                    100: '#fdfbf7',
-                    200: '#faf6ee',
-                    300: '#f5efe1',
-                    400: '#ede4ce',
-                    500: '#e2d5b8',
-                    600: '#c9b78e',
-                    700: '#a89468',
-                    800: '#8a7852',
-                    900: '#716344',
-                    950: '#3d3423',
+                // Slate grays for neutral tones
+                slate: {
+                    50: '#f8fafc',
+                    100: '#f1f5f9',
+                    200: '#e2e8f0',
+                    300: '#cbd5e1',
+                    400: '#94a3b8',
+                    500: '#64748b',
+                    600: '#475569',
+                    700: '#334155',
+                    800: '#1e293b',
+                    900: '#0f172a',
+                    950: '#020617',
                 },
             },
             fontFamily: {
-                // Elegant serif for headings
-                display: ['Playfair Display', 'Georgia', 'serif'],
-                // Clean sans-serif for body text
-                body: ['Inter', 'system-ui', 'sans-serif'],
+                // Modern sans-serif for everything
+                sans: ['Inter', 'system-ui', 'sans-serif'],
+                display: ['Outfit', 'Inter', 'system-ui', 'sans-serif'],
             },
             fontSize: {
-                // Custom fluid typography scale
-                'display-2xl': ['4.5rem', { lineHeight: '1.1', letterSpacing: '-0.02em' }],
-                'display-xl': ['3.75rem', { lineHeight: '1.1', letterSpacing: '-0.02em' }],
-                'display-lg': ['3rem', { lineHeight: '1.15', letterSpacing: '-0.01em' }],
-                'display-md': ['2.25rem', { lineHeight: '1.2', letterSpacing: '-0.01em' }],
-                'display-sm': ['1.875rem', { lineHeight: '1.25' }],
-                'display-xs': ['1.5rem', { lineHeight: '1.3' }],
+                // Bold display sizes
+                'display-2xl': ['5rem', { lineHeight: '1', letterSpacing: '-0.02em', fontWeight: '800' }],
+                'display-xl': ['4rem', { lineHeight: '1', letterSpacing: '-0.02em', fontWeight: '800' }],
+                'display-lg': ['3rem', { lineHeight: '1.1', letterSpacing: '-0.01em', fontWeight: '700' }],
+                'display-md': ['2.25rem', { lineHeight: '1.2', letterSpacing: '-0.01em', fontWeight: '700' }],
+                'display-sm': ['1.875rem', { lineHeight: '1.25', fontWeight: '600' }],
+                'display-xs': ['1.5rem', { lineHeight: '1.3', fontWeight: '600' }],
             },
             spacing: {
                 '18': '4.5rem',
@@ -94,13 +84,36 @@ export default {
                 '128': '32rem',
             },
             animation: {
-                'slide-in-right': 'slideInRight 0.3s ease-out',
-                'slide-out-right': 'slideOutRight 0.3s ease-in',
-                'fade-in': 'fadeIn 0.2s ease-out',
-                'fade-out': 'fadeOut 0.2s ease-in',
-                'scale-in': 'scaleIn 0.2s ease-out',
+                // Slide animations
+                'slide-up': 'slideUp 0.5s ease-out',
+                'slide-down': 'slideDown 0.5s ease-out',
+                'slide-in-right': 'slideInRight 0.4s ease-out',
+                'slide-out-right': 'slideOutRight 0.4s ease-in',
+                // Fade animations
+                'fade-in': 'fadeIn 0.3s ease-out',
+                'fade-out': 'fadeOut 0.3s ease-in',
+                'fade-in-up': 'fadeInUp 0.5s ease-out',
+                // Scale animations
+                'scale-in': 'scaleIn 0.3s ease-out',
+                'zoom-in': 'zoomIn 0.4s ease-out',
+                'bounce-in': 'bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+                // Continuous animations
+                'marquee': 'marquee 30s linear infinite',
+                'marquee-fast': 'marquee 15s linear infinite',
+                'pulse-glow': 'pulseGlow 2s ease-in-out infinite',
+                'float': 'float 3s ease-in-out infinite',
+                // Hover animations
+                'hover-lift': 'hoverLift 0.3s ease-out forwards',
             },
             keyframes: {
+                slideUp: {
+                    '0%': { transform: 'translateY(20px)', opacity: '0' },
+                    '100%': { transform: 'translateY(0)', opacity: '1' },
+                },
+                slideDown: {
+                    '0%': { transform: 'translateY(-20px)', opacity: '0' },
+                    '100%': { transform: 'translateY(0)', opacity: '1' },
+                },
                 slideInRight: {
                     '0%': { transform: 'translateX(100%)' },
                     '100%': { transform: 'translateX(0)' },
@@ -117,14 +130,67 @@ export default {
                     '0%': { opacity: '1' },
                     '100%': { opacity: '0' },
                 },
+                fadeInUp: {
+                    '0%': { opacity: '0', transform: 'translateY(20px)' },
+                    '100%': { opacity: '1', transform: 'translateY(0)' },
+                },
                 scaleIn: {
                     '0%': { transform: 'scale(0.95)', opacity: '0' },
                     '100%': { transform: 'scale(1)', opacity: '1' },
                 },
+                zoomIn: {
+                    '0%': { transform: 'scale(0.9)', opacity: '0' },
+                    '100%': { transform: 'scale(1)', opacity: '1' },
+                },
+                bounceIn: {
+                    '0%': { transform: 'scale(0.3)', opacity: '0' },
+                    '50%': { transform: 'scale(1.05)' },
+                    '70%': { transform: 'scale(0.9)' },
+                    '100%': { transform: 'scale(1)', opacity: '1' },
+                },
+                marquee: {
+                    '0%': { transform: 'translateX(0%)' },
+                    '100%': { transform: 'translateX(-50%)' },
+                },
+                pulseGlow: {
+                    '0%, 100%': { boxShadow: '0 0 0 0 rgba(255, 0, 0, 0.4)' },
+                    '50%': { boxShadow: '0 0 20px 10px rgba(255, 0, 0, 0.2)' },
+                },
+                float: {
+                    '0%, 100%': { transform: 'translateY(0)' },
+                    '50%': { transform: 'translateY(-10px)' },
+                },
+                hoverLift: {
+                    '0%': { transform: 'translateY(0)' },
+                    '100%': { transform: 'translateY(-8px)' },
+                },
             },
             boxShadow: {
-                'elegant': '0 4px 20px -2px rgba(16, 42, 67, 0.08)',
-                'elegant-lg': '0 10px 40px -10px rgba(16, 42, 67, 0.15)',
+                'glow': '0 0 20px rgba(255, 0, 0, 0.3)',
+                'glow-lg': '0 0 40px rgba(255, 0, 0, 0.4)',
+                'dark': '0 10px 40px -10px rgba(0, 0, 0, 0.5)',
+                'dark-lg': '0 20px 60px -15px rgba(0, 0, 0, 0.7)',
+                'inner-dark': 'inset 0 2px 10px rgba(0, 0, 0, 0.3)',
+            },
+            backgroundImage: {
+                'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+                'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
+                'shimmer': 'linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent)',
+            },
+            transitionDuration: {
+                '400': '400ms',
+                '600': '600ms',
+            },
+            scale: {
+                '102': '1.02',
+                '103': '1.03',
+            },
+            zIndex: {
+                '60': '60',
+                '70': '70',
+                '80': '80',
+                '90': '90',
+                '100': '100',
             },
         },
     },

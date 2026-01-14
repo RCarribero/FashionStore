@@ -1,0 +1,70 @@
+---
+import StoreLayout from "../../modules/store/layouts/StoreLayout.astro";
+import CheckoutForm from "../../modules/checkout/components/CheckoutForm";
+import OrderSummary from "../../modules/checkout/components/OrderSummary";
+import { ROUTES } from "../../config";
+
+export const prerender = false;
+---
+
+<StoreLayout title="Finalizar Compra | FashionMarket">
+    <div class="min-h-screen bg-slate-950 py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="mb-8">
+                <a
+                    href={ROUTES.CART}
+                    class="text-slate-400 hover:text-white flex items-center gap-2 text-sm mb-4"
+                >
+                    <svg
+                        class="w-4 h-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Volver a la tienda
+                </a>
+                <h1 class="font-display text-3xl md:text-4xl text-white">
+                    Finalizar Compra
+                </h1>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                {/* Formulario a la izquierda (2 columnas) */}
+                <div class="lg:col-span-2">
+                    <div
+                        class="bg-black/20 border border-slate-800 rounded-lg p-6 md:p-8"
+                    >
+                        <h2
+                            class="text-xl font-bold text-white mb-6 flex items-center gap-2"
+                        >
+                            <span
+                                class="w-8 h-8 rounded-full bg-white text-black flex items-center justify-center text-sm"
+                                >1</span
+                            >
+                            Datos de Envío y Contacto
+                        </h2>
+                        <CheckoutForm client:load />
+                    </div>
+                </div>
+
+                {/* Resumen a la derecha (1 columna) */}
+                <div class="lg:col-span-1">
+                    <OrderSummary client:load />
+
+                    <div class="mt-6 text-center">
+                        <p class="text-xs text-slate-500">
+                            Pagos seguros procesados por Stripe.<br />
+                            Tus datos están protegidos.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</StoreLayout>

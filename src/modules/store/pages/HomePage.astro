@@ -1,6 +1,7 @@
 ---
 /**
- * Store Homepage Template
+ * Store Homepage - Nike/JD/Adidas Inspired Design
+ * Modern sportswear aesthetic with dynamic sections
  */
 import StoreLayout from "../layouts/StoreLayout.astro";
 import {
@@ -11,7 +12,7 @@ import { formatPrice } from "../../../shared/utils";
 import { ROUTES } from "../../../config";
 
 // Fetch data
-const { data: featuredProducts } = await getHomepageFeatured(6);
+const { data: featuredProducts } = await getHomepageFeatured(8);
 const { data: categories } = await getCatalogCategories();
 ---
 
@@ -19,62 +20,144 @@ const { data: categories } = await getCatalogCategories();
     title="Moda Masculina Premium"
     description="Descubre nuestra coleccion de moda masculina premium"
 >
-    <!-- Hero -->
-    <section class="relative bg-navy-950 text-cream-50 overflow-hidden">
-        <div
-            class="absolute inset-0 bg-gradient-to-br from-navy-900/90 to-navy-950"
-        >
+    <!-- Hero Section - Full Viewport -->
+    <section class="relative min-h-[90vh] bg-black flex items-center overflow-hidden">
+        <!-- Background Gradient -->
+        <div class="absolute inset-0 bg-gradient-to-br from-black via-slate-900 to-black"></div>
+        
+        <!-- Animated Grid Pattern -->
+        <div class="absolute inset-0 opacity-10">
+            <div class="absolute inset-0" style="background-image: linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px); background-size: 50px 50px;"></div>
         </div>
-        <div class="container-wide relative py-24 lg:py-32">
-            <div class="max-w-2xl">
-                <h1 class="font-display text-display-lg lg:text-display-xl">
-                    Elegancia Atemporal
+
+        <!-- Hero Content -->
+        <div class="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
+            <div class="max-w-3xl">
+                <!-- Badge -->
+                <div class="inline-flex items-center gap-2 px-4 py-2 bg-accent/10 border border-accent/30 mb-8 animate-fade-in">
+                    <span class="w-2 h-2 bg-accent rounded-full animate-pulse"></span>
+                    <span class="text-accent text-sm font-semibold uppercase tracking-wider">Nueva Coleccion 2026</span>
+                </div>
+                
+                <!-- Title -->
+                <h1 class="font-display text-display-xl lg:text-display-2xl text-white mb-6 animate-slide-up">
+                    DEFINE TU <span class="text-accent">ESTILO</span>
                 </h1>
-                <p class="mt-6 text-xl text-cream-200">
-                    Piezas cuidadosamente seleccionadas para el hombre moderno
-                    que valora la calidad y el estilo sofisticado.
+                
+                <!-- Subtitle -->
+                <p class="text-xl lg:text-2xl text-slate-300 mb-10 max-w-2xl animate-fade-in" style="animation-delay: 0.2s;">
+                    Piezas premium para el hombre que marca tendencia. Calidad, diseno y actitud en cada prenda.
                 </p>
-                <div class="mt-10 flex flex-wrap gap-4">
-                    <a href={ROUTES.PRODUCTS} class="btn-primary">
-                        Ver Coleccion
-                    </a>
-                    <a
-                        href={ROUTES.CATEGORY("camisas")}
-                        class="btn-ghost border-cream-300 text-cream-50 hover:bg-cream-50 hover:text-navy-900"
+                
+                <!-- CTAs -->
+                <div class="flex flex-wrap gap-4 animate-fade-in" style="animation-delay: 0.4s;">
+                    <a 
+                        href={ROUTES.PRODUCTS} 
+                        class="group inline-flex items-center gap-3 px-8 py-4 bg-accent hover:bg-accent-600 text-white font-bold uppercase tracking-wider transition-all duration-300 hover:scale-105"
                     >
-                        Explorar Camisas
+                        Ver Coleccion
+                        <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3" />
+                        </svg>
+                    </a>
+                    <a 
+                        href={ROUTES.CATEGORY("camisetas")} 
+                        class="inline-flex items-center gap-3 px-8 py-4 border-2 border-white text-white font-bold uppercase tracking-wider hover:bg-white hover:text-black transition-all duration-300"
+                    >
+                        Explorar Camisetas
                     </a>
                 </div>
             </div>
         </div>
+
+        <!-- Decorative Element -->
+        <div class="absolute right-0 top-1/2 -translate-y-1/2 w-1/3 h-[600px] bg-gradient-to-l from-accent/20 to-transparent blur-3xl"></div>
     </section>
 
-    <!-- Categories -->
-    <section class="py-16 lg:py-24 bg-cream-50">
-        <div class="container-wide">
-            <h2
-                class="font-display text-display-md text-center text-navy-900 mb-12"
-            >
-                Categorias
-            </h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <!-- Offer Banner -->
+    <section class="bg-accent py-4 lg:py-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col lg:flex-row items-center justify-center gap-4 lg:gap-8 text-center">
+                <span class="text-white font-bold text-lg lg:text-xl uppercase tracking-wide">
+                    OFERTA FLASH
+                </span>
+                <span class="text-white/90 text-base lg:text-lg">
+                    Hasta -50% en seleccion de productos
+                </span>
+                <a 
+                    href={ROUTES.PRODUCTS} 
+                    class="inline-flex items-center gap-2 px-6 py-2 bg-black text-white text-sm font-bold uppercase tracking-wider hover:bg-slate-900 transition-colors"
+                >
+                    Comprar Ahora
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories Grid -->
+    <section class="py-16 lg:py-24 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Section Header -->
+            <div class="text-center mb-12 lg:mb-16">
+                <h2 class="font-display text-display-md lg:text-display-lg text-black mb-4">
+                    CATEGORIAS
+                </h2>
+                <p class="text-slate-600 text-lg max-w-2xl mx-auto">
+                    Explora nuestra seleccion de ropa premium por categoria
+                </p>
+            </div>
+
+            <!-- Categories Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
                 {
-                    categories?.map((category) => (
-                        <a
-                            href={ROUTES.CATEGORY(category.slug)}
-                            class="group relative aspect-[4/5] bg-charcoal-100 overflow-hidden"
-                        >
-                            <div class="absolute inset-0 bg-gradient-to-t from-navy-950/80 to-transparent" />
-                            <div class="absolute bottom-0 left-0 right-0 p-6">
-                                <h3 class="font-display text-2xl text-cream-50 group-hover:text-leather-300 transition-colors">
-                                    {category.name}
-                                </h3>
-                                <p class="text-cream-300 text-sm mt-2">
-                                    Ver productos &rarr;
-                                </p>
-                            </div>
-                        </a>
-                    ))
+                    categories?.map((category, index) => {
+                        const categoryImages = {
+                            'zapatillas': 'https://res.cloudinary.com/dzaka0idb/image/upload/v1768292616/fashionstore/categories/zapatillas.webp',
+                            'sudaderas': 'https://res.cloudinary.com/dzaka0idb/image/upload/v1768292618/fashionstore/categories/sudaderas.webp',
+                            'pantalones': 'https://res.cloudinary.com/dzaka0idb/image/upload/v1768292619/fashionstore/categories/pantalones.webp',
+                            'camisetas': 'https://res.cloudinary.com/dzaka0idb/image/upload/v1768292621/fashionstore/categories/camisetas.webp',
+                            'chaquetas': 'https://res.cloudinary.com/dzaka0idb/image/upload/v1768292621/fashionstore/categories/chaquetas.webp'
+                        };
+                        const categoryImage = categoryImages[category.slug as keyof typeof categoryImages];
+                        
+                        return (
+                            <a
+                                href={ROUTES.CATEGORY(category.slug)}
+                                class={`group relative overflow-hidden ${index === 0 ? 'md:row-span-2' : ''}`}
+                                style={`min-height: ${index === 0 ? '600px' : '290px'}`}
+                            >
+                                <!-- Background Image -->
+                                <div class="absolute inset-0 bg-slate-200">
+                                    {categoryImage ? (
+                                        <img 
+                                            src={categoryImage} 
+                                            alt={category.name}
+                                            class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                        />
+                                    ) : (
+                                        <div class="w-full h-full bg-gradient-to-br from-slate-300 to-slate-400"></div>
+                                    )}
+                                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                                </div>
+                                
+                                <!-- Content -->
+                                <div class="absolute bottom-0 left-0 right-0 p-6 lg:p-8">
+                                    <h3 class="font-display text-2xl lg:text-3xl font-bold text-white group-hover:text-accent transition-colors duration-300">
+                                        {category.name}
+                                    </h3>
+                                    <div class="flex items-center gap-2 mt-3 text-white/80 group-hover:text-white transition-colors">
+                                        <span class="text-sm font-medium uppercase tracking-wider">Ver productos</span>
+                                        <svg class="w-4 h-4 group-hover:translate-x-2 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </a>
+                        );
+                    })
                 }
             </div>
         </div>
@@ -83,56 +166,79 @@ const { data: categories } = await getCatalogCategories();
     <!-- Featured Products -->
     {
         featuredProducts && featuredProducts.length > 0 && (
-            <section class="py-16 lg:py-24">
-                <div class="container-wide">
-                    <h2 class="font-display text-display-md text-center text-navy-900 mb-12">
-                        Productos Destacados
-                    </h2>
-                    <div class="product-grid">
-                        {featuredProducts.map((product) => (
+            <section class="py-16 lg:py-24 bg-slate-50">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <!-- Section Header -->
+                    <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between mb-12">
+                        <div>
+                            <h2 class="font-display text-display-md lg:text-display-lg text-black mb-4">
+                                DESTACADOS
+                            </h2>
+                            <p class="text-slate-600 text-lg max-w-xl">
+                                Los mas vendidos de la temporada
+                            </p>
+                        </div>
+                        <a 
+                            href={ROUTES.PRODUCTS} 
+                            class="inline-flex items-center gap-2 mt-6 lg:mt-0 text-black font-semibold uppercase tracking-wider hover:text-accent transition-colors group"
+                        >
+                            Ver Todo
+                            <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3" />
+                            </svg>
+                        </a>
+                    </div>
+
+                    <!-- Products Grid -->
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+                        {featuredProducts.map((product, index) => (
                             <a
                                 href={ROUTES.PRODUCT_DETAIL(product.slug)}
-                                class="group"
+                                class="group bg-white overflow-hidden"
                             >
-                                <div class="aspect-[3/4] bg-charcoal-100 overflow-hidden mb-4">
+                                <!-- Image -->
+                                <div class="relative aspect-[3/4] bg-slate-100 overflow-hidden">
                                     {product.images[0] ? (
                                         <img
                                             src={product.images[0]}
                                             alt={product.name}
-                                            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                            class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                             loading="lazy"
                                         />
                                     ) : (
-                                        <div class="w-full h-full flex items-center justify-center text-charcoal-300">
-                                            <svg
-                                                class="h-12 w-12"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                stroke="currentColor"
-                                            >
-                                                <path
-                                                    stroke-linecap="round"
-                                                    stroke-linejoin="round"
-                                                    stroke-width="1"
-                                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                                                />
+                                        <div class="w-full h-full flex items-center justify-center text-slate-300">
+                                            <svg class="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                             </svg>
                                         </div>
                                     )}
+                                    
+                                    <!-- Quick View Overlay -->
+                                    <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
+                                        <span class="px-6 py-3 bg-white text-black font-bold text-sm uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-4 group-hover:translate-y-0">
+                                            Ver Producto
+                                        </span>
+                                    </div>
+
+                                    <!-- New Badge -->
+                                    {index < 2 && (
+                                        <span class="absolute top-3 left-3 px-3 py-1 bg-accent text-white text-xs font-bold uppercase tracking-wider">
+                                            Nuevo
+                                        </span>
+                                    )}
                                 </div>
-                                <h3 class="font-display text-lg text-navy-900 group-hover:text-leather-600 transition-colors">
-                                    {product.name}
-                                </h3>
-                                <p class="mt-1 font-medium text-navy-900">
-                                    {formatPrice(product.price)}
-                                </p>
+
+                                <!-- Info -->
+                                <div class="p-4">
+                                    <h3 class="font-semibold text-black group-hover:text-accent transition-colors duration-200 line-clamp-1">
+                                        {product.name}
+                                    </h3>
+                                    <p class="mt-2 font-bold text-lg text-black">
+                                        {formatPrice(product.price)}
+                                    </p>
+                                </div>
                             </a>
                         ))}
-                    </div>
-                    <div class="text-center mt-12">
-                        <a href={ROUTES.PRODUCTS} class="btn-secondary">
-                            Ver todos los productos
-                        </a>
                     </div>
                 </div>
             </section>
@@ -140,82 +246,51 @@ const { data: categories } = await getCatalogCategories();
     }
 
     <!-- Value Props -->
-    <section class="py-16 bg-navy-950 text-cream-50">
-        <div class="container-wide">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-                <div>
-                    <div
-                        class="mx-auto w-12 h-12 bg-leather-500/20 rounded-full flex items-center justify-center mb-4"
-                    >
-                        <svg
-                            class="h-6 w-6 text-leather-400"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="1.5"
-                                d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"
-                            ></path>
+    <section class="py-16 lg:py-20 bg-black text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
+                <!-- Prop 1 -->
+                <div class="text-center group">
+                    <div class="inline-flex items-center justify-center w-16 h-16 border-2 border-white/30 group-hover:border-accent group-hover:bg-accent/10 transition-all duration-300 mb-6">
+                        <svg class="h-8 w-8 text-white group-hover:text-accent transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
                         </svg>
                     </div>
-                    <h3 class="font-display text-lg text-cream-50">
-                        Envio Gratuito
+                    <h3 class="font-display text-xl font-bold uppercase tracking-wider mb-3">
+                        Envio Gratis
                     </h3>
-                    <p class="text-cream-400 text-sm mt-2">
-                        En pedidos superiores a 100
+                    <p class="text-slate-400">
+                        En pedidos superiores a 100 EUR
                     </p>
                 </div>
-                <div>
-                    <div
-                        class="mx-auto w-12 h-12 bg-leather-500/20 rounded-full flex items-center justify-center mb-4"
-                    >
-                        <svg
-                            class="h-6 w-6 text-leather-400"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="1.5"
-                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                            ></path>
+
+                <!-- Prop 2 -->
+                <div class="text-center group">
+                    <div class="inline-flex items-center justify-center w-16 h-16 border-2 border-white/30 group-hover:border-accent group-hover:bg-accent/10 transition-all duration-300 mb-6">
+                        <svg class="h-8 w-8 text-white group-hover:text-accent transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
                         </svg>
                     </div>
-                    <h3 class="font-display text-lg text-cream-50">
-                        Devoluciones Faciles
+                    <h3 class="font-display text-xl font-bold uppercase tracking-wider mb-3">
+                        Devoluciones
                     </h3>
-                    <p class="text-cream-400 text-sm mt-2">
-                        30 dias para devoluciones
+                    <p class="text-slate-400">
+                        30 dias para cambios y devoluciones
                     </p>
                 </div>
-                <div>
-                    <div
-                        class="mx-auto w-12 h-12 bg-leather-500/20 rounded-full flex items-center justify-center mb-4"
-                    >
-                        <svg
-                            class="h-6 w-6 text-leather-400"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="1.5"
-                                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                            ></path>
+
+                <!-- Prop 3 -->
+                <div class="text-center group">
+                    <div class="inline-flex items-center justify-center w-16 h-16 border-2 border-white/30 group-hover:border-accent group-hover:bg-accent/10 transition-all duration-300 mb-6">
+                        <svg class="h-8 w-8 text-white group-hover:text-accent transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
                         </svg>
                     </div>
-                    <h3 class="font-display text-lg text-cream-50">
+                    <h3 class="font-display text-xl font-bold uppercase tracking-wider mb-3">
                         Pago Seguro
                     </h3>
-                    <p class="text-cream-400 text-sm mt-2">
-                        Transacciones 100% seguras
+                    <p class="text-slate-400">
+                        Transacciones 100% seguras con Stripe
                     </p>
                 </div>
             </div>

@@ -1,0 +1,325 @@
+---
+/**
+ * Admin Dashboard - Overview of store stats
+ */
+export const prerender = false;
+
+import AdminLayout from "../../modules/admin/layouts/AdminLayout.astro";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+    import.meta.env.PUBLIC_SUPABASE_URL,
+    import.meta.env.SUPABASE_SERVICE_ROLE_KEY,
+);
+
+// Get stats
+const { count: productCount } = await supabase
+    .from("products")
+    .select("*", { count: "exact", head: true });
+const { count: orderCount } = await supabase
+    .from("orders")
+    .select("*", { count: "exact", head: true });
+const { count: userCount } = await supabase
+    .from("user_profiles")
+    .select("*", { count: "exact", head: true });
+const { count: categoryCount } = await supabase
+    .from("categories")
+    .select("*", { count: "exact", head: true });
+
+// Get recent orders
+const { data: recentOrders } = await supabase
+    .from("orders")
+    .select("id, created_at, total_amount, shipping_status, tracking_number")
+    .order("created_at", { ascending: false })
+    .limit(5);
+
+// Get total revenue
+const { data: revenueData } = await supabase
+    .from("orders")
+    .select("total_amount");
+const totalRevenue =
+    revenueData?.reduce((sum, o) => sum + (o.total_amount || 0), 0) || 0;
+
+const formatPrice = (cents: number) => (cents / 100).toFixed(2) + " EUR";
+const formatDate = (dateStr: string) =>
+    new Date(dateStr).toLocaleDateString("es-ES", {
+        day: "numeric",
+        month: "short",
+        hour: "2-digit",
+        minute: "2-digit",
+    });
+
+const statusColors: Record<string, string> = {
+    processing: "bg-yellow-500/20 text-yellow-400",
+    shipped: "bg-blue-500/20 text-blue-400",
+    in_transit: "bg-purple-500/20 text-purple-400",
+    out_for_delivery: "bg-orange-500/20 text-orange-400",
+    delivered: "bg-green-500/20 text-green-400",
+};
+---
+
+<AdminLayout title="Dashboard">
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="bg-slate-900 border border-slate-800 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-slate-400 text-sm">Productos</p>
+                    <p class="text-3xl font-bold text-white mt-1">
+                        {productCount}
+                    </p>
+                </div>
+                <div
+                    class="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center"
+                >
+                    <svg
+                        class="w-6 h-6 text-blue-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                        ></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-slate-400 text-sm">Pedidos</p>
+                    <p class="text-3xl font-bold text-white mt-1">
+                        {orderCount}
+                    </p>
+                </div>
+                <div
+                    class="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center"
+                >
+                    <svg
+                        class="w-6 h-6 text-green-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+                        ></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-slate-400 text-sm">Usuarios</p>
+                    <p class="text-3xl font-bold text-white mt-1">
+                        {userCount}
+                    </p>
+                </div>
+                <div
+                    class="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center"
+                >
+                    <svg
+                        class="w-6 h-6 text-purple-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                        ></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-slate-400 text-sm">Ingresos Totales</p>
+                    <p class="text-3xl font-bold text-white mt-1">
+                        {formatPrice(totalRevenue)}
+                    </p>
+                </div>
+                <div
+                    class="w-12 h-12 bg-accent/20 rounded-lg flex items-center justify-center"
+                >
+                    <svg
+                        class="w-6 h-6 text-accent"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        ></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Orders -->
+    <div class="bg-slate-900 border border-slate-800">
+        <div
+            class="p-6 border-b border-slate-800 flex justify-between items-center"
+        >
+            <h2 class="text-lg font-bold text-white">Pedidos Recientes</h2>
+            <a
+                href="/gestion-fm/pedidos"
+                class="text-accent hover:underline text-sm">Ver todos</a
+            >
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-slate-800">
+                    <tr>
+                        <th
+                            class="text-left px-6 py-3 text-xs font-medium text-slate-400 uppercase"
+                            >Tracking</th
+                        >
+                        <th
+                            class="text-left px-6 py-3 text-xs font-medium text-slate-400 uppercase"
+                            >Fecha</th
+                        >
+                        <th
+                            class="text-left px-6 py-3 text-xs font-medium text-slate-400 uppercase"
+                            >Estado</th
+                        >
+                        <th
+                            class="text-right px-6 py-3 text-xs font-medium text-slate-400 uppercase"
+                            >Total</th
+                        >
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800">
+                    {
+                        recentOrders?.map((order) => (
+                            <tr class="hover:bg-slate-800/50">
+                                <td class="px-6 py-4">
+                                    <a
+                                        href={`/gestion-fm/pedidos/${order.id}`}
+                                        class="font-mono text-white hover:text-accent"
+                                    >
+                                        {order.tracking_number ||
+                                            order.id.slice(0, 8)}
+                                    </a>
+                                </td>
+                                <td class="px-6 py-4 text-slate-400 text-sm">
+                                    {formatDate(order.created_at)}
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span
+                                        class={`px-2 py-1 text-xs font-medium rounded ${statusColors[order.shipping_status] || "bg-slate-700 text-slate-300"}`}
+                                    >
+                                        {order.shipping_status}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-right text-white font-medium">
+                                    {formatPrice(order.total_amount)}
+                                </td>
+                            </tr>
+                        ))
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <a
+            href="/gestion-fm/productos/nuevo"
+            class="bg-slate-900 border border-slate-800 p-6 hover:border-accent transition-colors flex items-center gap-4"
+        >
+            <div
+                class="w-10 h-10 bg-accent/20 rounded flex items-center justify-center"
+            >
+                <svg
+                    class="w-5 h-5 text-accent"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 4v16m8-8H4"></path>
+                </svg>
+            </div>
+            <div>
+                <p class="text-white font-medium">Añadir Producto</p>
+                <p class="text-slate-500 text-sm">Crear nuevo producto</p>
+            </div>
+        </a>
+        <a
+            href="/gestion-fm/categorias/nueva"
+            class="bg-slate-900 border border-slate-800 p-6 hover:border-accent transition-colors flex items-center gap-4"
+        >
+            <div
+                class="w-10 h-10 bg-accent/20 rounded flex items-center justify-center"
+            >
+                <svg
+                    class="w-5 h-5 text-accent"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 4v16m8-8H4"></path>
+                </svg>
+            </div>
+            <div>
+                <p class="text-white font-medium">Añadir Categoria</p>
+                <p class="text-slate-500 text-sm">Crear nueva categoria</p>
+            </div>
+        </a>
+        <a
+            href="/gestion-fm/pedidos"
+            class="bg-slate-900 border border-slate-800 p-6 hover:border-accent transition-colors flex items-center gap-4"
+        >
+            <div
+                class="w-10 h-10 bg-accent/20 rounded flex items-center justify-center"
+            >
+                <svg
+                    class="w-5 h-5 text-accent"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                    ></path>
+                </svg>
+            </div>
+            <div>
+                <p class="text-white font-medium">Gestionar Pedidos</p>
+                <p class="text-slate-500 text-sm">Ver y actualizar pedidos</p>
+            </div>
+        </a>
+    </div>
+</AdminLayout>
+
+

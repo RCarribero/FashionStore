@@ -38,6 +38,34 @@ export const $cart = persistentAtom<Cart>(
     }
 );
 
+export interface AppliedCoupon {
+    code: string;
+    discount_type: string;
+    discount_value: number;
+    discountAmount: number;
+    id?: string;
+}
+
+/**
+ * Coupon atom with persistence
+ */
+export const $coupon = persistentAtom<AppliedCoupon | null>(
+    'fm_coupon',
+    null,
+    {
+        encode: JSON.stringify,
+        decode: JSON.parse,
+    }
+);
+
+export function setCoupon(coupon: AppliedCoupon) {
+    $coupon.set(coupon);
+}
+
+export function clearCoupon() {
+    $coupon.set(null);
+}
+
 /**
  * Computed: Total items count
  */

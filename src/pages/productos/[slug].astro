@@ -5,7 +5,7 @@
 export const prerender = false;
 
 import StoreLayout from "../../modules/store/layouts/StoreLayout.astro";
-import AddToCartButton from "../../modules/store/components/AddToCartButton";
+import ProductSelector from "../../modules/store/components/ProductSelector";
 import { supabase } from "../../modules/auth";
 import { formatPrice } from "../../shared/utils";
 import { ROUTES } from "../../config";
@@ -22,122 +22,129 @@ const { data: product } = await supabase
 if (!product) {
     return Astro.redirect("/productos");
 }
+
+// Get variants for this product
+const { data: variants } = await supabase
+    .from("product_variants")
+    .select("*")
+    .eq("product_id", product.id)
+    .order("size");
 ---
 
 <StoreLayout title={product.name} description={product.description}>
-    <div class="container-wide py-12">
-        <nav class="mb-8">
-            <ol class="flex items-center gap-2 text-sm text-charcoal-500">
-                <li>
-                    <a href={ROUTES.HOME} class="hover:text-navy-900">Inicio</a>
-                </li>
-                <li>/</li>
-                <li>
-                    <a href={ROUTES.PRODUCTS} class="hover:text-navy-900"
-                        >Productos</a
-                    >
-                </li>
-                <li>/</li>
-                <li class="text-navy-900">{product.name}</li>
-            </ol>
-        </nav>
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            <div class="aspect-[3/4] bg-charcoal-100 overflow-hidden">
-                {
-                    product.images?.[0] ? (
-                        <img
-                            src={product.images[0]}
-                            alt={product.name}
-                            class="w-full h-full object-cover"
-                        />
-                    ) : (
-                        <div class="w-full h-full flex items-center justify-center text-charcoal-300">
-                            <svg
-                                class="h-24 w-24"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="1"
-                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                                />
-                            </svg>
-                        </div>
-                    )
-                }
-            </div>
-
-            <div class="flex flex-col">
-                {
-                    product.category && (
+    <div class="min-h-screen bg-slate-950">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <nav class="mb-8">
+                <ol class="flex items-center gap-2 text-sm text-slate-400">
+                    <li>
                         <a
-                            href={ROUTES.CATEGORY(product.category.slug)}
-                            class="text-sm text-leather-600 hover:text-leather-800 mb-2"
+                            href={ROUTES.HOME}
+                            class="hover:text-white transition-colors">Inicio</a
                         >
-                            {product.category.name}
-                        </a>
-                    )
-                }
+                    </li>
+                    <li>/</li>
+                    <li>
+                        <a
+                            href={ROUTES.PRODUCTS}
+                            class="hover:text-white transition-colors"
+                            >Productos</a
+                        >
+                    </li>
+                    <li>/</li>
+                    <li class="text-white font-medium">{product.name}</li>
+                </ol>
+            </nav>
 
-                <h1 class="font-display text-display-md text-navy-900">
-                    {product.name}
-                </h1>
-                <p class="mt-4 text-2xl font-medium text-navy-900">
-                    {formatPrice(product.price)}
-                </p>
-                <p class="mt-6 text-charcoal-600 leading-relaxed">
-                    {product.description}
-                </p>
-
-                <div class="mt-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <div
+                    class="aspect-[3/4] bg-slate-900 border border-slate-800 overflow-hidden relative rounded-lg"
+                >
                     {
-                        product.stock > 0 ? (
-                            <span class="text-sm text-green-600">
-                                En stock ({product.stock} disponibles)
-                            </span>
+                        product.images?.[0] ? (
+                            <img
+                                src={product.images[0]}
+                                alt={product.name}
+                                class="w-full h-full object-cover"
+                            />
                         ) : (
-                            <span class="text-sm text-red-600">Agotado</span>
+                            <div class="w-full h-full flex items-center justify-center text-slate-700">
+                                <svg
+                                    class="h-24 w-24"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="1"
+                                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                    />
+                                </svg>
+                            </div>
                         )
                     }
                 </div>
 
-                <div class="mt-8">
-                    <AddToCartButton
-                        client:load
-                        product={{
-                            id: product.id,
-                            name: product.name,
-                            price: product.price,
-                            images: product.images || [],
-                            stock: product.stock,
-                        }}
-                    />
-                </div>
+                <div class="flex flex-col">
+                    {
+                        product.category && (
+                            <a
+                                href={ROUTES.CATEGORY(product.category.slug)}
+                                class="text-sm text-accent hover:text-red-400 transition-colors mb-2 uppercase tracking-wide font-medium"
+                            >
+                                {product.category.name}
+                            </a>
+                        )
+                    }
 
-                <div class="mt-12 pt-8 border-t border-charcoal-100">
-                    <h3 class="font-display text-lg text-navy-900 mb-4">
-                        Detalles
-                    </h3>
-                    <ul class="space-y-2 text-sm text-charcoal-600">
-                        <li class="flex justify-between">
-                            <span>Categoria</span>
-                            <span class="text-navy-900"
-                                >{
-                                    product.category?.name || "Sin categoria"
-                                }</span
+                    <h1
+                        class="font-display text-4xl lg:text-5xl text-white mb-4"
+                    >
+                        {product.name}
+                    </h1>
+                    <p class="text-3xl font-bold text-white mb-6">
+                        {formatPrice(product.price)}
+                    </p>
+                    <div class="prose prose-invert max-w-none mb-8">
+                        <p class="text-slate-300 leading-relaxed text-lg">
+                            {product.description}
+                        </p>
+                    </div>
+
+                    <div class="mt-auto">
+                        <ProductSelector
+                            client:load
+                            product={product}
+                            variants={variants || []}
+                        />
+                    </div>
+
+                    <div class="mt-12 pt-8 border-t border-slate-800">
+                        <h3 class="font-display text-lg text-white mb-4">
+                            Detalles del Producto
+                        </h3>
+                        <dl class="space-y-4 text-sm">
+                            <div
+                                class="flex justify-between py-3 border-b border-slate-800/50"
                             >
-                        </li>
-                        <li class="flex justify-between">
-                            <span>SKU</span>
-                            <span class="text-navy-900"
-                                >{product.id.slice(0, 8).toUpperCase()}</span
+                                <dt class="text-slate-400">Categoria</dt>
+                                <dd class="text-white font-medium">
+                                    {product.category?.name || "Sin categoria"}
+                                </dd>
+                            </div>
+                            <div
+                                class="flex justify-between py-3 border-b border-slate-800/50"
                             >
-                        </li>
-                    </ul>
+                                <dt class="text-slate-400">SKU</dt>
+                                <dd
+                                    class="text-white font-medium tracking-wider"
+                                >
+                                    {product.id.slice(0, 8).toUpperCase()}
+                                </dd>
+                            </div>
+                        </dl>
+                    </div>
                 </div>
             </div>
         </div>
