@@ -6,6 +6,7 @@ export const prerender = false;
 
 import AdminLayout from "../../../modules/admin/layouts/AdminLayout.astro";
 import { createClient } from "@supabase/supabase-js";
+import ImageUploader from "../../../modules/admin/components/ImageUploader";
 
 const supabase = createClient(
     import.meta.env.PUBLIC_SUPABASE_URL,
@@ -133,18 +134,21 @@ const formatPrice = (cents: number) => (cents / 100).toFixed(2);
 
             <div class="bg-slate-900 border border-slate-800 p-6 space-y-4">
                 <h2 class="text-lg font-bold text-white mb-4">Imagenes</h2>
-
-                <div>
-                    <label class="block text-sm text-slate-400 mb-1"
-                        >URLs de imagenes (una por linea)</label
-                    >
-                    <textarea
-                        id="images"
-                        rows="4"
-                        class="w-full bg-slate-800 border border-slate-700 text-white px-4 py-3 resize-none font-mono text-sm"
-                        >{product.images?.join("\n")}</textarea
-                    >
-                </div>
+                <p class="text-sm text-slate-400 mb-4">
+                    Arrastra imagenes o haz clic para subir
+                </p>
+                <ImageUploader
+                    client:load
+                    folder="fashionstore/products"
+                    inputId="images"
+                    initialImages={product.images || []}
+                />
+                <textarea
+                    id="images"
+                    rows="2"
+                    class="w-full bg-slate-800/50 border border-slate-700 text-slate-400 px-4 py-2 resize-none font-mono text-xs"
+                    >{product.images?.join("\n")}</textarea
+                >
             </div>
 
             <div class="bg-slate-900 border border-slate-800 p-6 space-y-4">

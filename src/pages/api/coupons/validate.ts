@@ -14,7 +14,7 @@ export const prerender = false;
 
 export const POST: APIRoute = async ({ request }) => {
     try {
-        const { code, purchaseAmount, cartItems } = await request.json();
+        const { code, purchaseAmount, cartItems, userId } = await request.json();
 
         if (!code) {
             return new Response(JSON.stringify({
@@ -40,6 +40,30 @@ export const POST: APIRoute = async ({ request }) => {
         // Validate coupon status
         if (!coupon.is_active) {
             return new Response(JSON.stringify({ valid: false, error: 'Cupon inactivo' }), { status: 200 });
+        }
+
+        // Special validation for BIENVENIDO coupon - first purchase only
+        if (code.toUpperCase() === 'BIENVENIDO') {
+            if (!userId) {
+                return new Response(JSON.stringify({
+                    valid: false,
+                    error: 'Debes iniciar sesion para usar este cupon'
+                }), { status: 200 });
+            }
+
+            // Check if user has made a purchase before
+            const { data: profile } = await supabase
+                .from('user_profiles')
+                .select('has_made_purchase')
+                .eq('id', userId)
+                .single();
+
+            if (profile && profile.has_made_purchase === true) {
+                return new Response(JSON.stringify({
+                    valid: false,
+                    error: 'Este cupon solo es valido para tu primera compra'
+                }), { status: 200 });
+            }
         }
 
         const now = new Date();

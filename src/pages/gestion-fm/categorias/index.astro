@@ -6,6 +6,7 @@ export const prerender = false;
 
 import AdminLayout from "../../../modules/admin/layouts/AdminLayout.astro";
 import { createClient } from "@supabase/supabase-js";
+import CategoryImageUploader from "../../../modules/admin/components/CategoryImageUploader";
 
 const supabase = createClient(
     import.meta.env.PUBLIC_SUPABASE_URL,
@@ -189,14 +190,16 @@ const { data: categories } = await supabase
                     />
                 </div>
                 <div>
-                    <label class="block text-sm text-slate-400 mb-1"
-                        >Imagen URL</label
+                    <label class="block text-sm text-slate-400 mb-2"
+                        >Imagen</label
                     >
-                    <input
-                        type="url"
-                        id="categoryImage"
-                        class="w-full bg-slate-800 border border-slate-700 text-white px-4 py-2"
-                    />
+                    <div id="imageUploaderContainer">
+                        <CategoryImageUploader
+                            client:load
+                            inputId="categoryImage"
+                        />
+                    </div>
+                    <input type="hidden" id="categoryImage" />
                 </div>
                 <div class="flex gap-3">
                     <button
