@@ -45,9 +45,27 @@ const statusColors: Record<string, string> = {
 ---
 
 <AdminLayout title="Pedidos">
+    <!-- Inline Notification Container -->
+    <div
+        id="notification-area"
+        class="fixed top-4 right-4 z-50 transition-all duration-300 transform translate-x-full opacity-0"
+    >
+        <div
+            id="notification-content"
+            class="px-4 py-3 rounded shadow-lg text-white font-medium text-sm flex items-center gap-2"
+        >
+            <!-- Content injected via JS -->
+        </div>
+    </div>
     <div class="flex justify-between items-center mb-6">
         <p class="text-slate-400">{orders?.length || 0} pedidos</p>
         <div class="flex gap-2">
+            <input
+                type="text"
+                id="searchOrder"
+                placeholder="Buscar (ID, Tracking...)"
+                class="bg-slate-800 border border-slate-700 text-white px-3 py-2 text-sm w-64 focus:border-accent focus:outline-none"
+            />
             <select
                 id="statusFilter"
                 class="bg-slate-800 border border-slate-700 text-white px-3 py-2 text-sm"
@@ -68,7 +86,7 @@ const statusColors: Record<string, string> = {
                 <tr>
                     <th
                         class="text-left px-6 py-3 text-xs font-medium text-slate-400 uppercase"
-                        >Tracking</th
+                        >Pedido</th
                     >
                     <th
                         class="text-left px-6 py-3 text-xs font-medium text-slate-400 uppercase"
@@ -98,12 +116,22 @@ const statusColors: Record<string, string> = {
                         <tr
                             class="hover:bg-slate-800/50 order-row"
                             data-status={order.shipping_status}
+                            data-search={`${order.id} ${order.order_number || ""} ${order.tracking_number || ""} ${order.items?.map((i: any) => i.name).join(" ")}`.toLowerCase()}
                         >
                             <td class="px-6 py-4">
-                                <span class="font-mono text-white">
-                                    {order.tracking_number ||
-                                        order.id.slice(0, 8)}
-                                </span>
+                                <div class="flex flex-col">
+                                    <span class="font-bold text-white text-md text-accent">
+                                        #{order.order_number}
+                                    </span>
+                                    <span class="font-mono text-slate-500 text-[10px] mt-1">
+                                        {order.id.slice(0, 8)}...
+                                    </span>
+                                    {order.tracking_number && (
+                                        <span class="text-slate-400 text-xs mt-1">
+                                            Track: {order.tracking_number}
+                                        </span>
+                                    )}
+                                </div>
                             </td>
                             <td class="px-6 py-4 text-slate-400 text-sm">
                                 {formatDate(order.created_at)}
@@ -152,25 +180,68 @@ const statusColors: Record<string, string> = {
 </AdminLayout>
 
 <script>
-    // Filter by status
-    document.getElementById("statusFilter")?.addEventListener("change", (e) => {
-        const status = (e.target as HTMLSelectElement).value;
+    // Notification helper
+    /**
+     * @param {string} message
+     * @param {string} [type='success']
+     */
+    function showNotification(message, type = "success") {
+        const area = document.getElementById("notification-area");
+        const content = document.getElementById("notification-content");
+
+        if (!area || !content) return;
+
+        // Colors base on type
+        if (type === "error") {
+            content.className =
+                "px-4 py-3 rounded shadow-lg text-white font-medium text-sm flex items-center gap-2 bg-red-600";
+        } else {
+            content.className =
+                "px-4 py-3 rounded shadow-lg text-white font-medium text-sm flex items-center gap-2 bg-green-600";
+        }
+
+        content.textContent = message;
+
+        // Show
+        area.classList.remove("translate-x-full", "opacity-0");
+
+        // Hide after 3s
+        setTimeout(() => {
+            area.classList.add("translate-x-full", "opacity-0");
+        }, 3000);
+    }
+
+    // Filter Logic
+    const statusSelect = document.getElementById("statusFilter");
+    const searchInput = document.getElementById("searchOrder");
+
+    function filterOrders() {
+        const statusVal = statusSelect?.value || "";
+        const searchVal = searchInput?.value.toLowerCase() || "";
+
         document.querySelectorAll(".order-row").forEach((row) => {
-            if (!status || row.getAttribute("data-status") === status) {
-                (row as HTMLElement).style.display = "";
+            const rowStatus = row.getAttribute("data-status");
+            const rowSearch = row.getAttribute("data-search");
+
+            const matchStatus = !statusVal || rowStatus === statusVal;
+            const matchSearch = !searchVal || rowSearch.includes(searchVal);
+
+            if (matchStatus && matchSearch) {
+                row.style.display = "";
             } else {
-                (row as HTMLElement).style.display = "none";
+                row.style.display = "none";
             }
         });
-    });
+    }
+
+    statusSelect?.addEventListener("change", filterOrders);
+    searchInput?.addEventListener("input", filterOrders);
 
     // Update status
     document.querySelectorAll(".status-select").forEach((select) => {
         select.addEventListener("change", async (e) => {
-            const orderId = (e.target as HTMLSelectElement).getAttribute(
-                "data-order-id",
-            );
-            const newStatus = (e.target as HTMLSelectElement).value;
+            const orderId = e.target.getAttribute("data-order-id");
+            const newStatus = e.target.value;
 
             const res = await fetch("/api/admin/orders/update-status", {
                 method: "POST",
@@ -179,16 +250,10 @@ const statusColors: Record<string, string> = {
             });
 
             if (res.ok) {
-                (e.target as HTMLElement)
-                    .closest("tr")
-                    ?.setAttribute("data-status", newStatus);
+                e.target.closest("tr")?.setAttribute("data-status", newStatus);
             } else {
-                alert("Error al actualizar estado");
+                showNotification("Error al actualizar estado", "error");
             }
         });
     });
 </script>
-
-
-
-

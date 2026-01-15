@@ -33,6 +33,18 @@ const formatPrice = (cents: number) => (cents / 100).toFixed(2);
 ---
 
 <AdminLayout title={`Editar: ${product.name}`}>
+    <!-- Inline Notification Container -->
+    <div
+        id="notification-area"
+        class="fixed top-4 right-4 z-50 transition-all duration-300 transform translate-x-full opacity-0"
+    >
+        <div
+            id="notification-content"
+            class="px-4 py-3 rounded shadow-lg text-white font-medium text-sm flex items-center gap-2"
+        >
+            <!-- Content injected via JS -->
+        </div>
+    </div>
     <div class="max-w-2xl">
         <form id="productForm" class="space-y-6">
             <div class="bg-slate-900 border border-slate-800 p-6 space-y-4">
@@ -186,6 +198,37 @@ const formatPrice = (cents: number) => (cents / 100).toFixed(2);
 <script define:vars={{ productId: id }}>
     const form = document.getElementById("productForm");
 
+    // Notification helper
+    /**
+     * @param {string} message
+     * @param {string} [type='success']
+     */
+    function showNotification(message, type = "success") {
+        const area = document.getElementById("notification-area");
+        const content = document.getElementById("notification-content");
+
+        if (!area || !content) return;
+
+        // Colors base on type
+        if (type === "error") {
+            content.className =
+                "px-4 py-3 rounded shadow-lg text-white font-medium text-sm flex items-center gap-2 bg-red-600";
+        } else {
+            content.className =
+                "px-4 py-3 rounded shadow-lg text-white font-medium text-sm flex items-center gap-2 bg-green-600";
+        }
+
+        content.textContent = message;
+
+        // Show
+        area.classList.remove("translate-x-full", "opacity-0");
+
+        // Hide after 3s
+        setTimeout(() => {
+            area.classList.add("translate-x-full", "opacity-0");
+        }, 3000);
+    }
+
     form?.addEventListener("submit", async (e) => {
         e.preventDefault();
 
@@ -229,7 +272,10 @@ const formatPrice = (cents: number) => (cents / 100).toFixed(2);
             window.location.href = "/gestion-fm/productos";
         } else {
             const data = await res.json();
-            alert("Error: " + (data.error || "Error al guardar"));
+            showNotification(
+                "Error: " + (data.error || "Error al guardar"),
+                "error",
+            );
         }
     });
 </script>

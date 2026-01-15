@@ -19,6 +19,18 @@ const { data: categories } = await supabase
 ---
 
 <AdminLayout title="Categorias">
+    <!-- Inline Notification Container -->
+    <div
+        id="notification-area"
+        class="fixed top-4 right-4 z-50 transition-all duration-300 transform translate-x-full opacity-0"
+    >
+        <div
+            id="notification-content"
+            class="px-4 py-3 rounded shadow-lg text-white font-medium text-sm flex items-center gap-2"
+        >
+            <!-- Content injected via JS -->
+        </div>
+    </div>
     <div class="flex justify-between items-center mb-6">
         <p class="text-slate-400">{categories?.length || 0} categorias</p>
         <button
@@ -91,6 +103,57 @@ const { data: categories } = await supabase
         }
     </div>
 
+    <!-- Custom Delete Modal -->
+    <div
+        id="deleteModal"
+        class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50"
+    >
+        <div
+            class="bg-slate-900 border border-slate-800 p-6 w-full max-w-md mx-4 rounded-lg"
+        >
+            <div class="text-center">
+                <div
+                    class="w-16 h-16 mx-auto mb-4 bg-red-500/20 rounded-full flex items-center justify-center"
+                >
+                    <svg
+                        class="w-8 h-8 text-red-500"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        ></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2">
+                    Eliminar Categoría
+                </h3>
+                <p class="text-slate-400 mb-1">
+                    ¿Seguro que quieres eliminar esta categoría?
+                </p>
+                <p id="deleteItemName" class="text-white font-medium mb-6"></p>
+            </div>
+            <div class="flex gap-3">
+                <button
+                    id="confirmDelete"
+                    class="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 font-medium rounded transition-colors"
+                >
+                    Si, eliminar
+                </button>
+                <button
+                    id="cancelDelete"
+                    class="flex-1 bg-slate-800 hover:bg-slate-700 text-white py-3 font-medium rounded transition-colors"
+                >
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal -->
     <div
         id="categoryModal"
@@ -155,31 +218,54 @@ const { data: categories } = await supabase
 
 <script>
     const modal = document.getElementById("categoryModal");
-    const form = document.getElementById("categoryForm") as HTMLFormElement;
+    const form = document.getElementById("categoryForm");
 
-    function openModal(category?: any) {
+    // Notification helper
+    /**
+     * @param {string} message
+     * @param {string} [type='success']
+     */
+    function showNotification(message, type = "success") {
+        const area = document.getElementById("notification-area");
+        const content = document.getElementById("notification-content");
+
+        if (!area || !content) return;
+
+        // Colors base on type
+        if (type === "error") {
+            content.className =
+                "px-4 py-3 rounded shadow-lg text-white font-medium text-sm flex items-center gap-2 bg-red-600";
+        } else {
+            content.className =
+                "px-4 py-3 rounded shadow-lg text-white font-medium text-sm flex items-center gap-2 bg-green-600";
+        }
+
+        content.textContent = message;
+
+        // Show
+        area.classList.remove("translate-x-full", "opacity-0");
+
+        // Hide after 3s
+        setTimeout(() => {
+            area.classList.add("translate-x-full", "opacity-0");
+        }, 3000);
+    }
+
+    function openModal(category) {
         const title = document.getElementById("modalTitle");
-        const idInput = document.getElementById(
-            "categoryId",
-        ) as HTMLInputElement;
-        const nameInput = document.getElementById(
-            "categoryName",
-        ) as HTMLInputElement;
-        const slugInput = document.getElementById(
-            "categorySlug",
-        ) as HTMLInputElement;
-        const imageInput = document.getElementById(
-            "categoryImage",
-        ) as HTMLInputElement;
+        const idInput = document.getElementById("categoryId");
+        const nameInput = document.getElementById("categoryName");
+        const slugInput = document.getElementById("categorySlug");
+        const imageInput = document.getElementById("categoryImage");
 
         if (category) {
-            title!.textContent = "Editar Categoria";
+            title.textContent = "Editar Categoria";
             idInput.value = category.id;
             nameInput.value = category.name;
             slugInput.value = category.slug;
             imageInput.value = category.image || "";
         } else {
-            title!.textContent = "Nueva Categoria";
+            title.textContent = "Nueva Categoria";
             form.reset();
             idInput.value = "";
         }
@@ -203,30 +289,71 @@ const { data: categories } = await supabase
         });
     });
 
+    // Delete Modal Logic
+    const deleteModal = document.getElementById("deleteModal");
+    const itemNameEl = document.getElementById("deleteItemName");
+    const confirmDeleteBtn = document.getElementById("confirmDelete");
+    const cancelDeleteBtn = document.getElementById("cancelDelete");
+    let deleteId = null;
+
+    function showDeleteModal(id, name) {
+        deleteId = id;
+        itemNameEl.textContent = name;
+        deleteModal?.classList.remove("hidden");
+        deleteModal?.classList.add("flex");
+    }
+
+    function hideDeleteModal() {
+        deleteModal?.classList.add("hidden");
+        deleteModal?.classList.remove("flex");
+        deleteId = null;
+    }
+
+    cancelDeleteBtn?.addEventListener("click", hideDeleteModal);
+    deleteModal?.addEventListener("click", (e) => {
+        if (e.target === deleteModal) hideDeleteModal();
+    });
+
+    confirmDeleteBtn?.addEventListener("click", async () => {
+        if (!deleteId) return;
+
+        confirmDeleteBtn.textContent = "Eliminando...";
+        confirmDeleteBtn.disabled = true;
+
+        const res = await fetch(`/api/admin/categories/${deleteId}`, {
+            method: "DELETE",
+        });
+
+        if (res.ok) {
+            window.location.reload();
+        } else {
+            hideDeleteModal();
+            showNotification("Error al eliminar", "error");
+            confirmDeleteBtn.textContent = "Si, eliminar";
+            confirmDeleteBtn.disabled = false;
+        }
+    });
+
     document.querySelectorAll("[data-delete]").forEach((btn) => {
         btn.addEventListener("click", async () => {
-            if (confirm("¿Eliminar esta categoria?")) {
-                const id = btn.getAttribute("data-delete");
-                const res = await fetch(`/api/admin/categories/${id}`, {
-                    method: "DELETE",
-                });
-                if (res.ok) window.location.reload();
-            }
+            const id = btn.getAttribute("data-delete");
+            // Find name in card
+            const card = btn.closest(".group");
+            const name =
+                card?.querySelector("h3")?.textContent?.trim() ||
+                "esta categoría";
+
+            showDeleteModal(id, name);
         });
     });
 
     form?.addEventListener("submit", async (e) => {
         e.preventDefault();
-        const id = (document.getElementById("categoryId") as HTMLInputElement)
-            .value;
+        const id = document.getElementById("categoryId").value;
         const data = {
-            name: (document.getElementById("categoryName") as HTMLInputElement)
-                .value,
-            slug: (document.getElementById("categorySlug") as HTMLInputElement)
-                .value,
-            image:
-                (document.getElementById("categoryImage") as HTMLInputElement)
-                    .value || null,
+            name: document.getElementById("categoryName").value,
+            slug: document.getElementById("categorySlug").value,
+            image: document.getElementById("categoryImage").value || null,
         };
 
         const res = await fetch(
@@ -241,17 +368,18 @@ const { data: categories } = await supabase
         if (res.ok) window.location.reload();
         else {
             const errorData = await res.json();
-            alert("Error: " + (errorData.error || "Error al guardar"));
+            showNotification(
+                "Error: " + (errorData.error || "Error al guardar"),
+                "error",
+            );
         }
     });
 
     // Auto-generate slug from name
     document.getElementById("categoryName")?.addEventListener("input", (e) => {
-        const slugInput = document.getElementById(
-            "categorySlug",
-        ) as HTMLInputElement;
+        const slugInput = document.getElementById("categorySlug");
         if (!slugInput.value || slugInput.dataset.auto !== "false") {
-            slugInput.value = (e.target as HTMLInputElement).value
+            slugInput.value = e.target.value
                 .toLowerCase()
                 .normalize("NFD")
                 .replace(/[\u0300-\u036f]/g, "")
@@ -263,6 +391,6 @@ const { data: categories } = await supabase
     document
         .getElementById("categorySlug")
         ?.addEventListener("input", function () {
-            (this as HTMLInputElement).dataset.auto = "false";
+            this.dataset.auto = "false";
         });
 </script>

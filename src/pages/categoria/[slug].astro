@@ -6,8 +6,12 @@
 import StoreLayout from "../../modules/store/layouts/StoreLayout.astro";
 import { createAdminClient } from "../../modules/auth/services/auth.service";
 import { formatPrice } from "../../shared/utils";
+import {
+    enrichProductsWithDiscounts,
+    type ProductWithDiscount,
+} from "../../shared/utils/promotions";
 import { ROUTES } from "../../config";
-import type { Product, Category } from "../../shared/types";
+import type { Category } from "../../shared/types";
 
 // Generate static paths for all categories
 export async function getStaticPaths() {
@@ -44,11 +48,14 @@ if (!category) {
 }
 
 // Get products in this category
-const { data: products } = await supabase
+const { data: rawProducts } = await supabase
     .from("products")
     .select("*")
     .eq("category_id", category.id)
     .order("created_at", { ascending: false });
+
+// Enrich products with promotion discounts
+const products = await enrichProductsWithDiscounts(rawProducts || []);
 
 // Get all categories for filter
 const { data: categories } = await supabase
@@ -127,56 +134,82 @@ const { data: categories } = await supabase
                     {
                         products && products.length > 0 ? (
                             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {products.map((product: Product) => (
-                                    <a
-                                        href={ROUTES.PRODUCT_DETAIL(
-                                            product.slug,
-                                        )}
-                                        class="group bg-slate-900 border border-slate-800 hover:border-accent transition-all duration-300"
-                                    >
-                                        <div class="aspect-[3/4] bg-slate-800 overflow-hidden relative">
-                                            {product.images?.[0] ? (
-                                                <img
-                                                    src={product.images[0]}
-                                                    alt={product.name}
-                                                    class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                                                />
-                                            ) : (
-                                                <div class="w-full h-full flex items-center justify-center text-slate-600">
-                                                    <svg
-                                                        class="h-16 w-16"
-                                                        fill="none"
-                                                        viewBox="0 0 24 24"
-                                                        stroke="currentColor"
-                                                    >
-                                                        <path
-                                                            stroke-linecap="round"
-                                                            stroke-linejoin="round"
-                                                            stroke-width="1"
-                                                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14"
-                                                        />
-                                                    </svg>
-                                                </div>
+                                {products.map(
+                                    (product: ProductWithDiscount) => (
+                                        <a
+                                            href={ROUTES.PRODUCT_DETAIL(
+                                                product.slug,
                                             )}
-                                        </div>
-                                        <div class="p-4">
-                                            <p class="text-xs text-slate-400 uppercase tracking-wider mb-1">
-                                                {category.name}
-                                            </p>
-                                            <h3 class="font-display text-lg text-white group-hover:text-accent transition-colors">
-                                                {product.name}
-                                            </h3>
-                                            <p class="mt-2 text-white font-bold text-lg">
-                                                {formatPrice(product.price)}
-                                            </p>
-                                            {product.stock === 0 && (
-                                                <p class="mt-1 text-sm text-red-500">
-                                                    Agotado
+                                            class="group bg-slate-900 border border-slate-800 hover:border-accent transition-all duration-300"
+                                        >
+                                            <div class="aspect-[3/4] bg-slate-800 overflow-hidden relative">
+                                                {product.images?.[0] ? (
+                                                    <img
+                                                        src={product.images[0]}
+                                                        alt={product.name}
+                                                        class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                                    />
+                                                ) : (
+                                                    <div class="w-full h-full flex items-center justify-center text-slate-600">
+                                                        <svg
+                                                            class="h-16 w-16"
+                                                            fill="none"
+                                                            viewBox="0 0 24 24"
+                                                            stroke="currentColor"
+                                                        >
+                                                            <path
+                                                                stroke-linecap="round"
+                                                                stroke-linejoin="round"
+                                                                stroke-width="1"
+                                                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14"
+                                                            />
+                                                        </svg>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div class="p-4">
+                                                <p class="text-xs text-slate-400 uppercase tracking-wider mb-1">
+                                                    {category.name}
                                                 </p>
-                                            )}
-                                        </div>
-                                    </a>
-                                ))}
+                                                <h3 class="font-display text-lg text-white group-hover:text-accent transition-colors">
+                                                    {product.name}
+                                                </h3>
+                                                <div class="mt-2">
+                                                    {product.discountedPrice ? (
+                                                        <>
+                                                            <p class="text-slate-400 line-through text-sm">
+                                                                {formatPrice(
+                                                                    product.price,
+                                                                )}
+                                                            </p>
+                                                            <p class="text-accent font-bold text-lg">
+                                                                {formatPrice(
+                                                                    product.discountedPrice,
+                                                                )}
+                                                            </p>
+                                                            <span class="inline-block mt-1 px-2 py-0.5 bg-accent/20 text-accent text-xs font-medium rounded">
+                                                                {
+                                                                    product.promotionTitle
+                                                                }
+                                                            </span>
+                                                        </>
+                                                    ) : (
+                                                        <p class="text-white font-bold text-lg">
+                                                            {formatPrice(
+                                                                product.price,
+                                                            )}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                                {product.stock === 0 && (
+                                                    <p class="mt-1 text-sm text-red-500">
+                                                        Agotado
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </a>
+                                    ),
+                                )}
                             </div>
                         ) : (
                             <div class="text-center py-16 bg-slate-900 border border-slate-800">

@@ -1,0 +1,19 @@
+---
+import AdminLayout from "../../../modules/admin/layouts/AdminLayout.astro";
+import HomeLayoutEditor from "../../../modules/admin/components/HomeLayoutEditor";
+---
+
+<AdminLayout title="Diseño de Inicio">
+    <div class="mb-8">
+        <h1 class="text-3xl font-display font-bold text-white mb-2">
+            Diseño de Página de Inicio
+        </h1>
+        <p class="text-slate-400">
+            Personaliza el orden y visibilidad de las secciones
+        </p>
+    </div>
+
+    <div class="bg-slate-900 border border-slate-800 rounded-lg p-6">
+        <HomeLayoutEditor client:only="react" />
+    </div>
+</AdminLayout>

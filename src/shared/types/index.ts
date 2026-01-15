@@ -32,6 +32,7 @@ export interface CartItem {
     price: number;
     size: string;
     quantity: number;
+    expiresAt?: number; // Reservation expiry timestamp (ms since epoch)
 }
 
 export interface Cart {

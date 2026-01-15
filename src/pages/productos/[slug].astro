@@ -8,6 +8,10 @@ import StoreLayout from "../../modules/store/layouts/StoreLayout.astro";
 import ProductSelector from "../../modules/store/components/ProductSelector";
 import { supabase } from "../../modules/auth";
 import { formatPrice } from "../../shared/utils";
+import {
+    getActivePromotions,
+    calculateDiscountedPrice,
+} from "../../shared/utils/promotions";
 import { ROUTES } from "../../config";
 import { STORE_CONFIG } from "../../modules/store/config";
 
@@ -29,6 +33,16 @@ const { data: variants } = await supabase
     .select("*")
     .eq("product_id", product.id)
     .order("size");
+
+// Calculate discounted price if promotion exists
+const promotions = await getActivePromotions();
+const discountInfo = calculateDiscountedPrice(
+    product.id,
+    product.price,
+    promotions,
+);
+const discountedPrice = discountInfo?.discountedPrice ?? null;
+const promotionTitle = discountInfo?.promotion.public_title ?? null;
 ---
 
 <StoreLayout title={product.name} description={product.description}>
@@ -103,9 +117,27 @@ const { data: variants } = await supabase
                     >
                         {product.name}
                     </h1>
-                    <p class="text-3xl font-bold text-white mb-6">
-                        {formatPrice(product.price)}
-                    </p>
+                    <div class="mb-6">
+                        {
+                            discountedPrice ? (
+                                <>
+                                    <p class="text-slate-400 line-through text-xl">
+                                        {formatPrice(product.price)}
+                                    </p>
+                                    <p class="text-accent font-bold text-3xl">
+                                        {formatPrice(discountedPrice)}
+                                    </p>
+                                    <span class="inline-block mt-2 px-3 py-1 bg-accent/20 text-accent text-sm font-medium rounded">
+                                        {promotionTitle}
+                                    </span>
+                                </>
+                            ) : (
+                                <p class="text-3xl font-bold text-white">
+                                    {formatPrice(product.price)}
+                                </p>
+                            )
+                        }
+                    </div>
                     <div class="prose prose-invert max-w-none mb-8">
                         <p class="text-slate-300 leading-relaxed text-lg">
                             {product.description}

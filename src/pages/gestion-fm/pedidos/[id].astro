@@ -57,7 +57,19 @@ const statusColors: Record<string, string> = {
 };
 ---
 
-<AdminLayout title={`Pedido ${order.tracking_number || order.id.slice(0, 8)}`}>
+<AdminLayout title={`Pedido #${order.order_number || ""}`}>
+    <!-- Inline Notification Container -->
+    <div
+        id="notification-area"
+        class="fixed top-4 right-4 z-50 transition-all duration-300 transform translate-x-full opacity-0"
+    >
+        <div
+            id="notification-content"
+            class="px-4 py-3 rounded shadow-lg text-white font-medium text-sm flex items-center gap-2"
+        >
+            <!-- Content injected via JS -->
+        </div>
+    </div>
     <div class="mb-6">
         <a
             href="/gestion-fm/pedidos"
@@ -88,7 +100,13 @@ const statusColors: Record<string, string> = {
                     <div>
                         <p class="text-slate-400 text-sm">Tracking</p>
                         <p class="font-mono text-xl text-white font-bold">
-                            {order.tracking_number || order.id.slice(0, 8)}
+                            #{order.order_number}
+                            <span class="text-sm font-normal text-slate-400"
+                                >({
+                                    order.tracking_number ||
+                                        order.id.slice(0, 8)
+                                })</span
+                            >
                         </p>
                     </div>
                     <span
@@ -265,6 +283,37 @@ const statusColors: Record<string, string> = {
 </AdminLayout>
 
 <script define:vars={{ orderId: id }}>
+    // Notification helper
+    /**
+     * @param {string} message
+     * @param {string} [type='success']
+     */
+    function showNotification(message, type = "success") {
+        const area = document.getElementById("notification-area");
+        const content = document.getElementById("notification-content");
+
+        if (!area || !content) return;
+
+        // Colors base on type
+        if (type === "error") {
+            content.className =
+                "px-4 py-3 rounded shadow-lg text-white font-medium text-sm flex items-center gap-2 bg-red-600";
+        } else {
+            content.className =
+                "px-4 py-3 rounded shadow-lg text-white font-medium text-sm flex items-center gap-2 bg-green-600";
+        }
+
+        content.textContent = message;
+
+        // Show
+        area.classList.remove("translate-x-full", "opacity-0");
+
+        // Hide after 3s
+        setTimeout(() => {
+            area.classList.add("translate-x-full", "opacity-0");
+        }, 3000);
+    }
+
     document
         .getElementById("updateStatus")
         ?.addEventListener("click", async () => {
@@ -279,7 +328,7 @@ const statusColors: Record<string, string> = {
             if (res.ok) {
                 window.location.reload();
             } else {
-                alert("Error al actualizar estado");
+                showNotification("Error al actualizar estado", "error");
             }
         });
 </script>

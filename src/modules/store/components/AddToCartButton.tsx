@@ -29,6 +29,7 @@ export default function AddToCartButton({
 }: AddToCartButtonProps) {
     const [state, setState] = useState<ButtonState>('idle');
     const [size, setSize] = useState(selectedSize || '');
+    const [stockWarning, setStockWarning] = useState<string | null>(null);
 
     // Get available sizes and stock from variants if available
     const availableSizes = product.variants?.length
@@ -52,7 +53,8 @@ export default function AddToCartButton({
 
         // Check specific stock
         if (getStockForSize(size) < quantity) {
-            alert(`Solo quedan ${getStockForSize(size)} unidades de la talla ${size}`);
+            setStockWarning(`Solo quedan ${getStockForSize(size)} unidades de la talla ${size}`);
+            setTimeout(() => setStockWarning(null), 3000);
             return;
         }
 
@@ -96,6 +98,12 @@ export default function AddToCartButton({
 
     return (
         <div className={className}>
+            {/* Stock warning */}
+            {stockWarning && (
+                <div className="mb-4 bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-2 rounded text-sm">
+                    {stockWarning}
+                </div>
+            )}
             {/* Size selector if not provided */}
             {!selectedSize && (
                 <div className="mb-6">

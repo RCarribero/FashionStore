@@ -25,11 +25,12 @@ interface CartItem {
 
 export const POST: APIRoute = async ({ request }) => {
     try {
-        const { items, customer, userId, couponCode } = await request.json() as {
+        const { items, customer, userId, couponCode, cartSessionId } = await request.json() as {
             items: CartItem[],
             customer: any,
             userId?: string,
-            couponCode?: string
+            couponCode?: string,
+            cartSessionId?: string
         };
 
         if (!items || items.length === 0) {
@@ -196,7 +197,8 @@ export const POST: APIRoute = async ({ request }) => {
             metadata: {
                 userId: userId || '',
                 isFirstPurchase: isFirstPurchase ? 'true' : 'false',
-                couponCode: appliedCouponCode || ''
+                couponCode: appliedCouponCode || '',
+                cartSessionId: cartSessionId || ''
             },
             customer_email: customer?.email,
         });

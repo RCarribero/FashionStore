@@ -5,8 +5,9 @@
 import StoreLayout from "../layouts/StoreLayout.astro";
 import { supabase } from "../../auth";
 import { formatPrice } from "../../../shared/utils";
+import { enrichProductsWithDiscounts, type ProductWithDiscount } from "../../../shared/utils/promotions";
 import { ROUTES } from "../../../config";
-import type { Product, Category } from "../../../shared/types";
+import type { Category } from "../../../shared/types";
 
 // Get filter params
 const minPrice = Astro.url.searchParams.get("minPrice");
@@ -20,23 +21,26 @@ const { data: rawProducts } = await supabase
     .order("created_at", { ascending: false });
 
 // Filter products
-let products = rawProducts || [];
+let filteredProducts = rawProducts || [];
 
 if (minPrice) {
-    products = products.filter((p) => p.price >= Number(minPrice) * 100);
+    filteredProducts = filteredProducts.filter((p) => p.price >= Number(minPrice) * 100);
 }
 
 if (maxPrice) {
-    products = products.filter((p) => p.price <= Number(maxPrice) * 100);
+    filteredProducts = filteredProducts.filter((p) => p.price <= Number(maxPrice) * 100);
 }
 
 if (selectedSizes.length > 0) {
-    products = products.filter((p) =>
+    filteredProducts = filteredProducts.filter((p) =>
         p.variants?.some(
             (v: any) => selectedSizes.includes(v.size) && v.stock > 0,
         ),
     );
 }
+
+// Enrich with discount info
+const products = await enrichProductsWithDiscounts(filteredProducts);
 
 // Get all categories for filter
 const { data: categories } = await supabase
@@ -193,7 +197,7 @@ const hasFilters = minPrice || maxPrice || selectedSizes.length > 0;
                     {
                         products && products.length > 0 ? (
                             <div class="grid grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
-                                {products.map((product: Product, index: number) => (
+                                {products.map((product: ProductWithDiscount) => (
                                     <a
                                         href={ROUTES.PRODUCT_DETAIL(product.slug)}
                                         class="group bg-slate-900 border border-slate-800 hover:border-accent transition-all duration-300"
@@ -221,10 +225,10 @@ const hasFilters = minPrice || maxPrice || selectedSizes.length > 0;
                                                 </span>
                                             </div>
 
-                                            {/* Sale badge for some products */}
-                                            {index % 4 === 0 && (
+                                            {/* Promotion badge */}
+                                            {product.discountedPrice && (
                                                 <span class="absolute top-3 left-3 px-2 py-1 bg-accent text-white text-xs font-bold uppercase">
-                                                    -20%
+                                                    {product.promotionTitle || 'Oferta'}
                                                 </span>
                                             )}
                                             
@@ -241,13 +245,19 @@ const hasFilters = minPrice || maxPrice || selectedSizes.length > 0;
                                             <h3 class="font-semibold text-white group-hover:text-accent transition-colors line-clamp-1">
                                                 {product.name}
                                             </h3>
-                                            <div class="mt-2 flex items-center gap-2">
-                                                <span class="font-bold text-white">
-                                                    {formatPrice(product.price)}
-                                                </span>
-                                                {index % 4 === 0 && (
-                                                    <span class="text-sm text-slate-500 line-through">
-                                                        {formatPrice(product.price * 1.25)}
+                                            <div class="mt-2">
+                                                {product.discountedPrice ? (
+                                                    <>
+                                                        <span class="text-sm text-slate-500 line-through mr-2">
+                                                            {formatPrice(product.price)}
+                                                        </span>
+                                                        <span class="font-bold text-accent">
+                                                            {formatPrice(product.discountedPrice)}
+                                                        </span>
+                                                    </>
+                                                ) : (
+                                                    <span class="font-bold text-white">
+                                                        {formatPrice(product.price)}
                                                     </span>
                                                 )}
                                             </div>
