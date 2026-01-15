@@ -60,10 +60,12 @@ export default function OrderSummary() {
         discountLabel = appliedCoupon.is_automatic
             ? `Promocion (${appliedCoupon.public_title})`
             : `Cupon (${appliedCoupon.code})`;
-    } else if (isFirstPurchase) {
-        discountAmount = Math.round(subtotalWithShipping * 0.20);
-        discountLabel = '20% OFF - Primera Compra';
     }
+    // First Purchase discount DISABLED
+    // else if (isFirstPurchase) {
+    //     discountAmount = Math.round(subtotalWithShipping * 0.20);
+    //     discountLabel = '20% OFF - Primera Compra';
+    // }
 
     const total = subtotalWithShipping - discountAmount;
 
@@ -75,14 +77,19 @@ export default function OrderSummary() {
         <div className="bg-slate-900 rounded-lg p-6 border border-slate-800">
             <h2 className="text-lg font-bold text-white mb-4 uppercase tracking-wider">Resumen del Pedido</h2>
 
-            {/* First Purchase Banner - Only show if using first purchase discount */}
+            {/* First Purchase Notification - Only show code info, don't auto-apply */}
             {isFirstPurchase && !appliedCoupon && !checkingDiscount && (
-                <div className="mb-4 p-3 bg-green-500/10 border border-green-500/30 text-green-400 text-sm">
+                <div className="mb-4 p-3 bg-amber-500/10 border border-amber-500/30 text-amber-400 text-sm">
                     <div className="flex items-center gap-2">
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
                         </svg>
-                        <span className="font-medium">20% OFF - Primera Compra</span>
+                        <div>
+                            <span className="font-medium">Primera compra? </span>
+                            <span className="text-amber-300">Usa el codigo </span>
+                            <span className="font-mono font-bold bg-amber-500/20 px-1.5 py-0.5 rounded">BIENVENIDO</span>
+                            <span className="text-amber-300"> para un 20% de descuento</span>
+                        </div>
                     </div>
                 </div>
             )}

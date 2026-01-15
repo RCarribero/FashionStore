@@ -166,16 +166,16 @@ export const POST: APIRoute = async ({ request }) => {
             }
         }
 
-        // If no coupon applied, check for First Purchase Discount
-        if (isFirstPurchase && !discounts) {
-            const coupon = await stripe.coupons.create({
-                percent_off: 20,
-                duration: 'once',
-                name: '20% OFF - Primera Compra',
-            });
-
-            discounts = [{ coupon: coupon.id }];
-        }
+        // First Purchase Discount DISABLED
+        // To re-enable, uncomment the code below:
+        // if (isFirstPurchase && !discounts) {
+        //     const coupon = await stripe.coupons.create({
+        //         percent_off: 20,
+        //         duration: 'once',
+        //         name: '20% OFF - Primera Compra',
+        //     });
+        //     discounts = [{ coupon: coupon.id }];
+        // }
 
         const session = await stripe.checkout.sessions.create({
             line_items: lineItems,

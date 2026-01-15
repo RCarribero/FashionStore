@@ -57,22 +57,56 @@ export const POST: APIRoute = async ({ request }) => {
             }
         }
 
-        // 2. Handle Upserts (Reorder, Visibility, Config)
-        const updates = sections.map((section: any, index: number) => ({
-            id: section.id,
-            key: section.key,
-            label: section.label,
-            order_index: index,
-            is_visible: section.is_visible,
-            component_config: section.component_config || {}, // Save config
-            updated_at: new Date().toISOString()
-        }));
+        // 2. Handle Updates and Inserts separately
+        const newSections = sections.filter((s: any) => !s.id);
+        const existingSections = sections.filter((s: any) => s.id);
 
-        const { error } = await supabase
-            .from('home_sections')
-            .upsert(updates);
+        // Insert new sections (without id - let DB generate it)
+        if (newSections.length > 0) {
+            const inserts = newSections.map((section: any, idx: number) => {
+                // Find the correct order_index based on original position
+                const originalIndex = sections.findIndex((s: any) => s === section);
+                return {
+                    key: section.key,
+                    label: section.label,
+                    order_index: section.order_index ?? originalIndex,
+                    is_visible: section.is_visible,
+                    component_config: section.component_config || {},
+                    updated_at: new Date().toISOString()
+                };
+            });
 
-        if (error) throw error;
+            const { error: insertError } = await supabase
+                .from('home_sections')
+                .insert(inserts);
+
+            if (insertError) {
+                console.error('Insert error:', insertError);
+                throw insertError;
+            }
+        }
+
+        // Update existing sections
+        if (existingSections.length > 0) {
+            const updates = existingSections.map((section: any) => ({
+                id: section.id,
+                key: section.key,
+                label: section.label,
+                order_index: section.order_index,
+                is_visible: section.is_visible,
+                component_config: section.component_config || {},
+                updated_at: new Date().toISOString()
+            }));
+
+            const { error: updateError } = await supabase
+                .from('home_sections')
+                .upsert(updates);
+
+            if (updateError) {
+                console.error('Update error:', updateError);
+                throw updateError;
+            }
+        }
 
         return new Response(JSON.stringify({ success: true, message: 'Layout updated' }), {
             status: 200

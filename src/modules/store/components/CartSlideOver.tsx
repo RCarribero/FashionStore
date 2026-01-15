@@ -325,14 +325,32 @@ function CartFooter({ cart, cartTotal, onClose }: { cart: { items: CartItem[] };
                 quantity: item.quantity
             }));
 
-            const res = await fetch('/api/coupons/validate', {
+            // Get userId for first-purchase coupon validation
+            let userId;
+            try {
+                const { getCurrentUser } = await import('../../auth/services/auth-client.service');
+                const user = await getCurrentUser();
+                userId = user?.id;
+            } catch (e) {
+                // User not logged in, continue without userId
+            }
+
+            // Parse multiple codes (comma or space separated)
+            const codes = couponCode
+                .split(/[,\s]+/)
+                .map(c => c.trim())
+                .filter(c => c.length > 0);
+
+            // Use validate-best if multiple codes, otherwise use regular validate
+            const endpoint = codes.length > 1 ? '/api/coupons/validate-best' : '/api/coupons/validate';
+            const bodyData = codes.length > 1
+                ? { codes, purchaseAmount: cartTotal, cartItems, userId }
+                : { code: codes[0], purchaseAmount: cartTotal, cartItems, userId };
+
+            const res = await fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    code: couponCode.trim(),
-                    purchaseAmount: cartTotal,
-                    cartItems
-                })
+                body: JSON.stringify(bodyData)
             });
 
             const data = await res.json();
@@ -346,6 +364,11 @@ function CartFooter({ cart, cartTotal, onClose }: { cart: { items: CartItem[] };
                     id: data.coupon.id
                 });
                 setCouponCodeLocal('');
+                // If multiple codes were entered, show which one was applied
+                if (codes.length > 1) {
+                    setCouponError(`Aplicado el mejor cupon: ${data.coupon.code}`);
+                    setTimeout(() => setCouponError(''), 3000);
+                }
             } else {
                 setCouponError(data.error || 'Cupon no valido');
                 clearCoupon();
@@ -377,22 +400,25 @@ function CartFooter({ cart, cartTotal, onClose }: { cart: { items: CartItem[] };
             {/* Coupon Input */}
             <div className="mb-4">
                 {!appliedCoupon ? (
-                    <div className="flex gap-2">
-                        <input
-                            type="text"
-                            value={couponCode}
-                            onChange={(e) => setCouponCodeLocal(e.target.value.toUpperCase())}
-                            placeholder="Codigo de cupon"
-                            className="flex-1 px-3 py-2 border border-slate-200 text-sm font-mono uppercase text-black"
-                        />
-                        <button
-                            type="button"
-                            onClick={handleApplyCoupon}
-                            disabled={couponLoading || !couponCode.trim()}
-                            className="px-4 py-2 bg-black text-white text-sm font-medium hover:bg-slate-800 transition-colors disabled:opacity-50"
-                        >
-                            {couponLoading ? '...' : 'Aplicar'}
-                        </button>
+                    <div className="space-y-2">
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                value={couponCode}
+                                onChange={(e) => setCouponCodeLocal(e.target.value.toUpperCase())}
+                                placeholder="Codigo(s) de cupon"
+                                className="flex-1 px-3 py-2 border border-slate-200 text-sm font-mono uppercase text-black"
+                            />
+                            <button
+                                type="button"
+                                onClick={handleApplyCoupon}
+                                disabled={couponLoading || !couponCode.trim()}
+                                className="px-4 py-2 bg-black text-white text-sm font-medium hover:bg-slate-800 transition-colors disabled:opacity-50"
+                            >
+                                {couponLoading ? '...' : 'Aplicar'}
+                            </button>
+                        </div>
+                        <p className="text-xs text-slate-400">Puedes introducir varios codigos separados por coma</p>
                     </div>
                 ) : (
                     <div className={`flex items-center justify-between border px-3 py-2 rounded ${appliedCoupon.is_automatic ? 'bg-blue-50 border-blue-200' : 'bg-green-50 border-green-200'}`}>

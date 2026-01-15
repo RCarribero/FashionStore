@@ -146,7 +146,8 @@ export const POST: APIRoute = async ({ request }) => {
                             name: product.name,
                             size: product.metadata.size,
                             quantity: item.quantity,
-                            price: item.amount_total
+                            price: item.amount_total,
+                            image: product.images?.[0] || ''
                         };
                     });
 

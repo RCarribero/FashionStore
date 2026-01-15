@@ -20,6 +20,7 @@ interface OrderItem {
     size: string;
     quantity: number;
     price: number;
+    image?: string;
 }
 
 interface Order {
@@ -105,7 +106,43 @@ export default function ProfilePage() {
                 .order('created_at', { ascending: false });
 
             if (ordersData) {
-                setOrders(ordersData);
+                // Get all unique product IDs from orders
+                const productIds = new Set<string>();
+                ordersData.forEach(order => {
+                    order.items?.forEach((item: OrderItem) => {
+                        if (!item.image && item.productId) {
+                            productIds.add(item.productId);
+                        }
+                    });
+                });
+
+                // Fetch product images if needed
+                let productImages: Record<string, string> = {};
+                if (productIds.size > 0) {
+                    const { data: products } = await supabase
+                        .from('products')
+                        .select('id, images')
+                        .in('id', Array.from(productIds));
+
+                    if (products) {
+                        products.forEach(p => {
+                            if (p.images && p.images.length > 0) {
+                                productImages[p.id] = p.images[0];
+                            }
+                        });
+                    }
+                }
+
+                // Enrich orders with product images
+                const enrichedOrders = ordersData.map(order => ({
+                    ...order,
+                    items: order.items?.map((item: OrderItem) => ({
+                        ...item,
+                        image: item.image || productImages[item.productId] || ''
+                    }))
+                }));
+
+                setOrders(enrichedOrders);
             }
 
             // Load addresses
@@ -468,13 +505,36 @@ export default function ProfilePage() {
                                                             </div>
                                                         </div>
 
-                                                        <div className="space-y-2 mb-4">
+                                                        <div className="space-y-3 mb-4">
                                                             {order.items.map((item, idx) => (
-                                                                <div key={idx} className="flex justify-between text-sm">
-                                                                    <span className="text-slate-300">
-                                                                        {item.name} <span className="text-slate-500">(Talla {item.size})</span> x{item.quantity}
-                                                                    </span>
-                                                                    <span className="text-white">
+                                                                <div key={idx} className="flex gap-3 items-center">
+                                                                    {/* Product Image */}
+                                                                    <div className="w-14 h-14 flex-shrink-0 bg-slate-800 rounded overflow-hidden">
+                                                                        {item.image ? (
+                                                                            <img
+                                                                                src={item.image}
+                                                                                alt={item.name}
+                                                                                className="w-full h-full object-cover"
+                                                                            />
+                                                                        ) : (
+                                                                            <div className="w-full h-full flex items-center justify-center text-slate-600">
+                                                                                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14" />
+                                                                                </svg>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                    {/* Product Details */}
+                                                                    <div className="flex-1 min-w-0">
+                                                                        <p className="text-slate-300 text-sm font-medium truncate">
+                                                                            {item.name}
+                                                                        </p>
+                                                                        <p className="text-slate-500 text-xs">
+                                                                            Talla {item.size} x{item.quantity}
+                                                                        </p>
+                                                                    </div>
+                                                                    {/* Price */}
+                                                                    <span className="text-white text-sm font-medium">
                                                                         {formatPrice(item.price)}
                                                                     </span>
                                                                 </div>

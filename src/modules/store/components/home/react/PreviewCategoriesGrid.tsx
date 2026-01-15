@@ -3,6 +3,15 @@ import { useEffect, useState } from 'react';
 import { ROUTES } from "../../../../../config";
 import { getCatalogCategories } from "../../../services/catalog.service";
 
+// Fallback images for categories that don't have an image set in DB
+const fallbackImages: Record<string, string> = {
+    'zapatillas': 'https://res.cloudinary.com/dzaka0idb/image/upload/v1768292616/fashionstore/categories/zapatillas.webp',
+    'sudaderas': 'https://res.cloudinary.com/dzaka0idb/image/upload/v1768292618/fashionstore/categories/sudaderas.webp',
+    'pantalones': 'https://res.cloudinary.com/dzaka0idb/image/upload/v1768292619/fashionstore/categories/pantalones.webp',
+    'camisetas': 'https://res.cloudinary.com/dzaka0idb/image/upload/v1768292621/fashionstore/categories/camisetas.webp',
+    'chaquetas': 'https://res.cloudinary.com/dzaka0idb/image/upload/v1768292621/fashionstore/categories/chaquetas.webp'
+};
+
 export const PreviewCategoriesGrid = () => {
     const [categories, setCategories] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -14,7 +23,7 @@ export const PreviewCategoriesGrid = () => {
         });
     }, []);
 
-    if (loading) return <div className="h-96 flex items-center justify-center bg-slate-100">Cargando categorías...</div>;
+    if (loading) return <div className="h-96 flex items-center justify-center bg-slate-100">Cargando categorias...</div>;
 
     return (
         <section className="py-16 lg:py-24 bg-white pointer-events-none">
@@ -32,14 +41,7 @@ export const PreviewCategoriesGrid = () => {
                 {/* Categories Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
                     {categories.map((category, index) => {
-                        const categoryImages: any = {
-                            'zapatillas': 'https://res.cloudinary.com/dzaka0idb/image/upload/v1768292616/fashionstore/categories/zapatillas.webp',
-                            'sudaderas': 'https://res.cloudinary.com/dzaka0idb/image/upload/v1768292618/fashionstore/categories/sudaderas.webp',
-                            'pantalones': 'https://res.cloudinary.com/dzaka0idb/image/upload/v1768292619/fashionstore/categories/pantalones.webp',
-                            'camisetas': 'https://res.cloudinary.com/dzaka0idb/image/upload/v1768292621/fashionstore/categories/camisetas.webp',
-                            'chaquetas': 'https://res.cloudinary.com/dzaka0idb/image/upload/v1768292621/fashionstore/categories/chaquetas.webp'
-                        };
-                        const categoryImage = categoryImages[category.slug];
+                        const categoryImage = category.image || fallbackImages[category.slug];
 
                         return (
                             <div

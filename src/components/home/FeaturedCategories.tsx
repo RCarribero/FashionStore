@@ -4,21 +4,23 @@ import { motion } from 'framer-motion';
 interface Category {
     slug: string;
     name: string;
+    image?: string;
 }
 
 interface FeaturedCategoriesProps {
     categories: Category[];
 }
 
-export const FeaturedCategories: React.FC<FeaturedCategoriesProps> = ({ categories }) => {
-    const categoryImages: Record<string, string> = {
-        'zapatillas': 'https://res.cloudinary.com/dzaka0idb/image/upload/v1768292616/fashionstore/categories/zapatillas.webp',
-        'sudaderas': 'https://res.cloudinary.com/dzaka0idb/image/upload/v1768292618/fashionstore/categories/sudaderas.webp',
-        'pantalones': 'https://res.cloudinary.com/dzaka0idb/image/upload/v1768292619/fashionstore/categories/pantalones.webp',
-        'camisetas': 'https://res.cloudinary.com/dzaka0idb/image/upload/v1768292621/fashionstore/categories/camisetas.webp',
-        'chaquetas': 'https://res.cloudinary.com/dzaka0idb/image/upload/v1768292621/fashionstore/categories/chaquetas.webp'
-    };
+// Fallback images for categories that don't have an image set in DB
+const fallbackImages: Record<string, string> = {
+    'zapatillas': 'https://res.cloudinary.com/dzaka0idb/image/upload/v1768292616/fashionstore/categories/zapatillas.webp',
+    'sudaderas': 'https://res.cloudinary.com/dzaka0idb/image/upload/v1768292618/fashionstore/categories/sudaderas.webp',
+    'pantalones': 'https://res.cloudinary.com/dzaka0idb/image/upload/v1768292619/fashionstore/categories/pantalones.webp',
+    'camisetas': 'https://res.cloudinary.com/dzaka0idb/image/upload/v1768292621/fashionstore/categories/camisetas.webp',
+    'chaquetas': 'https://res.cloudinary.com/dzaka0idb/image/upload/v1768292621/fashionstore/categories/chaquetas.webp'
+};
 
+export const FeaturedCategories: React.FC<FeaturedCategoriesProps> = ({ categories }) => {
     return (
         <section className="py-16 lg:py-24 bg-white">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -30,7 +32,7 @@ export const FeaturedCategories: React.FC<FeaturedCategoriesProps> = ({ categori
                         viewport={{ once: true }}
                         className="font-display text-4xl lg:text-5xl font-bold text-black mb-4"
                     >
-                        CATEGORÍAS
+                        CATEGORIAS
                     </motion.h2>
                     <motion.p
                         initial={{ opacity: 0 }}
@@ -38,15 +40,16 @@ export const FeaturedCategories: React.FC<FeaturedCategoriesProps> = ({ categori
                         viewport={{ once: true }}
                         className="text-slate-600 text-lg max-w-2xl mx-auto"
                     >
-                        Explora nuestra selección de ropa premium por categoría
+                        Explora nuestra seleccion de ropa premium por categoria
                     </motion.p>
                 </div>
 
                 {/* Categories Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
                     {categories?.map((category, index) => {
-                        const categoryImage = categoryImages[category.slug];
                         const isLarge = index === 0;
+                        // Use DB image first, then fallback
+                        const categoryImage = category.image || fallbackImages[category.slug];
 
                         return (
                             <motion.a

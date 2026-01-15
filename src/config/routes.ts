@@ -14,7 +14,7 @@ export const ROUTES = {
 
     // Auth Routes
     LOGIN: '/login',
-    REGISTER: '/register',
+    REGISTER: '/registro',
     PROFILE: '/perfil',
     AUTH: {
         LOGIN: '/admin/login',
@@ -23,14 +23,18 @@ export const ROUTES = {
 
     // Admin Routes
     ADMIN: {
-        DASHBOARD: '/admin',
+        DASHBOARD: '/gestion-fm',
         PRODUCTS: {
-            LIST: '/admin/productos',
-            NEW: '/admin/productos/nuevo',
-            EDIT: (id: string) => `/admin/productos/${id}`,
+            LIST: '/gestion-fm/productos',
+            NEW: '/gestion-fm/productos/nuevo',
+            EDIT: (id: string) => `/gestion-fm/productos/${id}`,
         },
-        CATEGORIES: '/admin/categorias',
-        ORDERS: '/admin/pedidos',
+        CATEGORIES: '/gestion-fm/categorias',
+        ORDERS: '/gestion-fm/pedidos',
+        USERS: '/gestion-fm/usuarios',
+        COUPONS: '/gestion-fm/cupones',
+        PROMOTIONS: '/gestion-fm/promociones',
+        DESIGN: '/gestion-fm/diseno',
     },
 
     // API Routes
@@ -47,7 +51,7 @@ export const ROUTES = {
 // Navigation items for store header
 export const STORE_NAV = [
     { name: 'Inicio', href: ROUTES.HOME },
-    { name: 'Todo', href: ROUTES.PRODUCTS },
+    { name: 'Productos', href: ROUTES.PRODUCTS },
     { name: 'Ofertas', href: ROUTES.SALE },
     { name: 'Outlet', href: ROUTES.OUTLET },
     { name: 'Zapatillas', href: ROUTES.CATEGORY('zapatillas') },
@@ -62,6 +66,10 @@ export const ADMIN_NAV = [
     { name: 'Productos', href: ROUTES.ADMIN.PRODUCTS.LIST, icon: 'box' },
     { name: 'Categorias', href: ROUTES.ADMIN.CATEGORIES, icon: 'folder' },
     { name: 'Pedidos', href: ROUTES.ADMIN.ORDERS, icon: 'shopping-bag' },
+    { name: 'Usuarios', href: ROUTES.ADMIN.USERS, icon: 'users' },
+    { name: 'Cupones', href: ROUTES.ADMIN.COUPONS, icon: 'ticket' },
+    { name: 'Promociones', href: ROUTES.ADMIN.PROMOTIONS, icon: 'tag' },
+    { name: 'Diseño Inicio', href: ROUTES.ADMIN.DESIGN, icon: 'layout' },
 ];
 
 export type Routes = typeof ROUTES;

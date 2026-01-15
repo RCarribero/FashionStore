@@ -1,29 +1,51 @@
 /**
  * ImageUploader - React Island Component
  * Drag and drop image uploader for admin product forms
+ * Uploads via server-side API endpoint
  */
 
-import { useState, useCallback, useRef } from 'react';
-import { supabase } from '../../auth';
-import { ADMIN_CONFIG } from '../config';
+import { useState, useCallback, useRef, useEffect } from 'react';
 
 interface UploadedImage {
     url: string;
     path: string;
 }
 
-export default function ImageUploader() {
+interface ImageUploaderProps {
+    initialImages?: string[];
+    folder?: string;
+    inputId?: string;
+}
+
+export default function ImageUploader({
+    initialImages = [],
+    folder = 'fashionstore/products',
+    inputId = 'images'
+}: ImageUploaderProps) {
     const [images, setImages] = useState<UploadedImage[]>([]);
     const [uploading, setUploading] = useState(false);
     const [dragActive, setDragActive] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const initialized = useRef(false);
+
+    // Initialize with existing images
+    useEffect(() => {
+        if (!initialized.current && initialImages.length > 0) {
+            const existingImages = initialImages.map(url => ({ url, path: '' }));
+            setImages(existingImages);
+            initialized.current = true;
+        }
+    }, [initialImages]);
 
     const updateHiddenInput = useCallback((newImages: UploadedImage[]) => {
         const input = document.getElementById('images-input') as HTMLInputElement;
-        if (input) {
-            input.value = JSON.stringify(newImages.map(img => img.url));
-        }
-    }, []);
+        const textarea = document.getElementById(inputId) as HTMLTextAreaElement;
+
+        const urls = newImages.map(img => img.url);
+
+        if (input) input.value = JSON.stringify(urls);
+        if (textarea) textarea.value = urls.join('\n');
+    }, [inputId]);
 
     const uploadFiles = useCallback(async (files: FileList) => {
         setUploading(true);
@@ -32,25 +54,30 @@ export default function ImageUploader() {
         for (const file of Array.from(files)) {
             if (!file.type.startsWith('image/')) continue;
 
-            const ext = file.name.split('.').pop();
-            const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`;
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('folder', folder);
 
-            const { data, error } = await supabase.storage
-                .from(ADMIN_CONFIG.products.imageBucket)
-                .upload(fileName, file, {
-                    cacheControl: '3600',
-                    upsert: false,
+            try {
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData,
                 });
 
-            if (data && !error) {
-                const { data: urlData } = supabase.storage
-                    .from(ADMIN_CONFIG.products.imageBucket)
-                    .getPublicUrl(fileName);
+                const data = await response.json();
 
-                newImages.push({
-                    url: urlData.publicUrl,
-                    path: fileName,
-                });
+                if (data.url) {
+                    newImages.push({
+                        url: data.url,
+                        path: data.public_id || '',
+                    });
+                } else {
+                    console.error('Upload error:', data);
+                    alert(`Error subiendo imagen: ${data.error || 'Desconocido'}`);
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                alert('Error de red al subir imagen');
             }
         }
 
@@ -58,7 +85,7 @@ export default function ImageUploader() {
         setImages(updated);
         updateHiddenInput(updated);
         setUploading(false);
-    }, [images, updateHiddenInput]);
+    }, [images, updateHiddenInput, folder]);
 
     const handleDrag = useCallback((e: React.DragEvent) => {
         e.preventDefault();
@@ -86,13 +113,7 @@ export default function ImageUploader() {
         }
     }, [uploadFiles]);
 
-    const removeImage = useCallback(async (index: number) => {
-        const imageToRemove = images[index];
-
-        await supabase.storage
-            .from(ADMIN_CONFIG.products.imageBucket)
-            .remove([imageToRemove.path]);
-
+    const removeImage = useCallback((index: number) => {
         const updated = images.filter((_, i) => i !== index);
         setImages(updated);
         updateHiddenInput(updated);
@@ -107,10 +128,12 @@ export default function ImageUploader() {
                 onDrop={handleDrop}
                 onClick={() => fileInputRef.current?.click()}
                 className={`
-          border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
-          ${dragActive ? 'border-navy-500 bg-navy-50' : 'border-charcoal-200 hover:border-charcoal-300'}
-          ${uploading ? 'opacity-50 pointer-events-none' : ''}
-        `}
+                    border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-all
+                    ${dragActive
+                        ? 'border-red-500 bg-red-500/10'
+                        : 'border-slate-600 hover:border-slate-500 hover:bg-slate-800/50'}
+                    ${uploading ? 'opacity-50 pointer-events-none' : ''}
+                `}
             >
                 <input
                     ref={fileInputRef}
@@ -121,32 +144,41 @@ export default function ImageUploader() {
                     className="hidden"
                 />
 
-                <svg className="mx-auto h-12 w-12 text-charcoal-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                <svg className="mx-auto h-10 w-10 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
 
-                <p className="mt-4 text-sm text-charcoal-600">
-                    {uploading ? 'Subiendo imagenes...' : (
+                <p className="mt-3 text-sm text-slate-400">
+                    {uploading ? (
+                        <span className="text-red-400">Subiendo imagen...</span>
+                    ) : (
                         <>
-                            <span className="font-medium text-navy-600">Arrastra imagenes aqui</span>
+                            <span className="font-medium text-white">Arrastra imagenes aqui</span>
                             {' '}o haz clic para seleccionar
                         </>
                     )}
                 </p>
-                <p className="mt-1 text-xs text-charcoal-400">PNG, JPG, WEBP hasta 10MB</p>
+                <p className="mt-1 text-xs text-slate-500">PNG, JPG, WEBP</p>
             </div>
 
             {images.length > 0 && (
-                <div className="grid grid-cols-4 gap-4">
+                <div className="grid grid-cols-4 gap-3">
                     {images.map((image, index) => (
-                        <div key={image.path} className="relative group aspect-square">
-                            <img src={image.url} alt={`Imagen ${index + 1}`} className="w-full h-full object-cover rounded" />
+                        <div key={image.url} className="relative group aspect-square bg-slate-800 rounded overflow-hidden">
+                            <img
+                                src={image.url}
+                                alt={`Imagen ${index + 1}`}
+                                className="w-full h-full object-cover"
+                            />
                             <button
                                 type="button"
-                                onClick={() => removeImage(index)}
-                                className="absolute top-1 right-1 p-1 bg-red-600 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    removeImage(index);
+                                }}
+                                className="absolute top-1 right-1 p-1.5 bg-red-600 hover:bg-red-700 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity"
                             >
-                                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                             </button>

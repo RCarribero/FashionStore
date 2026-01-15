@@ -1,3 +1,5 @@
+export const prerender = false;
+
 import type { APIRoute } from 'astro';
 import { createClient } from '@supabase/supabase-js';
 import { sendEmail } from '../../../lib/email';
@@ -6,16 +8,7 @@ const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL || process.env.PUBLIC_SU
 const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || process.env.PUBLIC_SUPABASE_ANON_KEY;
 const supabaseServiceKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-// Use Service Role if available for admin tasks (like checking all emails), 
-// but for this public endpoint, anon key is fine as we have RLS policies allowing insert.
-// However, to check for duplicates without exposing email list to public, 
-// we might need Service Role or proper RLS. 
-// The RLS policy I wrote: "Enable insert for everyone" allows insert.
-// "Enable all access for service role".
-// Checking "if (existing)" with anon key might fail if RLS doesn't allow SELECT.
-// Let's use Service Role to be safe for the "check existing" part to avoid information leakage RLS issues,
-// or just handle the unique constraint error from insert.
-// Actually, using Service Role is safer for robust backend logic.
+// ... (comments) ...
 
 const supabase = createClient(supabaseUrl || '', supabaseServiceKey || supabaseAnonKey || '');
 
@@ -85,10 +78,10 @@ export const POST: APIRoute = async ({ request }) => {
             <h1 class="title">¡Bienvenido al Club!</h1>
             <p class="text">Gracias por unirte a nuestra comunidad exclusiva. Ahora serás el primero en enterarte de:</p>
             <ul style="text-align: left; max-width: 300px; margin: 0 auto 30px auto; color: #666;">
-                <li>🚀 Nuevos lanzamientos y colecciones</li>
-                <li>💎 Ofertas exclusivas para miembros</li>
-                <li>🎟️ Acceso anticipado a rebajas</li>
-                <li>🎁 Promociones especiales y cupones</li>
+                <li>Nuevos lanzamientos y colecciones</li>
+                <li>Ofertas exclusivas para miembros</li>
+                <li>Acceso anticipado a rebajas</li>
+                <li>Promociones especiales y cupones</li>
             </ul>
             <p class="text">Tu estilo empieza aquí.</p>
             <a href="${import.meta.env.PUBLIC_SITE_URL}/productos" class="button">Ver Novedades</a>
@@ -104,7 +97,7 @@ export const POST: APIRoute = async ({ request }) => {
 
         await sendEmail({
             to: email,
-            subject: '¡Bienvenido a FashionMarket Club! 🚀',
+            subject: '¡Bienvenido a FashionMarket Club!',
             html: welcomeHtml
         });
 
