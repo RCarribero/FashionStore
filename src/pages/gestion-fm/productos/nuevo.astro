@@ -19,6 +19,18 @@ const { data: categories } = await supabase
 ---
 
 <AdminLayout title="Nuevo Producto">
+    <!-- Inline Notification Container -->
+    <div
+        id="notification-area"
+        class="fixed top-4 right-4 z-50 transition-all duration-300 transform translate-x-full opacity-0"
+    >
+        <div
+            id="notification-content"
+            class="px-4 py-3 rounded shadow-lg text-white font-medium text-sm flex items-center gap-2"
+        >
+            <!-- Content injected via JS -->
+        </div>
+    </div>
     <div class="max-w-2xl">
         <form id="productForm" class="space-y-6">
             <div class="bg-slate-900 border border-slate-800 p-6 space-y-4">
@@ -155,13 +167,44 @@ const { data: categories } = await supabase
 </AdminLayout>
 
 <script>
-    const form = document.getElementById("productForm") as HTMLFormElement;
+    const form = document.getElementById("productForm");
+
+    // Notification helper
+    /**
+     * @param {string} message
+     * @param {string} [type='success']
+     */
+    function showNotification(message, type = "success") {
+        const area = document.getElementById("notification-area");
+        const content = document.getElementById("notification-content");
+
+        if (!area || !content) return;
+
+        // Colors base on type
+        if (type === "error") {
+            content.className =
+                "px-4 py-3 rounded shadow-lg text-white font-medium text-sm flex items-center gap-2 bg-red-600";
+        } else {
+            content.className =
+                "px-4 py-3 rounded shadow-lg text-white font-medium text-sm flex items-center gap-2 bg-green-600";
+        }
+
+        content.textContent = message;
+
+        // Show
+        area.classList.remove("translate-x-full", "opacity-0");
+
+        // Hide after 3s
+        setTimeout(() => {
+            area.classList.add("translate-x-full", "opacity-0");
+        }, 3000);
+    }
 
     // Auto-generate slug
     document.getElementById("name")?.addEventListener("input", (e) => {
-        const slugInput = document.getElementById("slug") as HTMLInputElement;
+        const slugInput = document.getElementById("slug");
         if (!slugInput.dataset.manual) {
-            slugInput.value = (e.target as HTMLInputElement).value
+            slugInput.value = e.target.value
                 .toLowerCase()
                 .normalize("NFD")
                 .replace(/[\u0300-\u036f]/g, "")
@@ -170,39 +213,29 @@ const { data: categories } = await supabase
         }
     });
     document.getElementById("slug")?.addEventListener("input", function () {
-        (this as HTMLInputElement).dataset.manual = "true";
+        this.dataset.manual = "true";
     });
 
     form?.addEventListener("submit", async (e) => {
         e.preventDefault();
 
-        const name = (document.getElementById("name") as HTMLInputElement)
-            .value;
-        const slug = (document.getElementById("slug") as HTMLInputElement)
-            .value;
-        const description = (
-            document.getElementById("description") as HTMLTextAreaElement
-        ).value;
-        const price =
-            parseFloat(
-                (document.getElementById("price") as HTMLInputElement).value,
-            ) * 100;
-        const category_id = (
-            document.getElementById("category") as HTMLSelectElement
-        ).value;
-        const imagesText = (
-            document.getElementById("images") as HTMLTextAreaElement
-        ).value;
+        const name = document.getElementById("name").value;
+        const slug = document.getElementById("slug").value;
+        const description = document.getElementById("description").value;
+        const price = parseFloat(document.getElementById("price").value) * 100;
+        const category_id = document.getElementById("category").value;
+        const imagesText = document.getElementById("images").value;
         const images = imagesText
             .split("\n")
             .map((url) => url.trim())
             .filter(Boolean);
 
-        const variants: { size: string; stock: number }[] = [];
+        /** @type {Array<{size: string, stock: number}>} */
+        const variants = [];
         document.querySelectorAll("[data-size]").forEach((input) => {
             variants.push({
-                size: input.getAttribute("data-size")!,
-                stock: parseInt((input as HTMLInputElement).value) || 0,
+                size: input.getAttribute("data-size"),
+                stock: parseInt(input.value) || 0,
             });
         });
 
@@ -227,8 +260,10 @@ const { data: categories } = await supabase
             window.location.href = "/gestion-fm/productos";
         } else {
             const data = await res.json();
-            alert("Error: " + (data.error || "Error al crear producto"));
+            showNotification(
+                "Error: " + (data.error || "Error al crear producto"),
+                "error",
+            );
         }
     });
 </script>
-

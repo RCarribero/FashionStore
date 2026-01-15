@@ -15,6 +15,7 @@ const supabase = createClient(
 const { data: coupons } = await supabase
     .from("coupons")
     .select("*, coupon_products(product_id)")
+    .eq("is_automatic", false)
     .order("created_at", { ascending: false });
 
 const { data: products } = await supabase
@@ -39,6 +40,69 @@ const formatDiscount = (type: string, value: number) => {
 ---
 
 <AdminLayout title="Cupones y Promociones">
+    <!-- Inline Notification Container -->
+    <div
+        id="notification-area"
+        class="fixed top-4 right-4 z-50 transition-all duration-300 transform translate-x-full opacity-0"
+    >
+        <div
+            id="notification-content"
+            class="px-4 py-3 rounded shadow-lg text-white font-medium text-sm flex items-center gap-2"
+        >
+            <!-- Content injected via JS -->
+        </div>
+    </div>
+
+    <!-- Custom Delete Modal -->
+    <div
+        id="deleteModal"
+        class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50"
+    >
+        <div
+            class="bg-slate-900 border border-slate-800 p-6 w-full max-w-md mx-4 rounded-lg"
+        >
+            <div class="text-center">
+                <div
+                    class="w-16 h-16 mx-auto mb-4 bg-red-500/20 rounded-full flex items-center justify-center"
+                >
+                    <svg
+                        class="w-8 h-8 text-red-500"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        ></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2">
+                    Eliminar Cupón
+                </h3>
+                <p class="text-slate-400 mb-1">
+                    ¿Seguro que quieres eliminar este cupón?
+                </p>
+                <p id="deleteItemName" class="text-white font-medium mb-6"></p>
+            </div>
+            <div class="flex gap-3">
+                <button
+                    id="confirmDelete"
+                    class="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 font-medium rounded transition-colors"
+                >
+                    Si, eliminar
+                </button>
+                <button
+                    id="cancelDelete"
+                    class="flex-1 bg-slate-800 hover:bg-slate-700 text-white py-3 font-medium rounded transition-colors"
+                >
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
     <div class="flex justify-between items-center mb-6">
         <p class="text-slate-400">{coupons?.length || 0} cupones</p>
         <button
@@ -353,14 +417,42 @@ const formatDiscount = (type: string, value: number) => {
 
 <script>
     const modal = document.getElementById("couponModal");
-    const form = document.getElementById("couponForm") as HTMLFormElement;
+    const form = document.getElementById("couponForm");
+
+    // Notification helper
+    /**
+     * @param {string} message
+     * @param {string} [type='success']
+     */
+    function showNotification(message, type = "success") {
+        const area = document.getElementById("notification-area");
+        const content = document.getElementById("notification-content");
+
+        if (!area || !content) return;
+
+        // Colors base on type
+        if (type === "error") {
+            content.className =
+                "px-4 py-3 rounded shadow-lg text-white font-medium text-sm flex items-center gap-2 bg-red-600";
+        } else {
+            content.className =
+                "px-4 py-3 rounded shadow-lg text-white font-medium text-sm flex items-center gap-2 bg-green-600";
+        }
+
+        content.textContent = message;
+
+        // Show
+        area.classList.remove("translate-x-full", "opacity-0");
+
+        // Hide after 3s
+        setTimeout(() => {
+            area.classList.add("translate-x-full", "opacity-0");
+        }, 3000);
+    }
+
     const productSelection = document.getElementById("productSelection");
-    const appliesToAll = document.getElementById(
-        "appliesToAll",
-    ) as HTMLInputElement;
-    const appliesToSpecific = document.getElementById(
-        "appliesToSpecific",
-    ) as HTMLInputElement;
+    const appliesToAll = document.getElementById("appliesToAll");
+    const appliesToSpecific = document.getElementById("appliesToSpecific");
 
     // Toggle product selection visibility
     appliesToAll?.addEventListener("change", () => {
@@ -370,39 +462,29 @@ const formatDiscount = (type: string, value: number) => {
         productSelection?.classList.remove("hidden");
     });
 
-    function openModal(coupon?: any) {
+    function openModal(coupon) {
         const title = document.getElementById("modalTitle");
         const fields = {
-            id: document.getElementById("couponId") as HTMLInputElement,
-            code: document.getElementById("couponCode") as HTMLInputElement,
-            discountType: document.getElementById(
-                "discountType",
-            ) as HTMLSelectElement,
-            discountValue: document.getElementById(
-                "discountValue",
-            ) as HTMLInputElement,
-            minPurchase: document.getElementById(
-                "minPurchase",
-            ) as HTMLInputElement,
-            description: document.getElementById(
-                "description",
-            ) as HTMLInputElement,
-            validFrom: document.getElementById("validFrom") as HTMLInputElement,
-            validUntil: document.getElementById(
-                "validUntil",
-            ) as HTMLInputElement,
-            maxUses: document.getElementById("maxUses") as HTMLInputElement,
+            id: document.getElementById("couponId"),
+            code: document.getElementById("couponCode"),
+            discountType: document.getElementById("discountType"),
+            discountValue: document.getElementById("discountValue"),
+            minPurchase: document.getElementById("minPurchase"),
+            description: document.getElementById("description"),
+            validFrom: document.getElementById("validFrom"),
+            validUntil: document.getElementById("validUntil"),
+            maxUses: document.getElementById("maxUses"),
         };
 
         // Reset product checkboxes
         document.querySelectorAll(".product-checkbox").forEach((cb) => {
-            (cb as HTMLInputElement).checked = false;
+            cb.checked = false;
         });
         appliesToAll.checked = true;
         productSelection?.classList.add("hidden");
 
         if (coupon) {
-            title!.textContent = "Editar Cupon";
+            title.textContent = "Editar Cupon";
             fields.id.value = coupon.id;
             fields.code.value = coupon.code;
             fields.discountType.value = coupon.discount_type;
@@ -429,17 +511,16 @@ const formatDiscount = (type: string, value: number) => {
 
                 // Check the products that are linked
                 const linkedProducts =
-                    coupon.coupon_products?.map((cp: any) => cp.product_id) ||
-                    [];
+                    coupon.coupon_products?.map((cp) => cp.product_id) || [];
                 document.querySelectorAll(".product-checkbox").forEach((cb) => {
                     const productId = cb.getAttribute("data-product-id");
                     if (linkedProducts.includes(productId)) {
-                        (cb as HTMLInputElement).checked = true;
+                        cb.checked = true;
                     }
                 });
             }
         } else {
-            title!.textContent = "Nuevo Cupon";
+            title.textContent = "Nuevo Cupon";
             form.reset();
             fields.id.value = "";
         }
@@ -468,16 +549,61 @@ const formatDiscount = (type: string, value: number) => {
         });
     });
 
+    // Delete Modal Logic
+    const deleteModal = document.getElementById("deleteModal");
+    const itemNameEl = document.getElementById("deleteItemName");
+    const confirmDeleteBtn = document.getElementById("confirmDelete");
+    const cancelDeleteBtn = document.getElementById("cancelDelete");
+    let deleteId = null;
+
+    function showDeleteModal(id, name) {
+        deleteId = id;
+        itemNameEl.textContent = name;
+        deleteModal?.classList.remove("hidden");
+        deleteModal?.classList.add("flex");
+    }
+
+    function hideDeleteModal() {
+        deleteModal?.classList.add("hidden");
+        deleteModal?.classList.remove("flex");
+        deleteId = null;
+    }
+
+    cancelDeleteBtn?.addEventListener("click", hideDeleteModal);
+    deleteModal?.addEventListener("click", (e) => {
+        if (e.target === deleteModal) hideDeleteModal();
+    });
+
+    confirmDeleteBtn?.addEventListener("click", async () => {
+        if (!deleteId) return;
+
+        confirmDeleteBtn.textContent = "Eliminando...";
+        confirmDeleteBtn.disabled = true;
+
+        const res = await fetch(`/api/admin/coupons/${deleteId}`, {
+            method: "DELETE",
+        });
+
+        if (res.ok) {
+            window.location.reload();
+        } else {
+            hideDeleteModal();
+            showNotification("Error al eliminar", "error");
+            confirmDeleteBtn.textContent = "Si, eliminar";
+            confirmDeleteBtn.disabled = false;
+        }
+    });
+
     document.querySelectorAll("[data-delete]").forEach((btn) => {
         btn.addEventListener("click", async () => {
-            if (confirm("¿Eliminar este cupon?")) {
-                const id = btn.getAttribute("data-delete");
-                const res = await fetch(`/api/admin/coupons/${id}`, {
-                    method: "DELETE",
-                });
-                if (res.ok) window.location.reload();
-                else alert("Error al eliminar");
-            }
+            const id = btn.getAttribute("data-delete");
+            // Find code in row
+            const row = btn.closest("tr");
+            const code =
+                row?.querySelector("span.font-mono")?.textContent?.trim() ||
+                "este cupón";
+
+            showDeleteModal(id, code);
         });
     });
 
@@ -497,55 +623,40 @@ const formatDiscount = (type: string, value: number) => {
     form?.addEventListener("submit", async (e) => {
         e.preventDefault();
 
-        const id = (document.getElementById("couponId") as HTMLInputElement)
-            .value;
-        const discountType = (
-            document.getElementById("discountType") as HTMLSelectElement
-        ).value;
+        const id = document.getElementById("couponId").value;
+        const discountType = document.getElementById("discountType").value;
         const discountValueRaw = parseFloat(
-            (document.getElementById("discountValue") as HTMLInputElement)
-                .value,
+            document.getElementById("discountValue").value,
         );
         const discountValue =
             discountType === "fixed"
                 ? Math.round(discountValueRaw * 100)
                 : discountValueRaw;
-        const minPurchaseRaw = (
-            document.getElementById("minPurchase") as HTMLInputElement
-        ).value;
+        const minPurchaseRaw = document.getElementById("minPurchase").value;
 
-        // Get selected products
+        // Get selecte products
         const appliesTo = appliesToSpecific.checked ? "specific" : "all";
-        const selectedProducts: string[] = [];
+        /** @type {string[]} */
+        const selectedProducts = [];
         if (appliesTo === "specific") {
             document
                 .querySelectorAll(".product-checkbox:checked")
                 .forEach((cb) => {
-                    selectedProducts.push(cb.getAttribute("data-product-id")!);
+                    selectedProducts.push(cb.getAttribute("data-product-id"));
                 });
         }
 
         const data = {
-            code: (
-                document.getElementById("couponCode") as HTMLInputElement
-            ).value.toUpperCase(),
+            code: document.getElementById("couponCode").value.toUpperCase(),
             discount_type: discountType,
             discount_value: discountValue,
             min_purchase: minPurchaseRaw
                 ? Math.round(parseFloat(minPurchaseRaw) * 100)
                 : 0,
-            description:
-                (document.getElementById("description") as HTMLInputElement)
-                    .value || null,
-            valid_from:
-                (document.getElementById("validFrom") as HTMLInputElement)
-                    .value || null,
-            valid_until:
-                (document.getElementById("validUntil") as HTMLInputElement)
-                    .value || null,
-            max_uses:
-                (document.getElementById("maxUses") as HTMLInputElement)
-                    .value || null,
+            description: document.getElementById("description").value || null,
+            valid_from: document.getElementById("validFrom").value || null,
+            valid_until: document.getElementById("validUntil").value || null,
+            max_uses: document.getElementById("maxUses").value || null,
             applies_to: appliesTo,
             product_ids: selectedProducts,
         };
@@ -559,7 +670,10 @@ const formatDiscount = (type: string, value: number) => {
         if (res.ok) window.location.reload();
         else {
             const err = await res.json();
-            alert("Error: " + (err.error || "Error al guardar"));
+            showNotification(
+                "Error: " + (err.error || "Error al guardar"),
+                "error",
+            );
         }
     });
 </script>

@@ -18,6 +18,8 @@ import {
     closeCart,
     removeFromCart,
     updateQuantity,
+    checkAutomaticPromotions,
+    checkCartExpiration
 } from '../stores/cart.store';
 import { formatPrice } from '../../../shared/utils';
 import type { CartItem } from '../../../shared/types';
@@ -55,8 +57,29 @@ export default function CartSlideOver({ isOpen, onClose }: CartSlideOverProps) {
         };
     }, [isOpen, onClose]);
 
+    // Check for automatic promotions when cart opens or total changes
+    useEffect(() => {
+        if (isOpen && isMounted) {
+            checkAutomaticPromotions();
+        }
+    }, [isOpen, cartTotal, isMounted]);
+
+    // Check for cart expiration periodically (hidden from user)
+    useEffect(() => {
+        if (!isMounted) return;
+
+        const interval = setInterval(() => {
+            const expired = checkCartExpiration();
+            if (expired) {
+                // Cart was cleared due to expiration
+                console.log('Cart expired - items cleared');
+            }
+        }, 30000); // Check every 30 seconds
+
+        return () => clearInterval(interval);
+    }, [isMounted]);
+
     // Derived state that matches server (empty) until mounted
-    // This prevents hydration mismatches because the server always renders 'empty' state for nanostores
     const effectiveCartCount = isMounted ? cartCount : 0;
     const effectiveIsEmpty = isMounted ? isEmpty : true;
     const effectiveCartTotal = isMounted ? cartTotal : 0;
@@ -165,6 +188,7 @@ function EmptyCart({ onClose }: { onClose: () => void }) {
 function CartItemRow({ item }: { item: CartItem }) {
     const handleQuantityChange = useCallback((qty: number) => {
         updateQuantity(item.productId, item.size, qty);
+        checkAutomaticPromotions();
     }, [item.productId, item.size]);
 
     const handleRemove = useCallback(() => {
@@ -236,12 +260,57 @@ function CartItemRow({ item }: { item: CartItem }) {
  */
 function CartFooter({ cart, cartTotal, onClose }: { cart: { items: CartItem[] }; cartTotal: number; onClose: () => void }) {
     const [loading, setLoading] = useState(false);
-    const [couponCode, setCouponCode] = useState('');
+    const [couponCode, setCouponCodeLocal] = useState('');
     const [couponLoading, setCouponLoading] = useState(false);
     const [couponError, setCouponError] = useState('');
 
-    // Use global coupon store
     const appliedCoupon = useStore($coupon);
+
+    // Revalidate coupon when cart items change
+    useEffect(() => {
+        if (appliedCoupon && !appliedCoupon.is_automatic) {
+            revalidateCoupon();
+        }
+    }, [cart.items.length, cartTotal]);
+
+    const revalidateCoupon = async () => {
+        const currentCoupon = $coupon.get();
+        if (!currentCoupon || currentCoupon.is_automatic) return;
+
+        try {
+            const cartItems = cart.items.map(item => ({
+                productId: item.productId,
+                price: item.price,
+                quantity: item.quantity
+            }));
+
+            const res = await fetch('/api/coupons/validate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    code: currentCoupon.code,
+                    purchaseAmount: cartTotal,
+                    cartItems
+                })
+            });
+
+            const data = await res.json();
+
+            if (data.valid) {
+                setCoupon({
+                    code: data.coupon.code,
+                    discount_type: data.coupon.discount_type,
+                    discount_value: data.coupon.discount_value,
+                    discountAmount: data.discountAmount,
+                    id: data.coupon.id
+                });
+            } else {
+                clearCoupon();
+            }
+        } catch (error) {
+            console.error('Coupon revalidation failed:', error);
+        }
+    };
 
     const handleApplyCoupon = async () => {
         if (!couponCode.trim()) return;
@@ -276,7 +345,7 @@ function CartFooter({ cart, cartTotal, onClose }: { cart: { items: CartItem[] };
                     discountAmount: data.discountAmount,
                     id: data.coupon.id
                 });
-                setCouponCode('');
+                setCouponCodeLocal('');
             } else {
                 setCouponError(data.error || 'Cupon no valido');
                 clearCoupon();
@@ -290,7 +359,7 @@ function CartFooter({ cart, cartTotal, onClose }: { cart: { items: CartItem[] };
 
     const handleRemoveCoupon = () => {
         clearCoupon();
-        setCouponCode('');
+        setCouponCodeLocal('');
         setCouponError('');
     };
 
@@ -312,7 +381,7 @@ function CartFooter({ cart, cartTotal, onClose }: { cart: { items: CartItem[] };
                         <input
                             type="text"
                             value={couponCode}
-                            onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                            onChange={(e) => setCouponCodeLocal(e.target.value.toUpperCase())}
                             placeholder="Codigo de cupon"
                             className="flex-1 px-3 py-2 border border-slate-200 text-sm font-mono uppercase text-black"
                         />
@@ -326,22 +395,29 @@ function CartFooter({ cart, cartTotal, onClose }: { cart: { items: CartItem[] };
                         </button>
                     </div>
                 ) : (
-                    <div className="flex items-center justify-between bg-green-50 border border-green-200 px-3 py-2 rounded">
+                    <div className={`flex items-center justify-between border px-3 py-2 rounded ${appliedCoupon.is_automatic ? 'bg-blue-50 border-blue-200' : 'bg-green-50 border-green-200'}`}>
                         <div className="flex items-center gap-2">
-                            <svg className="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg className={`w-4 h-4 ${appliedCoupon.is_automatic ? 'text-blue-600' : 'text-green-600'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                             </svg>
-                            <span className="text-sm font-mono font-bold text-green-800">{appliedCoupon.code}</span>
-                            <span className="text-sm text-green-600">
-                                (-{appliedCoupon.discount_type === 'percentage' ? `${appliedCoupon.discount_value}%` : formatPrice(appliedCoupon.discount_value)})
-                            </span>
+                            <div className="flex flex-col">
+                                <span className={`text-sm font-bold ${appliedCoupon.is_automatic ? 'text-blue-800' : 'text-green-800 font-mono'}`}>
+                                    {appliedCoupon.is_automatic ? (appliedCoupon.public_title || 'Oferta Especial') : appliedCoupon.code}
+                                </span>
+                                <span className={`text-xs ${appliedCoupon.is_automatic ? 'text-blue-600' : 'text-green-600'}`}>
+                                    -{appliedCoupon.discount_type === 'percentage' ? `${appliedCoupon.discount_value}%` : formatPrice(appliedCoupon.discount_value)}
+                                </span>
+                            </div>
                         </div>
                         <button
                             type="button"
                             onClick={handleRemoveCoupon}
-                            className="text-red-500 hover:text-red-700 text-sm"
+                            className="text-slate-400 hover:text-red-500 text-sm"
+                            title={appliedCoupon.is_automatic ? "Quitar oferta" : "Quitar cupon"}
                         >
-                            Quitar
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
                         </button>
                     </div>
                 )}
@@ -415,7 +491,6 @@ export function CartTrigger() {
         setIsMounted(true);
     }, []);
 
-    // Derived count to match server (0) until mounted
     const displayCount = isMounted ? cartCount : 0;
 
     return (

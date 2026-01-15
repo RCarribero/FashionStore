@@ -22,11 +22,18 @@ const createTransporter = () => {
     });
 };
 
+export interface EmailAttachment {
+    filename: string;
+    content: Buffer;
+    contentType?: string;
+}
+
 export interface EmailOptions {
     to: string;
     subject: string;
     html: string;
     from?: string;
+    attachments?: EmailAttachment[];
 }
 
 export async function sendEmail(options: EmailOptions): Promise<{ success: boolean; error?: string }> {
@@ -39,12 +46,23 @@ export async function sendEmail(options: EmailOptions): Promise<{ success: boole
     }
 
     try {
-        const result = await transporter.sendMail({
+        const mailOptions: nodemailer.SendMailOptions = {
             from: options.from || `FashionMarket <${import.meta.env.SMTP_USER}>`,
             to: options.to,
             subject: options.subject,
             html: options.html
-        });
+        };
+
+        // Add attachments if provided
+        if (options.attachments && options.attachments.length > 0) {
+            mailOptions.attachments = options.attachments.map(att => ({
+                filename: att.filename,
+                content: att.content,
+                contentType: att.contentType || 'application/pdf'
+            }));
+        }
+
+        const result = await transporter.sendMail(mailOptions);
 
         console.log('Email sent:', result.messageId);
         return { success: true };

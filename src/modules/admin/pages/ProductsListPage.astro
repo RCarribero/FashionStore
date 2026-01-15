@@ -178,7 +178,7 @@ const { data: products } = await getProducts();
                 if (response.ok) {
                     window.location.reload();
                 } else {
-                    alert("Error al eliminar");
+                    toast.error("Error al eliminar");
                 }
             }
         });

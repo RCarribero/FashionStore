@@ -57,7 +57,9 @@ export default function OrderSummary() {
 
     if (appliedCoupon) {
         discountAmount = appliedCoupon.discountAmount;
-        discountLabel = `Cupon (${appliedCoupon.code})`;
+        discountLabel = appliedCoupon.is_automatic
+            ? `Promocion (${appliedCoupon.public_title})`
+            : `Cupon (${appliedCoupon.code})`;
     } else if (isFirstPurchase) {
         discountAmount = Math.round(subtotalWithShipping * 0.20);
         discountLabel = '20% OFF - Primera Compra';

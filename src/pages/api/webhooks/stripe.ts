@@ -173,6 +173,25 @@ export const POST: APIRoute = async ({ request }) => {
             }
         }
 
+        // Clear stock reservations after successful purchase
+        const cartSessionId = expandedSession.metadata?.cartSessionId;
+        if (cartSessionId) {
+            try {
+                const { error: reserveError } = await supabase
+                    .from('stock_reservations')
+                    .delete()
+                    .eq('session_id', cartSessionId);
+
+                if (reserveError) {
+                    console.error('Failed to clear reservations:', reserveError);
+                } else {
+                    console.log(`Cleared reservations for session ${cartSessionId}`);
+                }
+            } catch (error) {
+                console.error('Error clearing reservations:', error);
+            }
+        }
+
         console.log('Payment successful and stock updated');
     }
 

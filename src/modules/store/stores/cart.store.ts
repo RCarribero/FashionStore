@@ -1,6 +1,7 @@
 /**
  * Cart Store
  * Shopping cart state management using Nano Stores
+ * With 15-minute stock reservation system (global timer, hidden from UI)
  */
 
 import { atom, computed } from 'nanostores';
@@ -8,6 +9,38 @@ import { persistentAtom } from '@nanostores/persistent';
 import type { Cart, CartItem, Product } from '../../../shared/types';
 import { STORE_CONFIG } from '../config';
 import { getCartItemKey } from '../../../shared/utils';
+
+// Session ID for stock reservations (persisted)
+export const $cartSessionId = persistentAtom<string>(
+    'fm_cart_session',
+    '',
+    {
+        encode: (v) => v,
+        decode: (v) => v,
+    }
+);
+
+// Global cart expiration timestamp (persisted)
+export const $cartExpiresAt = persistentAtom<number>(
+    'fm_cart_expires',
+    0,
+    {
+        encode: (v) => String(v),
+        decode: (v) => parseInt(v) || 0,
+    }
+);
+
+const RESERVATION_DURATION_MS = 15 * 60 * 1000; // 15 minutes
+
+// Initialize session ID if not set
+function getOrCreateSessionId(): string {
+    let sessionId = $cartSessionId.get();
+    if (!sessionId) {
+        sessionId = `cart_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+        $cartSessionId.set(sessionId);
+    }
+    return sessionId;
+}
 
 // Cart open state (for programmatic opening)
 export const $isCartOpen = atom<boolean>(false);
@@ -44,6 +77,8 @@ export interface AppliedCoupon {
     discount_value: number;
     discountAmount: number;
     id?: string;
+    is_automatic?: boolean;
+    public_title?: string;
 }
 
 /**
@@ -67,6 +102,58 @@ export function clearCoupon() {
 }
 
 /**
+ * Check for automatic promotions
+ * checks backend for best active promotion
+ */
+export async function checkAutomaticPromotions() {
+    const currentCoupon = $coupon.get();
+
+    // If a manual coupon is applied, don't overwrite it with auto-promo
+    if (currentCoupon && !currentCoupon.is_automatic) {
+        return;
+    }
+
+    const cart = $cart.get();
+    if (cart.items.length === 0) {
+        if (currentCoupon?.is_automatic) clearCoupon();
+        return;
+    }
+
+    const total = cart.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+    try {
+        const response = await fetch('/api/coupons/auto-apply', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                purchaseAmount: total,
+                cartItems: cart.items
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.valid && data.coupon) {
+            setCoupon({
+                code: data.coupon.code,
+                discount_type: data.coupon.discount_type,
+                discount_value: data.coupon.discount_value,
+                discountAmount: data.discountAmount,
+                id: data.coupon.id,
+                is_automatic: true,
+                public_title: data.coupon.public_title
+            });
+        } else {
+            if (currentCoupon?.is_automatic) {
+                clearCoupon();
+            }
+        }
+    } catch (err) {
+        console.error("Auto-promo check failed", err);
+    }
+}
+
+/**
  * Computed: Total items count
  */
 export const $cartCount = computed($cart, (cart) =>
@@ -86,7 +173,64 @@ export const $cartTotal = computed($cart, (cart) =>
 export const $isCartEmpty = computed($cart, (cart) => cart.items.length === 0);
 
 /**
- * Add item to cart
+ * Reserve ALL cart items on the server (resets timer for all)
+ */
+async function reserveAllCartItems(): Promise<{ success: boolean; expiresAt?: number }> {
+    const cart = $cart.get();
+    if (cart.items.length === 0) {
+        return { success: true };
+    }
+
+    const sessionId = getOrCreateSessionId();
+    const expiresAt = Date.now() + RESERVATION_DURATION_MS;
+
+    // Reserve each item with the same expiration
+    try {
+        for (const item of cart.items) {
+            const response = await fetch('/api/stock/reserve', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    sessionId,
+                    productId: item.productId,
+                    size: item.size,
+                    quantity: item.quantity
+                })
+            });
+
+            const data = await response.json();
+            if (!response.ok || !data.success) {
+                console.error('Failed to reserve item:', item.productId, data.error);
+            }
+        }
+
+        // Update global expiration
+        $cartExpiresAt.set(expiresAt);
+        return { success: true, expiresAt };
+    } catch (err) {
+        console.error('Reserve all error:', err);
+        return { success: false };
+    }
+}
+
+/**
+ * Release stock reservation on the server
+ */
+async function releaseStock(productId: string, size: string): Promise<void> {
+    try {
+        const sessionId = getOrCreateSessionId();
+        await fetch('/api/stock/release', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sessionId, productId, size })
+        });
+    } catch (err) {
+        console.error('Stock release error:', err);
+    }
+}
+
+/**
+ * Add item to cart - reserves ALL items and resets global timer
  */
 export function addToCart(
     product: Pick<Product, 'id' | 'name' | 'price' | 'images' | 'stock'> & { variants?: { size: string; stock: number }[] },
@@ -117,17 +261,17 @@ export function addToCart(
         return false;
     }
 
+    const newTotalQty = currentQty + quantity;
+
     let newItems: CartItem[];
 
     if (existingIndex >= 0) {
-        // Update existing item
         newItems = cart.items.map((item, i) =>
             i === existingIndex
-                ? { ...item, quantity: item.quantity + quantity }
+                ? { ...item, quantity: newTotalQty }
                 : item
         );
     } else {
-        // Add new item
         const newItem: CartItem = {
             productId: product.id,
             productName: product.name,
@@ -144,11 +288,14 @@ export function addToCart(
         updatedAt: Date.now(),
     });
 
+    // Reserve ALL items and reset global timer
+    reserveAllCartItems();
+
     return true;
 }
 
 /**
- * Remove item from cart
+ * Remove item from cart and release its reservation
  */
 export function removeFromCart(productId: string, size: string): void {
     const cart = $cart.get();
@@ -160,6 +307,12 @@ export function removeFromCart(productId: string, size: string): void {
         ),
         updatedAt: Date.now(),
     });
+
+    // Release this item's reservation
+    releaseStock(productId, size);
+
+    // Revalidate coupons
+    checkAutomaticPromotions();
 }
 
 /**
@@ -186,13 +339,69 @@ export function updateQuantity(
         ),
         updatedAt: Date.now(),
     });
+
+    // Update reservation for this item
+    const sessionId = getOrCreateSessionId();
+    fetch('/api/stock/reserve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId, productId, size, quantity })
+    }).catch(err => console.error('Update quantity reserve error:', err));
 }
 
 /**
- * Clear entire cart
+ * Clear entire cart and release all reservations
  */
 export function clearCart(): void {
+    const cart = $cart.get();
+
+    // Release all reservations
+    cart.items.forEach(item => {
+        releaseStock(item.productId, item.size);
+    });
+
     $cart.set(EMPTY_CART);
+    $cartExpiresAt.set(0);
+}
+
+/**
+ * Release all reservations for current session (after checkout)
+ */
+export async function releaseAllReservations(): Promise<void> {
+    try {
+        const sessionId = getOrCreateSessionId();
+        await fetch('/api/stock/release-all', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sessionId })
+        });
+        $cartExpiresAt.set(0);
+    } catch (err) {
+        console.error('Release all reservations error:', err);
+    }
+}
+
+/**
+ * Get cart session ID for checkout
+ */
+export function getCartSessionId(): string {
+    return getOrCreateSessionId();
+}
+
+/**
+ * Check if cart has expired and clear it if so
+ */
+export function checkCartExpiration(): boolean {
+    const expiresAt = $cartExpiresAt.get();
+    const cart = $cart.get();
+
+    if (expiresAt > 0 && Date.now() > expiresAt && cart.items.length > 0) {
+        // Cart has expired - clear it
+        clearCart();
+        clearCoupon();
+        return true; // Expired
+    }
+    return false; // Not expired
 }
 
 /**

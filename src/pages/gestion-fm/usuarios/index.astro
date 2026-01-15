@@ -26,6 +26,18 @@ const formatDate = (dateStr: string) =>
 ---
 
 <AdminLayout title="Usuarios">
+    <!-- Inline Notification Container -->
+    <div
+        id="notification-area"
+        class="fixed top-4 right-4 z-50 transition-all duration-300 transform translate-x-full opacity-0"
+    >
+        <div
+            id="notification-content"
+            class="px-4 py-3 rounded shadow-lg text-white font-medium text-sm flex items-center gap-2"
+        >
+            <!-- Content injected via JS -->
+        </div>
+    </div>
     <div class="flex justify-between items-center mb-6">
         <p class="text-slate-400">{profiles?.length || 0} usuarios</p>
     </div>
@@ -110,30 +122,137 @@ const formatDate = (dateStr: string) =>
             </tbody>
         </table>
     </div>
+    <!-- Custom Confirm Modal -->
+    <div
+        id="confirmModal"
+        class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50"
+    >
+        <div
+            class="bg-slate-900 border border-slate-800 p-6 w-full max-w-md mx-4 rounded-lg"
+        >
+            <div class="text-center">
+                <div
+                    class="w-16 h-16 mx-auto mb-4 bg-accent/20 rounded-full flex items-center justify-center"
+                >
+                    <svg
+                        class="w-8 h-8 text-accent"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                        ></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2">
+                    Confirmar Acción
+                </h3>
+                <p id="confirmMessage" class="text-slate-400 mb-6">
+                    ¿Estás seguro de continuar?
+                </p>
+            </div>
+            <div class="flex gap-3">
+                <button
+                    id="confirmAction"
+                    class="flex-1 bg-accent hover:bg-red-700 text-white py-3 font-medium rounded transition-colors"
+                >
+                    Confirmar
+                </button>
+                <button
+                    id="cancelAction"
+                    class="flex-1 bg-slate-800 hover:bg-slate-700 text-white py-3 font-medium rounded transition-colors"
+                >
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
 </AdminLayout>
 
 <script>
+    // Notification helper
+    /**
+     * @param {string} message
+     * @param {string} [type='success']
+     */
+    function showNotification(message, type = "success") {
+        const area = document.getElementById("notification-area");
+        const content = document.getElementById("notification-content");
+
+        if (!area || !content) return;
+
+        // Colors base on type
+        if (type === "error") {
+            content.className =
+                "px-4 py-3 rounded shadow-lg text-white font-medium text-sm flex items-center gap-2 bg-red-600";
+        } else {
+            content.className =
+                "px-4 py-3 rounded shadow-lg text-white font-medium text-sm flex items-center gap-2 bg-green-600";
+        }
+
+        content.textContent = message;
+
+        // Show
+        area.classList.remove("translate-x-full", "opacity-0");
+
+        // Hide after 3s
+        setTimeout(() => {
+            area.classList.add("translate-x-full", "opacity-0");
+        }, 3000);
+    }
+
+    const modal = document.getElementById("confirmModal");
+    const confirmMessageEl = document.getElementById("confirmMessage");
+    const confirmBtn = document.getElementById("confirmAction");
+    const cancelBtn = document.getElementById("cancelAction");
+    let pendingAction = null;
+
+    function showConfirmModal(message, action) {
+        if (confirmMessageEl) confirmMessageEl.textContent = message;
+        pendingAction = action;
+        modal?.classList.remove("hidden");
+        modal?.classList.add("flex");
+    }
+
+    function hideConfirmModal() {
+        modal?.classList.add("hidden");
+        modal?.classList.remove("flex");
+        pendingAction = null;
+    }
+
+    cancelBtn?.addEventListener("click", hideConfirmModal);
+    modal?.addEventListener("click", (e) => {
+        if (e.target === modal) hideConfirmModal();
+    });
+
+    confirmBtn?.addEventListener("click", async () => {
+        if (pendingAction) {
+            await pendingAction();
+        }
+        hideConfirmModal();
+    });
+
     // Toggle admin status
     document.querySelectorAll("[data-toggle-admin]").forEach((btn) => {
-        btn.addEventListener("click", async () => {
+        btn.addEventListener("click", () => {
             const userId = btn.getAttribute("data-toggle-admin");
             const isAdmin = btn.getAttribute("data-is-admin") === "true";
+            const message = `¿${isAdmin ? "Quitar" : "Dar"} permisos de admin a este usuario?`;
 
-            if (
-                !confirm(
-                    `¿${isAdmin ? "Quitar" : "Dar"} permisos de admin a este usuario?`,
-                )
-            )
-                return;
+            showConfirmModal(message, async () => {
+                const res = await fetch("/api/admin/users/toggle-admin", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ userId, isAdmin: !isAdmin }),
+                });
 
-            const res = await fetch("/api/admin/users/toggle-admin", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ userId, isAdmin: !isAdmin }),
+                if (res.ok) window.location.reload();
+                else showNotification("Error al actualizar", "error");
             });
-
-            if (res.ok) window.location.reload();
-            else alert("Error al actualizar");
         });
     });
 
@@ -142,11 +261,7 @@ const formatDate = (dateStr: string) =>
         btn.addEventListener("click", () => {
             const id = btn.getAttribute("data-copy");
             navigator.clipboard.writeText(id || "");
-            alert("ID copiado");
+            showNotification("ID copiado", "success");
         });
     });
 </script>
-
-
-
-

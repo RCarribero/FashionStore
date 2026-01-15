@@ -5,6 +5,7 @@
 import type { APIRoute } from 'astro';
 import { createClient } from '@supabase/supabase-js';
 import { sendEmail, formatPrice, formatDate } from '../../../lib/email';
+import { generateInvoicePDF } from '../../../lib/invoice';
 
 const supabase = createClient(
     import.meta.env.PUBLIC_SUPABASE_URL,
@@ -121,11 +122,25 @@ export const POST: APIRoute = async ({ request }) => {
         const emailHTML = generateOrderConfirmationHTML(order, order.items || []);
         const subject = `Confirmacion de Pedido ${order.tracking_number || '#' + order.id.slice(0, 8)}`;
 
-        // Send email via Gmail SMTP
+        // Generate invoice PDF
+        let invoicePDF: Buffer | null = null;
+        try {
+            invoicePDF = await generateInvoicePDF(order);
+        } catch (pdfError) {
+            console.error('Failed to generate invoice PDF:', pdfError);
+            // Continue without attachment if PDF generation fails
+        }
+
+        // Send email via Gmail SMTP with invoice attachment
         const result = await sendEmail({
             to: recipientEmail,
             subject: subject,
-            html: emailHTML
+            html: emailHTML,
+            attachments: invoicePDF ? [{
+                filename: `factura-${order.order_number || order.id.slice(0, 8)}.pdf`,
+                content: invoicePDF,
+                contentType: 'application/pdf'
+            }] : undefined
         });
 
         return new Response(JSON.stringify({

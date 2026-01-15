@@ -1,0 +1,28 @@
+---
+const { component_config } = Astro.props;
+const title = component_config?.title || "";
+const content = component_config?.subtitle || "";
+const textColor = component_config?.textColor || "#000000";
+---
+
+<section class="py-12 px-4 bg-white text-center">
+    <div class="max-w-4xl mx-auto">
+        {
+            title && (
+                <h2
+                    class="text-3xl md:text-4xl font-bold mb-6 font-display"
+                    style={`color: ${textColor}`}
+                >
+                    {title}
+                </h2>
+            )
+        }
+        {
+            content && (
+                <div class="prose prose-lg mx-auto text-slate-600">
+                    <p>{content}</p>
+                </div>
+            )
+        }
+    </div>
+</section>

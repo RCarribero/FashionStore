@@ -178,15 +178,21 @@ const formatPrice = (cents: number) => (cents / 100).toFixed(2) + " EUR";
 <script>
     const modal = document.getElementById("deleteModal");
     const productNameEl = document.getElementById("deleteProductName");
+    /** @type {HTMLButtonElement} */
     const confirmBtn = document.getElementById("confirmDelete");
     const cancelBtn = document.getElementById("cancelDelete");
     const toast = document.getElementById("toast");
     const toastMessage = document.getElementById("toastMessage");
-    let deleteId: string | null = null;
+    /** @type {string | null} */
+    let deleteId = null;
 
-    function showModal(id: string, name: string) {
+    /**
+     * @param {string} id
+     * @param {string} name
+     */
+    function showModal(id, name) {
         deleteId = id;
-        productNameEl!.textContent = name;
+        productNameEl.textContent = name;
         modal?.classList.remove("hidden");
         modal?.classList.add("flex");
     }
@@ -197,15 +203,19 @@ const formatPrice = (cents: number) => (cents / 100).toFixed(2) + " EUR";
         deleteId = null;
     }
 
-    function showToast(message: string, isError = false) {
-        toastMessage!.textContent = message;
-        toast!.className = toast!.className.replace(
+    /**
+     * @param {string} message
+     * @param {boolean} [isError=false]
+     */
+    function showToast(message, isError = false) {
+        toastMessage.textContent = message;
+        toast.className = toast.className.replace(
             "bg-green-600",
             isError ? "bg-red-600" : "bg-green-600",
         );
-        toast!.classList.remove("translate-y-20", "opacity-0");
+        toast.classList.remove("translate-y-20", "opacity-0");
         setTimeout(() => {
-            toast!.classList.add("translate-y-20", "opacity-0");
+            toast.classList.add("translate-y-20", "opacity-0");
         }, 3000);
     }
 
@@ -216,7 +226,7 @@ const formatPrice = (cents: number) => (cents / 100).toFixed(2) + " EUR";
             const name =
                 row?.querySelector(".text-white.font-medium")?.textContent ||
                 "este producto";
-            showModal(id!, name);
+            showModal(id, name);
         });
     });
 
