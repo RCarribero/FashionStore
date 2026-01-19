@@ -1,5 +1,5 @@
 // Debug script to check products and categories
-import { createAdminClient } from './src/modules/auth/services/auth.service.ts';
+import { createAdminClient } from '../src/modules/auth/services/auth.service';
 
 const supabase = createAdminClient();
 

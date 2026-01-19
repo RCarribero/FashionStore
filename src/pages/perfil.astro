@@ -1,13 +1,3 @@
 ---
-/**
- * User Profile Page
- */
-export const prerender = false;
-
-import StoreLayout from "../modules/store/layouts/StoreLayout.astro";
-import ProfilePage from "../modules/store/components/ProfilePage";
+return Astro.redirect("/cuenta/perfil");
 ---
-
-<StoreLayout title="Mi Perfil">
-    <ProfilePage client:load />
-</StoreLayout>

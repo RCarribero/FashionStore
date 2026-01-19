@@ -69,9 +69,57 @@ export default function ProfilePage() {
     const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
     const [selectedOrderForReturn, setSelectedOrderForReturn] = useState<{ id: string, number: number } | null>(null);
 
+    // Password Change Modal State
+    const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+    const [passwordData, setPasswordData] = useState({ current: '', new: '', confirm: '' });
+    const [passwordLoading, setPasswordLoading] = useState(false);
+    const [passwordError, setPasswordError] = useState<string | null>(null);
+    const [passwordSuccess, setPasswordSuccess] = useState(false);
+
     const openReturnModal = (orderId: string, orderNumber: number) => {
         setSelectedOrderForReturn({ id: orderId, number: orderNumber });
         setIsReturnModalOpen(true);
+    };
+
+    const handleChangePassword = async () => {
+        setPasswordError(null);
+        setPasswordSuccess(false);
+
+        if (passwordData.new !== passwordData.confirm) {
+            setPasswordError('Las contrasenas no coinciden');
+            return;
+        }
+
+        if (passwordData.new.length < 6) {
+            setPasswordError('La contrasena debe tener al menos 6 caracteres');
+            return;
+        }
+
+        setPasswordLoading(true);
+        try {
+            const res = await fetch('/api/auth/change-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    currentPassword: passwordData.current,
+                    newPassword: passwordData.new
+                })
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+
+            setPasswordSuccess(true);
+            setPasswordData({ current: '', new: '', confirm: '' });
+            setTimeout(() => {
+                setIsPasswordModalOpen(false);
+                setPasswordSuccess(false);
+            }, 2000);
+        } catch (err: any) {
+            setPasswordError(err.message || 'Error al cambiar contrasena');
+        } finally {
+            setPasswordLoading(false);
+        }
     };
 
     useEffect(() => {
@@ -394,6 +442,22 @@ export default function ProfilePage() {
                                             </button>
                                         </div>
                                     )}
+
+                                    {/* Password Change Section */}
+                                    <div className="border-t border-slate-700 pt-6 mt-6">
+                                        <div className="flex justify-between items-center">
+                                            <div>
+                                                <h3 className="text-white font-medium">Contrasena</h3>
+                                                <p className="text-slate-500 text-sm">Cambia tu contrasena de acceso</p>
+                                            </div>
+                                            <button
+                                                onClick={() => setIsPasswordModalOpen(true)}
+                                                className="px-4 py-2 border border-slate-700 text-white hover:bg-slate-800 transition-colors text-sm"
+                                            >
+                                                Cambiar Contrasena
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -554,13 +618,39 @@ export default function ProfilePage() {
                                                             </div>
                                                         </div>
 
-                                                        <div className="mt-4 flex gap-2">
+                                                        <div className="mt-4 flex gap-2 flex-wrap">
                                                             <a
                                                                 href={`/pedidos/${order.id}`}
                                                                 className="flex-1 text-center px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-sm font-medium transition-colors"
                                                             >
                                                                 Ver Seguimiento
                                                             </a>
+
+                                                            {/* Cancel Button - Only for paid/processing orders (not shipped) */}
+                                                            {['paid', 'processing', 'pending'].includes(order.status) &&
+                                                                !['shipped', 'in_transit', 'out_for_delivery', 'delivered', 'cancelled'].includes(order.shipping_status) && (
+                                                                    <button
+                                                                        onClick={async () => {
+                                                                            if (!confirm('¿Seguro que quieres cancelar este pedido? Esta accion no se puede deshacer.')) return;
+                                                                            try {
+                                                                                const res = await fetch('/api/orders/cancel', {
+                                                                                    method: 'POST',
+                                                                                    headers: { 'Content-Type': 'application/json' },
+                                                                                    body: JSON.stringify({ orderId: order.id })
+                                                                                });
+                                                                                const data = await res.json();
+                                                                                if (!res.ok) throw new Error(data.error);
+                                                                                alert('Pedido cancelado correctamente. El stock ha sido restaurado.');
+                                                                                loadUser(); // Refresh orders
+                                                                            } catch (err: any) {
+                                                                                alert(err.message || 'Error al cancelar el pedido');
+                                                                            }
+                                                                        }}
+                                                                        className="px-4 py-2 bg-red-900/30 hover:bg-red-900/60 border border-red-500/30 hover:border-red-500/60 text-red-400 text-sm font-medium transition-colors"
+                                                                    >
+                                                                        Cancelar Pedido
+                                                                    </button>
+                                                                )}
 
                                                             {/* Return Button - Only for Delivered Orders */}
                                                             {order.shipping_status === 'delivered' && (
@@ -616,21 +706,37 @@ export default function ProfilePage() {
                                         e.preventDefault();
                                         setSaving(true);
                                         try {
+                                            const payload = {
+                                                full_name: currentAddress.full_name,
+                                                phone: currentAddress.phone,
+                                                name: currentAddress.name,
+                                                street: currentAddress.street,
+                                                city: currentAddress.city,
+                                                province: currentAddress.province,
+                                                postal_code: currentAddress.postal_code,
+                                                country: currentAddress.country || 'España',
+                                                user_id: user?.id
+                                            };
+
                                             if (currentAddress.id) {
-                                                await supabase
+                                                const { user_id, ...updatePayload } = payload; // Don't update user_id on edit
+                                                const { error } = await supabase
                                                     .from('user_addresses')
-                                                    .update(currentAddress)
+                                                    .update(updatePayload)
                                                     .eq('id', currentAddress.id);
+                                                if (error) throw error;
                                             } else {
-                                                await supabase
+                                                const { error } = await supabase
                                                     .from('user_addresses')
-                                                    .insert({ ...currentAddress, user_id: user?.id });
+                                                    .insert(payload);
+                                                if (error) throw error;
                                             }
                                             setMessage({ type: 'success', text: 'Direccion guardada' });
                                             setIsEditingAddress(false);
                                             loadUser();
-                                        } catch {
-                                            setMessage({ type: 'error', text: 'Error al guardar' });
+                                        } catch (error: any) {
+                                            console.error(error);
+                                            setMessage({ type: 'error', text: error.message || 'Error al guardar' });
                                         }
                                         setSaving(false);
                                     }} className="space-y-4">
@@ -795,6 +901,74 @@ export default function ProfilePage() {
                         // Optional: Refresh orders or show global success message
                     }}
                 />
+            )}
+
+            {/* Password Change Modal */}
+            {isPasswordModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+                    <div className="bg-slate-900 border border-slate-700 rounded-lg p-6 max-w-md w-full shadow-xl">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-xl font-display text-white">Cambiar Contrasena</h3>
+                            <button onClick={() => setIsPasswordModalOpen(false)} className="text-slate-400 hover:text-white">
+                                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        {passwordError && (
+                            <div className="mb-4 p-3 bg-red-500/10 border border-red-500/50 text-red-400 text-sm rounded">
+                                {passwordError}
+                            </div>
+                        )}
+
+                        {passwordSuccess && (
+                            <div className="mb-4 p-3 bg-green-500/10 border border-green-500/50 text-green-400 text-sm rounded">
+                                Contrasena actualizada correctamente
+                            </div>
+                        )}
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-slate-300 mb-2">Contrasena actual</label>
+                                <input
+                                    type="password"
+                                    value={passwordData.current}
+                                    onChange={(e) => setPasswordData({ ...passwordData, current: e.target.value })}
+                                    className="w-full px-4 py-3 bg-slate-800 border border-slate-700 text-white focus:outline-none focus:border-accent rounded"
+                                    placeholder="Tu contrasena actual"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-300 mb-2">Nueva contrasena</label>
+                                <input
+                                    type="password"
+                                    value={passwordData.new}
+                                    onChange={(e) => setPasswordData({ ...passwordData, new: e.target.value })}
+                                    className="w-full px-4 py-3 bg-slate-800 border border-slate-700 text-white focus:outline-none focus:border-accent rounded"
+                                    placeholder="Minimo 6 caracteres"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-300 mb-2">Confirmar nueva contrasena</label>
+                                <input
+                                    type="password"
+                                    value={passwordData.confirm}
+                                    onChange={(e) => setPasswordData({ ...passwordData, confirm: e.target.value })}
+                                    className="w-full px-4 py-3 bg-slate-800 border border-slate-700 text-white focus:outline-none focus:border-accent rounded"
+                                    placeholder="Repite la nueva contrasena"
+                                />
+                            </div>
+                            <button
+                                onClick={handleChangePassword}
+                                disabled={passwordLoading || !passwordData.current || !passwordData.new || !passwordData.confirm}
+                                className="w-full py-3 bg-accent hover:bg-red-700 text-white font-bold uppercase tracking-wider transition-colors disabled:opacity-50 mt-4"
+                            >
+                                {passwordLoading ? 'Cambiando...' : 'Cambiar Contrasena'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );

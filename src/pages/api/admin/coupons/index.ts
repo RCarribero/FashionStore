@@ -3,7 +3,7 @@
  */
 import type { APIRoute } from 'astro';
 import { createClient } from '@supabase/supabase-js';
-import { sendEmail } from '../../../../lib/email';
+import { sendEmail } from '../../../../lib/services/email';
 
 const supabase = createClient(
     import.meta.env.PUBLIC_SUPABASE_URL,
