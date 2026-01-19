@@ -6,6 +6,7 @@ export const prerender = false;
 
 import StoreLayout from "../../modules/store/layouts/StoreLayout.astro";
 import ProductSelector from "../../modules/store/components/ProductSelector";
+import SizeRecommender from "../../components/products/SizeRecommender";
 import { supabase } from "../../modules/auth";
 import { formatPrice } from "../../shared/utils";
 import {
@@ -145,6 +146,7 @@ const promotionTitle = discountInfo?.promotion.public_title ?? null;
                     </div>
 
                     <div class="mt-auto">
+                        <SizeRecommender client:visible />
                         <ProductSelector
                             client:load
                             product={product}

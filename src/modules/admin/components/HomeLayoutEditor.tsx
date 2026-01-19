@@ -406,7 +406,7 @@ export default function HomeLayoutEditor() {
                                             type="text"
                                             value={editConfig.title || ''}
                                             onChange={(e) => setEditConfig({ ...editConfig, title: e.target.value })}
-                                            className="w-full px-4 py-2 border border-slate-300 rounded focus:border-accent focus:outline-none"
+                                            className="w-full px-4 py-2 border border-slate-300 rounded focus:border-accent focus:outline-none text-black"
                                             placeholder="Ej: NUEVA COLECCIÓN 2026"
                                         />
                                     </div>
@@ -416,7 +416,7 @@ export default function HomeLayoutEditor() {
                                             type="text"
                                             value={editConfig.subtitle || ''}
                                             onChange={(e) => setEditConfig({ ...editConfig, subtitle: e.target.value })}
-                                            className="w-full px-4 py-2 border border-slate-300 rounded focus:border-accent focus:outline-none"
+                                            className="w-full px-4 py-2 border border-slate-300 rounded focus:border-accent focus:outline-none text-black"
                                             placeholder="Ej: Define tu estilo"
                                         />
                                     </div>
@@ -426,7 +426,7 @@ export default function HomeLayoutEditor() {
                                             type="text"
                                             value={editConfig.buttonText || ''}
                                             onChange={(e) => setEditConfig({ ...editConfig, buttonText: e.target.value })}
-                                            className="w-full px-4 py-2 border border-slate-300 rounded focus:border-accent focus:outline-none"
+                                            className="w-full px-4 py-2 border border-slate-300 rounded focus:border-accent focus:outline-none text-black"
                                             placeholder="Ej: Comprar Ahora"
                                         />
                                     </div>
@@ -442,7 +442,7 @@ export default function HomeLayoutEditor() {
                                             type="text"
                                             value={editConfig.title || ''}
                                             onChange={(e) => setEditConfig({ ...editConfig, title: e.target.value })}
-                                            className="w-full px-4 py-2 border border-slate-300 rounded focus:border-accent focus:outline-none"
+                                            className="w-full px-4 py-2 border border-slate-300 rounded focus:border-accent focus:outline-none text-black"
                                             placeholder="Ej: OFERTA FLASH"
                                         />
                                     </div>
@@ -452,7 +452,7 @@ export default function HomeLayoutEditor() {
                                             type="text"
                                             value={editConfig.subtitle || ''}
                                             onChange={(e) => setEditConfig({ ...editConfig, subtitle: e.target.value })}
-                                            className="w-full px-4 py-2 border border-slate-300 rounded focus:border-accent focus:outline-none"
+                                            className="w-full px-4 py-2 border border-slate-300 rounded focus:border-accent focus:outline-none text-black"
                                             placeholder="Ej: Hasta -50%..."
                                         />
                                     </div>
@@ -468,7 +468,7 @@ export default function HomeLayoutEditor() {
                                             type="text"
                                             value={editConfig.title || ''}
                                             onChange={(e) => setEditConfig({ ...editConfig, title: e.target.value })}
-                                            className="w-full px-4 py-2 border border-slate-300 rounded focus:border-accent focus:outline-none"
+                                            className="w-full px-4 py-2 border border-slate-300 rounded focus:border-accent focus:outline-none text-black"
                                         />
                                     </div>
                                     <div>
@@ -476,7 +476,7 @@ export default function HomeLayoutEditor() {
                                         <textarea
                                             value={editConfig.subtitle || ''}
                                             onChange={(e) => setEditConfig({ ...editConfig, subtitle: e.target.value })}
-                                            className="w-full px-4 py-2 border border-slate-300 rounded focus:border-accent focus:outline-none"
+                                            className="w-full px-4 py-2 border border-slate-300 rounded focus:border-accent focus:outline-none text-black"
                                             rows={3}
                                         />
                                     </div>

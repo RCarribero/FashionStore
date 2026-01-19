@@ -49,7 +49,7 @@ export default function UserButton() {
             onMouseLeave={handleMouseLeave}
         >
             <a
-                href={isLoggedIn ? '/perfil' : '/login'}
+                href={isLoggedIn ? '/cuenta/perfil' : '/auth/login'}
                 className="block p-2 lg:p-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-full transition-all duration-200"
             >
                 <svg

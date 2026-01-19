@@ -4,8 +4,8 @@
  */
 import type { APIRoute } from 'astro';
 import { createClient } from '@supabase/supabase-js';
-import { sendEmail, formatPrice, formatDate } from '../../../lib/email';
-import { generateInvoicePDF } from '../../../lib/invoice';
+import { sendEmail, formatEmailPrice as formatPrice, formatEmailDate as formatDate } from '../../../lib/services/email';
+import { generateInvoicePDF } from '../../../lib/services/invoice';
 
 const supabase = createClient(
     import.meta.env.PUBLIC_SUPABASE_URL,

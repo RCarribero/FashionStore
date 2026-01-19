@@ -3,7 +3,7 @@
  * For debugging email configuration
  */
 import type { APIRoute } from 'astro';
-import { sendEmail } from '../../../lib/email';
+import { sendEmail } from '../../../lib/services/email';
 
 export const prerender = false;
 

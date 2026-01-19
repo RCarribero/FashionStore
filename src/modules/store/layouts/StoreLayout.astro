@@ -7,6 +7,8 @@ import BaseLayout from "../../../shared/layouts/BaseLayout.astro";
 import CartSlideOver, { CartTrigger } from "../components/CartSlideOver";
 import UserButton from "../components/UserButton";
 import NewsletterForm from "../components/NewsletterForm";
+import NewsletterPopup from "../../../components/ui/NewsletterPopup";
+import LiveSearch from "../../../components/ui/LiveSearch";
 import { ROUTES, STORE_NAV } from "../../../config";
 
 interface Props {
@@ -204,32 +206,7 @@ const currentPath = Astro.url.pathname;
                             id="searchContainer"
                             class="hidden absolute top-full right-0 left-0 mt-2 px-4 sm:px-6 lg:px-8"
                         >
-                            <form
-                                id="searchForm"
-                                class="max-w-md ml-auto bg-slate-900 border border-slate-700 p-4 shadow-xl"
-                            >
-                                <div class="flex gap-2">
-                                    <input
-                                        type="text"
-                                        id="searchInput"
-                                        placeholder="Buscar productos..."
-                                        class="flex-1 px-4 py-2 bg-slate-800 border border-slate-700 text-white placeholder:text-slate-500 focus:outline-none focus:border-accent"
-                                    />
-                                    <button
-                                        type="submit"
-                                        class="px-6 py-2 bg-accent hover:bg-red-700 text-white font-bold uppercase text-sm transition-colors"
-                                    >
-                                        Buscar
-                                    </button>
-                                    <button
-                                        type="button"
-                                        id="closeSearch"
-                                        class="px-3 py-2 text-slate-400 hover:text-white transition-colors"
-                                    >
-                                        ✕
-                                    </button>
-                                </div>
-                            </form>
+                            <LiveSearch client:load />
                         </div>
                         <!-- Search Icon -->
                         <button
@@ -550,26 +527,9 @@ const currentPath = Astro.url.pathname;
         // Search functionality
         const searchButton = document.getElementById("searchButton");
         const searchContainer = document.getElementById("searchContainer");
-        const searchForm = document.getElementById("searchForm");
-        const searchInput = document.getElementById("searchInput");
-        const closeSearch = document.getElementById("closeSearch");
-
         searchButton?.addEventListener("click", () => {
             searchContainer?.classList.toggle("hidden");
-            searchInput?.focus();
-        });
-
-        closeSearch?.addEventListener("click", () => {
-            searchContainer?.classList.add("hidden");
-            if (searchInput) searchInput.value = "";
-        });
-
-        searchForm?.addEventListener("submit", (e) => {
-            e.preventDefault();
-            const query = searchInput?.value.trim();
-            if (query) {
-                window.location.href = `/buscar?q=${encodeURIComponent(query)}`;
-            }
+            // Focus logic handled by React component autoFocus
         });
 
         // Mobile Menu
@@ -579,4 +539,7 @@ const currentPath = Astro.url.pathname;
             mobileMenu?.classList.toggle("hidden");
         });
     </script>
+
+    <!-- Newsletter Popup -->
+    <NewsletterPopup client:load delay={8000} />
 </BaseLayout>

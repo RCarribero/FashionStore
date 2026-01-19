@@ -9,33 +9,37 @@ export const ROUTES = {
     PRODUCTS: '/productos',
     PRODUCT_DETAIL: (slug: string) => `/productos/${slug}`,
     CATEGORY: (slug: string) => `/categoria/${slug}`,
-    SALE: '/ofertas',
-    OUTLET: '/outlet',
-    SEARCH: '/buscar',
-    CONTACT: '/contacto',
+    SALE: '/tienda/ofertas',
+    OUTLET: '/tienda/outlet',
+    SEARCH: '/tienda/buscar',
+    CONTACT: '/info/contacto',
 
     // Legal Pages
     LEGAL: {
-        PRIVACY: '/privacidad',
-        TERMS: '/terminos',
-        COOKIES: '/cookies',
-        RETURNS: '/devoluciones',
-        SHIPPING: '/envio',
+        PRIVACY: '/legal/privacidad',
+        TERMS: '/legal/terminos',
+        COOKIES: '/legal/cookies',
+        RETURNS: '/legal/devoluciones',
+        SHIPPING: '/info/envio',
     },
 
     // Auth Routes
     AUTH: {
-        LOGIN: '/login',
-        REGISTER: '/registro',
-        PROFILE: '/perfil',
+        LOGIN: '/auth/login',
+        REGISTER: '/auth/registro',
+        PROFILE: '/cuenta/perfil',
         ADMIN_LOGIN: '/admin/login',
         LOGOUT: '/api/auth/logout',
     },
 
+    // Shorthand for common auth routes
+    LOGIN: '/auth/login',
+    REGISTER: '/auth/registro',
+
     // Checkout Routes
     CHECKOUT: {
         INDEX: '/checkout',
-        SUCCESS: '/success',
+        SUCCESS: '/cuenta/success',
     },
 
     // Admin Routes

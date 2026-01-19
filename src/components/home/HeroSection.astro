@@ -1,0 +1,6 @@
+---
+import { Hero } from "../../../../components/home/Hero";
+const { component_config } = Astro.props;
+---
+
+<Hero client:load config={component_config} />
