@@ -74,7 +74,7 @@ export default function ProductSelector({ product, variants }: ProductSelectorPr
                             onClick={() => setSelectedVariantId(variant.id)}
                             disabled={variant.stock === 0}
                             className={`
-                                py-3 px-2 text-sm font-bold rounded-md border transition-all duration-200
+                            py-3 px-2 text-sm font-bold rounded-md border transition-all duration-200
                                 ${selectedVariantId === variant.id
                                     ? 'bg-white text-black border-white ring-2 ring-offset-2 ring-offset-slate-950 ring-white'
                                     : 'bg-slate-900 text-slate-300 border-slate-700 hover:border-slate-500'
@@ -82,7 +82,10 @@ export default function ProductSelector({ product, variants }: ProductSelectorPr
                                 ${variant.stock === 0 ? 'opacity-40 cursor-not-allowed decoration-slice' : ''}
                             `}
                         >
-                            {variant.size}
+                            {/* Heuristic: If size is numeric (2 digits), treat as shoe size (e.g. 39 -> Talla 39) */}
+                            {/^\d{2}$/.test(variant.size) || product?.category?.slug?.includes('zapatillas') || product?.category?.slug?.includes('calzado')
+                                ? `Talla ${variant.size}`
+                                : variant.size}
                         </button>
                     ))}
                 </div>
