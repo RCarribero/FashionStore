@@ -121,7 +121,7 @@ const getIcon = (name: string) => {
       const user = await getCurrentUser();
 
       if (!user) {
-        window.location.href = "/login?redirect=/gestion-fm";
+        window.location.href = "/auth/login?redirect=/gestion-fm";
         return;
       }
 

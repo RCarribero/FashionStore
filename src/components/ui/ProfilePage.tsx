@@ -82,7 +82,7 @@ export default function ProfilePage() {
         try {
             const currentUser = await getCurrentUser();
             if (!currentUser) {
-                window.location.href = '/login';
+                window.location.href = '/auth/login';
                 return;
             }
             setUser(currentUser as User);
@@ -157,7 +157,7 @@ export default function ProfilePage() {
             }
         } catch (error) {
             console.error('Error loading user:', error);
-            window.location.href = '/login';
+            window.location.href = '/auth/login';
         } finally {
             setLoading(false);
         }

@@ -25,7 +25,7 @@ export const ROUTES = {
 
     // Auth Routes
     AUTH: {
-        LOGIN: '/login',
+        LOGIN: '/auth/login',
         REGISTER: '/registro',
         PROFILE: '/perfil',
         ADMIN_LOGIN: '/admin/login',

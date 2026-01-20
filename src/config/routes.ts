@@ -13,7 +13,7 @@ export const ROUTES = {
     OUTLET: '/outlet',
 
     // Auth Routes
-    LOGIN: '/login',
+    LOGIN: '/auth/login',
     REGISTER: '/registro',
     PROFILE: '/perfil',
     AUTH: {
