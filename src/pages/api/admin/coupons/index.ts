@@ -45,12 +45,11 @@ export const POST: APIRoute = async ({ request }) => {
         }
 
         // Send email to newsletter subscribers for automatic promotions
-        // TEMPORARILY DISABLED
-        // if (couponData.is_automatic) {
-        //     sendPromotionEmails(coupon).catch(err => {
-        //         console.error('Error sending promotion emails:', err);
-        //     });
-        // }
+        if (couponData.is_automatic) {
+            sendPromotionEmails(coupon).catch(err => {
+                console.error('Error sending promotion emails:', err);
+            });
+        }
 
         return new Response(JSON.stringify(coupon), { status: 201 });
     } catch (error: any) {
