@@ -19,5 +19,8 @@ export default defineConfig({
         ssr: {
             noExternal: ['nanostores', '@nanostores/react', '@nanostores/persistent']
         }
+    },
+    security: {
+        checkOrigin: false
     }
 });
