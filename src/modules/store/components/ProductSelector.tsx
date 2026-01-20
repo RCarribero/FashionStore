@@ -149,7 +149,7 @@ export default function ProductSelector({ product, variants }: ProductSelectorPr
                 message="Debes iniciar sesión para añadir productos al carrito."
                 type="warning"
                 actionLabel="Iniciar Sesión"
-                onAction={() => window.location.href = '/login'}
+                onAction={() => window.location.href = '/auth/login'}
             />
         </div>
     );
