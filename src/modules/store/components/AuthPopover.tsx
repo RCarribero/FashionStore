@@ -55,7 +55,7 @@ export default function AuthPopover({ onClose }: Props) {
             <div className="space-y-3">
                 <a
                     href="/auth/login"
-                    className="block w-full py-3 bg-black text-white text-sm font-bold uppercase tracking-wider hover:!bg-white hover:!text-black border border-transparent hover:!border-black transition-colors"
+                    className="block w-full py-3 bg-black text-white text-sm font-bold uppercase tracking-wider hover:bg-[#ffffff] hover:text-[#000000] border border-transparent hover:border-[#000000] transition-colors"
                 >
                     INICIAR SESIÓN
                 </a>
