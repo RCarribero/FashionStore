@@ -66,7 +66,6 @@ export const GET: APIRoute = async ({ params, request, cookies }) => {
     try {
         let pdfBuffer: Buffer;
         if (type === 'credit_note') {
-            import { generateCreditNote } from '../../../../lib/invoicing';
             pdfBuffer = await generateCreditNote(order, userProfile);
         } else {
             pdfBuffer = await generateInvoice(order, userProfile);
