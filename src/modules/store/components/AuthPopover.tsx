@@ -57,7 +57,7 @@ export default function AuthPopover({ onClose }: Props) {
                     href="/auth/login"
                     className="block w-full py-3 bg-black text-white text-sm font-bold uppercase tracking-wider hover:!bg-white hover:!text-black border border-transparent hover:!border-black transition-colors"
                 >
-                    Inicia Sesion
+                    INICIAR SESIÓN
                 </a>
                 <a
                     href="/auth/registro"
