@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { ROUTES } from '../../../config';
 
 interface Props {
@@ -7,6 +7,8 @@ interface Props {
 }
 
 export default function AuthPopover({ onClose }: Props) {
+    const [isHovered, setIsHovered] = useState(false);
+
     return (
         <div className="absolute top-full right-0 mt-4 w-96 bg-white shadow-2xl z-50 p-8 text-center border border-slate-100 animate-fade-in-up before:content-[''] before:absolute before:-top-2 before:right-5 before:w-4 before:h-4 before:bg-white before:rotate-45">
             {/* Close Button */}
@@ -55,7 +57,12 @@ export default function AuthPopover({ onClose }: Props) {
             <div className="space-y-3">
                 <a
                     href="/auth/login"
-                    className="block w-full py-3 bg-black text-white text-sm font-bold uppercase tracking-wider hover:bg-[#ffffff] hover:text-[#000000] border border-transparent hover:border-[#000000] transition-colors"
+                    onMouseEnter={() => setIsHovered(true)}
+                    onMouseLeave={() => setIsHovered(false)}
+                    className={`block w-full py-3 text-sm font-bold uppercase tracking-wider border transition-all duration-200 ${isHovered
+                            ? 'bg-white text-black border-black'
+                            : 'bg-black text-white border-transparent'
+                        }`}
                 >
                     INICIAR SESIÓN
                 </a>
