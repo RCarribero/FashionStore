@@ -55,6 +55,12 @@ export const DELETE: APIRoute = async ({ params }) => {
     try {
         const { id } = params;
 
+        // First delete associated products (foreign key constraint)
+        await supabase
+            .from('coupon_products')
+            .delete()
+            .eq('coupon_id', id);
+
         const { error } = await supabase
             .from('coupons')
             .delete()

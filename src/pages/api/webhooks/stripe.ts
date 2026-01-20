@@ -168,6 +168,27 @@ export const POST: APIRoute = async ({ request }) => {
                     console.error('Failed to save order:', orderError);
                 } else {
                     console.log(`Order saved for user ${userId}`);
+
+                    // Send order confirmation email
+                    try {
+                        const siteUrl = import.meta.env.PUBLIC_SITE_URL || 'https://fashionstore.victoriafp.online';
+                        const emailResponse = await fetch(`${siteUrl}/api/email/order-confirmation`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                sessionId: expandedSession.id,
+                                userId: userId
+                            })
+                        });
+
+                        if (emailResponse.ok) {
+                            console.log('Order confirmation email sent');
+                        } else {
+                            console.error('Failed to send confirmation email:', await emailResponse.text());
+                        }
+                    } catch (emailError) {
+                        console.error('Error sending confirmation email:', emailError);
+                    }
                 }
             } catch (error) {
                 console.error('Error saving order:', error);
