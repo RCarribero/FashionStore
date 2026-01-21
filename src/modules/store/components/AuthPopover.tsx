@@ -59,12 +59,22 @@ export default function AuthPopover({ onClose }: Props) {
                     href="/auth/login"
                     onMouseEnter={() => setIsHovered(true)}
                     onMouseLeave={() => setIsHovered(false)}
-                    className={`block w-full py-3 text-sm font-bold uppercase tracking-wider border transition-all duration-200 ${isHovered
-                            ? 'bg-white text-black border-black'
-                            : 'bg-black text-white border-transparent'
-                        }`}
+                    style={{
+                        display: 'block',
+                        width: '100%',
+                        padding: '0.75rem',
+                        fontSize: '0.875rem',
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        textAlign: 'center',
+                        transition: 'all 0.2s ease',
+                        backgroundColor: isHovered ? '#ffffff' : '#000000',
+                        color: isHovered ? '#000000' : '#ffffff',
+                        border: isHovered ? '1px solid #000000' : '1px solid transparent',
+                    }}
                 >
-                    INICIAR SESIÓN
+                    INICIAR SESION
                 </a>
                 <a
                     href="/auth/registro"
