@@ -3,29 +3,28 @@
  * Shows login icon or user icon depending on auth state
  */
 import React, { useEffect, useState } from 'react';
-import { getCurrentUser } from '../../auth/services/auth-client.service';
-
 import AuthPopover from './AuthPopover';
 
 export default function UserButton() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [isMounted, setIsMounted] = useState(false);
     const [showPopover, setShowPopover] = useState(false);
-    let timeoutId: any = null;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
     useEffect(() => {
-        setIsMounted(true);
-        checkAuthStatus();
+        // Check auth status on mount
+        const checkAuth = async () => {
+            try {
+                // Dynamic import to avoid SSR issues
+                const { getCurrentUser } = await import('../../auth/services/auth-client.service');
+                const user = await getCurrentUser();
+                setIsLoggedIn(!!user);
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                setIsLoggedIn(false);
+            }
+        };
+        checkAuth();
     }, []);
-
-    const checkAuthStatus = async () => {
-        const user = await getCurrentUser();
-        setIsLoggedIn(!!user);
-    };
-
-    if (!isMounted) {
-        return null; // Avoid hydration mismatch
-    }
 
     const handleMouseEnter = () => {
         if (!isLoggedIn) {
@@ -38,7 +37,7 @@ export default function UserButton() {
         if (!isLoggedIn) {
             timeoutId = setTimeout(() => {
                 setShowPopover(false);
-            }, 300); // Small delay to allow moving to popover
+            }, 300);
         }
     };
 
