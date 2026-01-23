@@ -35,7 +35,28 @@ const getIcon = (name: string) => {
 ---
 
 <BaseLayout title={`${title} | Admin - FashionMarket`}>
-  <div class="min-h-screen bg-slate-950 flex">
+  <!-- Loading Screen -->
+  <div
+    id="admin-loading"
+    class="fixed inset-0 bg-slate-950 z-50 flex items-center justify-center"
+  >
+    <div class="text-center">
+      <div
+        class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-slate-700 border-t-accent mb-4"
+      >
+      </div>
+      <p class="text-slate-400 text-sm">
+        Verificando permisos de administrador...
+      </p>
+    </div>
+  </div>
+
+  <!-- Admin Panel (hidden until verified) -->
+  <div
+    id="admin-panel"
+    class="min-h-screen bg-slate-950 flex"
+    style="display: none;"
+  >
     <!-- Sidebar -->
     <aside class="w-64 bg-slate-900 border-r border-slate-800 fixed h-full">
       <div class="p-6 border-b border-slate-800">
@@ -134,7 +155,15 @@ const getIcon = (name: string) => {
 
       if (!profile?.is_admin) {
         window.location.href = "/?error=no_admin_access";
+        return;
       }
+
+      // Admin verified - hide loading and show panel
+      const loadingEl = document.getElementById("admin-loading");
+      const panelEl = document.getElementById("admin-panel");
+
+      if (loadingEl) loadingEl.style.display = "none";
+      if (panelEl) panelEl.style.display = "flex";
     }
 
     checkAdminAccess();
