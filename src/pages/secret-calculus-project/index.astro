@@ -1,0 +1,782 @@
+---
+import Layout from "../../layouts/CalculusLayout.astro";
+---
+
+<Layout title="Aprende Calculo Integral">
+  <div class="app-container">
+    <header class="header">
+      <h1>Calculo Integral Interactivo</h1>
+      <p class="subtitle">
+        Aprende integrales, areas y volumenes de forma practica
+      </p>
+    </header>
+
+    <nav class="tabs">
+      <button class="tab active" data-tab="indefinidas"
+        >Integrales Indefinidas</button
+      >
+      <button class="tab" data-tab="definidas">Integrales Definidas</button>
+      <button class="tab" data-tab="areas">Areas</button>
+      <button class="tab" data-tab="volumenes">Volumenes</button>
+      <button class="tab" data-tab="tutor">Tutor IA</button>
+    </nav>
+
+    <main class="content">
+      <section id="indefinidas" class="panel active">
+        <div class="theory-card">
+          <h2>Integrales Indefinidas</h2>
+          <p>
+            La integral indefinida es la antiderivada de una funcion. Si F'(x) =
+            f(x), entonces:
+          </p>
+          <div class="formula">$$\int f(x)\,dx = F(x) + C$$</div>
+          <h3>Reglas Basicas</h3>
+          <ul class="rules-list">
+            <li>
+              <span
+                class="formula"
+                set:html={"$$\\int x^n\\,dx = \\frac{x^{n+1}}{n+1} + C$$"}
+              />
+              (n distinto de -1)
+            </li>
+            <li><span class="formula">$$\int e^x\,dx = e^x + C$$</span></li>
+            <li>
+              <span class="formula">$$\int \sin(x)\,dx = -\cos(x) + C$$</span>
+            </li>
+            <li>
+              <span class="formula">$$\int \cos(x)\,dx = \sin(x) + C$$</span>
+            </li>
+          </ul>
+        </div>
+        <div class="practice-card">
+          <h3>Practica Interactiva</h3>
+          <div class="exercise" id="exercise-indef"></div>
+          <input
+            type="text"
+            id="answer-indef"
+            placeholder="Tu respuesta (ej: x^2 + C)"
+          />
+          <div class="btn-group">
+            <button class="btn primary" id="check-indef">Verificar</button>
+            <button class="btn secondary" id="hint-indef">Pista</button>
+            <button class="btn secondary" id="new-indef">Nuevo Ejercicio</button
+            >
+          </div>
+          <div class="feedback" id="feedback-indef"></div>
+        </div>
+      </section>
+
+      <section id="definidas" class="panel">
+        <div class="theory-card">
+          <h2>Integrales Definidas</h2>
+          <p>
+            La integral definida calcula el area neta bajo una curva entre dos
+            puntos:
+          </p>
+          <div class="formula">$$\int_a^b f(x)\,dx = F(b) - F(a)$$</div>
+          <h3>Teorema Fundamental del Calculo</h3>
+          <p>
+            Si F es antiderivada de f en [a,b], entonces la integral definida es
+            la diferencia de F evaluada en los limites.
+          </p>
+        </div>
+        <div class="practice-card">
+          <h3>Practica Interactiva</h3>
+          <div class="exercise" id="exercise-def"></div>
+          <input
+            type="text"
+            id="answer-def"
+            placeholder="Tu respuesta numerica"
+          />
+          <div class="btn-group">
+            <button class="btn primary" id="check-def">Verificar</button>
+            <button class="btn secondary" id="hint-def">Pista</button>
+            <button class="btn secondary" id="new-def">Nuevo Ejercicio</button>
+          </div>
+          <div class="feedback" id="feedback-def"></div>
+        </div>
+        <div class="visualizer-card">
+          <h3>Visualizador</h3>
+          <canvas id="canvas-def" width="500" height="300"></canvas>
+        </div>
+      </section>
+
+      <section id="areas" class="panel">
+        <div class="theory-card">
+          <h2>Calculo de Areas</h2>
+          <p>El area entre dos curvas f(x) y g(x) donde f(x) >= g(x):</p>
+          <div class="formula">$$A = \int_a^b [f(x) - g(x)]\,dx$$</div>
+        </div>
+        <div class="practice-card">
+          <h3>Calculadora de Areas</h3>
+          <div class="input-group">
+            <label
+              >f(x) = <input
+                type="text"
+                id="func-f"
+                value="x^2"
+                placeholder="x^2"
+              /></label
+            >
+            <label
+              >g(x) = <input
+                type="text"
+                id="func-g"
+                value="x"
+                placeholder="x"
+              /></label
+            >
+            <label>a = <input type="number" id="area-a" value="0" /></label>
+            <label>b = <input type="number" id="area-b" value="1" /></label>
+          </div>
+          <button class="btn primary" id="calc-area">Calcular Area</button>
+          <div class="result" id="result-area"></div>
+          <canvas id="canvas-area" width="500" height="300"></canvas>
+        </div>
+      </section>
+
+      <section id="volumenes" class="panel">
+        <div class="theory-card">
+          <h2>Volumenes de Revolucion</h2>
+          <h3>Metodo de Discos</h3>
+          <div class="formula">$$V = \pi \int_a^b [f(x)]^2\,dx$$</div>
+          <h3>Metodo de Capas</h3>
+          <div class="formula">$$V = 2\pi \int_a^b x \cdot f(x)\,dx$$</div>
+        </div>
+        <div class="practice-card">
+          <h3>Calculadora de Volumenes</h3>
+          <div class="input-group">
+            <label
+              >f(x) = <input
+                type="text"
+                id="vol-func"
+                value="x^2"
+                placeholder="x^2"
+              /></label
+            >
+            <label>a = <input type="number" id="vol-a" value="0" /></label>
+            <label>b = <input type="number" id="vol-b" value="2" /></label>
+            <label
+              >Metodo:
+              <select id="vol-method">
+                <option value="discos">Discos</option>
+                <option value="capas">Capas</option>
+              </select>
+            </label>
+          </div>
+          <button class="btn primary" id="calc-vol">Calcular Volumen</button>
+          <div class="result" id="result-vol"></div>
+        </div>
+      </section>
+
+      <section id="tutor" class="panel">
+        <div class="theory-card">
+          <h2>Tutor Inteligente</h2>
+          <p>
+            Escribe cualquier integral y tu solucion propuesta. El sistema
+            verificara si tu respuesta es correcta.
+          </p>
+        </div>
+        <div class="practice-card">
+          <h3>Verificador de Integrales</h3>
+          <div class="input-group" style="display: block;">
+            <label style="margin-bottom: 1rem;">
+              Integral a resolver (ej: x^2):
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span class="formula">$$\int$$</span>
+                <input
+                  type="text"
+                  id="tutor-func"
+                  placeholder="x^2"
+                  style="margin-bottom: 0;"
+                />
+                <span class="formula">$$dx$$</span>
+              </div>
+            </label>
+            <label>
+              Tu respuesta propuesta:
+              <input type="text" id="tutor-answer" placeholder="x^3/3" />
+            </label>
+          </div>
+          <div class="btn-group" style="margin-top: 1rem;">
+            <button class="btn primary" id="tutor-check"
+              >Verificar Respuesta</button
+            >
+            <button class="btn secondary" id="tutor-solve"
+              >Ver Solucion Correcta</button
+            >
+            <button class="btn secondary" id="tutor-scan" title="Simulacion"
+              >📸 Escanear (Demo)</button
+            >
+          </div>
+          <div class="feedback" id="feedback-tutor"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+</Layout>
+
+<style>
+  .app-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  .header {
+    text-align: center;
+    padding: 2rem 0;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    background-clip: text;
+    -webkit-background-clip: text;
+  }
+  .header h1 {
+    font-size: 2.5rem;
+    -webkit-text-fill-color: transparent;
+  }
+  .subtitle {
+    color: var(--text-secondary);
+    margin-top: 0.5rem;
+  }
+  .tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin: 2rem 0;
+    flex-wrap: wrap;
+  }
+  .tab {
+    padding: 0.75rem 1.5rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    transition: all 0.3s;
+  }
+  .tab:hover,
+  .tab.active {
+    background: var(--accent-primary);
+    color: white;
+    border-color: var(--accent-primary);
+  }
+  .panel {
+    display: none;
+  }
+  .panel.active {
+    display: block;
+  }
+  .theory-card,
+  .practice-card,
+  .visualizer-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .theory-card h2 {
+    color: var(--accent-primary);
+    margin-bottom: 1rem;
+  }
+  .theory-card h3 {
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .formula {
+    background: var(--bg-secondary);
+    padding: 1rem;
+    border-radius: 8px;
+    margin: 1rem 0;
+    overflow-x: auto;
+  }
+  .rules-list {
+    list-style: none;
+  }
+  .rules-list li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-color);
+  }
+  .exercise {
+    font-size: 1.25rem;
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    min-height: 60px;
+  }
+  input[type="text"],
+  input[type="number"],
+  select {
+    padding: 0.75rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-primary);
+    width: 100%;
+    margin-bottom: 1rem;
+    font-family: "JetBrains Mono", monospace;
+  }
+  .input-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+  }
+  .input-group label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+  }
+  .btn-group {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s;
+  }
+  .btn.primary {
+    background: var(--accent-primary);
+    color: white;
+  }
+  .btn.primary:hover {
+    background: var(--accent-secondary);
+    transform: translateY(-2px);
+  }
+  .btn.secondary {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+  }
+  .btn.secondary:hover {
+    background: var(--bg-card);
+  }
+  .feedback,
+  .result {
+    margin-top: 1rem;
+    padding: 1rem;
+    border-radius: 8px;
+    min-height: 50px;
+  }
+  .feedback.correct {
+    background: rgba(16, 185, 129, 0.2);
+    color: var(--success);
+  }
+  .feedback.incorrect {
+    background: rgba(239, 68, 68, 0.2);
+    color: var(--error);
+  }
+  .result {
+    background: var(--bg-secondary);
+  }
+  canvas {
+    width: 100%;
+    max-width: 500px;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    margin-top: 1rem;
+  }
+</style>
+
+<script>
+  // Tab navigation
+  document.querySelectorAll(".tab").forEach((tab) => {
+    tab.addEventListener("click", () => {
+      document
+        .querySelectorAll(".tab")
+        .forEach((t) => t.classList.remove("active"));
+      document
+        .querySelectorAll(".panel")
+        .forEach((p) => p.classList.remove("active"));
+      tab.classList.add("active");
+      document
+        .getElementById((tab as HTMLElement).dataset.tab!)
+        ?.classList.add("active");
+    });
+  });
+
+  // Math parser
+  function parseMath(expr: string, x: number): number {
+    const sanitized = expr
+      .replace(/\^/g, "**")
+      .replace(/sin/g, "Math.sin")
+      .replace(/cos/g, "Math.cos")
+      .replace(/tan/g, "Math.tan")
+      .replace(/sqrt/g, "Math.sqrt")
+      .replace(/log/g, "Math.log")
+      .replace(/exp/g, "Math.exp")
+      .replace(/pi/g, "Math.PI")
+      .replace(/e(?![x])/g, "Math.E");
+    try {
+      return new Function("x", `return ${sanitized}`)(x);
+    } catch {
+      return NaN;
+    }
+  }
+
+  // Numerical integration (Simpson's rule)
+  function integrate(
+    f: (x: number) => number,
+    a: number,
+    b: number,
+    n = 100,
+  ): number {
+    const h = (b - a) / n;
+    let sum = f(a) + f(b);
+    for (let i = 1; i < n; i++) {
+      sum += (i % 2 === 0 ? 2 : 4) * f(a + i * h);
+    }
+    return (h / 3) * sum;
+  }
+
+  // Indefinite integral exercises
+  const indefExercises = [
+    {
+      problem: "\\int 2x\\,dx",
+      answer: "x^2",
+      hint: "Usa la regla de potencias",
+    },
+    { problem: "\\int 3x^2\\,dx", answer: "x^3", hint: "Divide entre n+1" },
+    {
+      problem: "\\int 4x^3\\,dx",
+      answer: "x^4",
+      hint: "La derivada de x^4 es 4x^3",
+    },
+    { problem: "\\int 6x^5\\,dx", answer: "x^6", hint: "Aplica la formula" },
+  ];
+  let currentIndefIdx = 0;
+
+  function loadIndefExercise() {
+    const ex = indefExercises[currentIndefIdx];
+    document.getElementById("exercise-indef")!.innerHTML =
+      "$$" + ex.problem + "$$";
+    document.getElementById("feedback-indef")!.innerHTML = "";
+    (document.getElementById("answer-indef") as HTMLInputElement).value = "";
+    if (window.MathJax) window.MathJax.typesetPromise?.();
+  }
+
+  document.getElementById("check-indef")?.addEventListener("click", () => {
+    const input = (
+      document.getElementById("answer-indef") as HTMLInputElement
+    ).value
+      .toLowerCase()
+      .replace(/\s/g, "")
+      .replace("+c", "");
+    const correct = indefExercises[currentIndefIdx].answer.toLowerCase();
+    const fb = document.getElementById("feedback-indef")!;
+    if (input === correct) {
+      fb.className = "feedback correct";
+      fb.textContent = "Correcto! Recuerda agregar + C";
+    } else {
+      fb.className = "feedback incorrect";
+      fb.textContent = "Incorrecto. La respuesta es " + correct + " + C";
+    }
+  });
+
+  document.getElementById("hint-indef")?.addEventListener("click", () => {
+    document.getElementById("feedback-indef")!.textContent =
+      indefExercises[currentIndefIdx].hint;
+    document.getElementById("feedback-indef")!.className = "feedback";
+  });
+
+  document.getElementById("new-indef")?.addEventListener("click", () => {
+    currentIndefIdx = (currentIndefIdx + 1) % indefExercises.length;
+    loadIndefExercise();
+  });
+
+  // Definite integral exercises
+  const defExercises = [
+    { problem: "\\int_0^2 x\\,dx", answer: 2, func: "x", a: 0, b: 2 },
+    { problem: "\\int_0^1 x^2\\,dx", answer: 1 / 3, func: "x^2", a: 0, b: 1 },
+    { problem: "\\int_1^3 2x\\,dx", answer: 8, func: "2*x", a: 1, b: 3 },
+  ];
+  let currentDefIdx = 0;
+
+  function loadDefExercise() {
+    const ex = defExercises[currentDefIdx];
+    document.getElementById("exercise-def")!.innerHTML =
+      "$$" + ex.problem + "$$";
+    document.getElementById("feedback-def")!.innerHTML = "";
+    (document.getElementById("answer-def") as HTMLInputElement).value = "";
+    if (window.MathJax) window.MathJax.typesetPromise?.();
+    drawDefiniteIntegral(ex.func, ex.a, ex.b);
+  }
+
+  function drawDefiniteIntegral(funcStr: string, a: number, b: number) {
+    const canvas = document.getElementById("canvas-def") as HTMLCanvasElement;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d")!;
+    const w = canvas.width,
+      h = canvas.height;
+    ctx.fillStyle = "#12121a";
+    ctx.fillRect(0, 0, w, h);
+
+    const xMin = a - 1,
+      xMax = b + 1;
+    const toX = (x: number) => ((x - xMin) / (xMax - xMin)) * w;
+    const toY = (y: number) => h - (y / 10) * h;
+
+    // Draw axes
+    ctx.strokeStyle = "#444";
+    ctx.beginPath();
+    ctx.moveTo(0, toY(0));
+    ctx.lineTo(w, toY(0));
+    ctx.stroke();
+
+    // Draw area
+    ctx.fillStyle = "rgba(99, 102, 241, 0.3)";
+    ctx.beginPath();
+    ctx.moveTo(toX(a), toY(0));
+    for (let x = a; x <= b; x += 0.05) {
+      ctx.lineTo(toX(x), toY(parseMath(funcStr, x)));
+    }
+    ctx.lineTo(toX(b), toY(0));
+    ctx.closePath();
+    ctx.fill();
+
+    // Draw function
+    ctx.strokeStyle = "#6366f1";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let x = xMin; x <= xMax; x += 0.05) {
+      const y = parseMath(funcStr, x);
+      if (x === xMin) ctx.moveTo(toX(x), toY(y));
+      else ctx.lineTo(toX(x), toY(y));
+    }
+    ctx.stroke();
+  }
+
+  document.getElementById("check-def")?.addEventListener("click", () => {
+    const input = parseFloat(
+      (document.getElementById("answer-def") as HTMLInputElement).value,
+    );
+    const correct = defExercises[currentDefIdx].answer;
+    const fb = document.getElementById("feedback-def")!;
+    if (Math.abs(input - correct) < 0.01) {
+      fb.className = "feedback correct";
+      fb.textContent = "Correcto!";
+    } else {
+      fb.className = "feedback incorrect";
+      fb.textContent = "Incorrecto. La respuesta es " + correct.toFixed(4);
+    }
+  });
+
+  document.getElementById("hint-def")?.addEventListener("click", () => {
+    const ex = defExercises[currentDefIdx];
+    document.getElementById("feedback-def")!.textContent =
+      "Evalua la antiderivada en x=" + ex.b + " y resta el valor en x=" + ex.a;
+    document.getElementById("feedback-def")!.className = "feedback";
+  });
+
+  document.getElementById("new-def")?.addEventListener("click", () => {
+    currentDefIdx = (currentDefIdx + 1) % defExercises.length;
+    loadDefExercise();
+  });
+
+  // Area calculator
+  document.getElementById("calc-area")?.addEventListener("click", () => {
+    const f = (document.getElementById("func-f") as HTMLInputElement).value;
+    const g = (document.getElementById("func-g") as HTMLInputElement).value;
+    const a = parseFloat(
+      (document.getElementById("area-a") as HTMLInputElement).value,
+    );
+    const b = parseFloat(
+      (document.getElementById("area-b") as HTMLInputElement).value,
+    );
+
+    const area = integrate(
+      (x) => Math.abs(parseMath(f, x) - parseMath(g, x)),
+      a,
+      b,
+    );
+    document.getElementById("result-area")!.innerHTML =
+      "Area = " + area.toFixed(4) + " unidades cuadradas";
+
+    drawAreaBetweenCurves(f, g, a, b);
+  });
+
+  function drawAreaBetweenCurves(f: string, g: string, a: number, b: number) {
+    const canvas = document.getElementById("canvas-area") as HTMLCanvasElement;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d")!;
+    const w = canvas.width,
+      h = canvas.height;
+    ctx.fillStyle = "#12121a";
+    ctx.fillRect(0, 0, w, h);
+
+    const xMin = a - 0.5,
+      xMax = b + 0.5;
+    const toX = (x: number) => ((x - xMin) / (xMax - xMin)) * w;
+
+    let yMax = 0;
+    for (let x = a; x <= b; x += 0.1) {
+      yMax = Math.max(
+        yMax,
+        Math.abs(parseMath(f, x)),
+        Math.abs(parseMath(g, x)),
+      );
+    }
+    yMax = yMax * 1.2 || 5;
+    const toY = (y: number) => h / 2 - (y / yMax) * (h / 2);
+
+    // Draw area
+    ctx.fillStyle = "rgba(139, 92, 246, 0.3)";
+    ctx.beginPath();
+    ctx.moveTo(toX(a), toY(parseMath(g, a)));
+    for (let x = a; x <= b; x += 0.05) ctx.lineTo(toX(x), toY(parseMath(g, x)));
+    for (let x = b; x >= a; x -= 0.05) ctx.lineTo(toX(x), toY(parseMath(f, x)));
+    ctx.closePath();
+    ctx.fill();
+
+    // Draw f(x)
+    ctx.strokeStyle = "#6366f1";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let x = xMin; x <= xMax; x += 0.05) {
+      if (x === xMin) ctx.moveTo(toX(x), toY(parseMath(f, x)));
+      else ctx.lineTo(toX(x), toY(parseMath(f, x)));
+    }
+    ctx.stroke();
+
+    // Draw g(x)
+    ctx.strokeStyle = "#10b981";
+    ctx.beginPath();
+    for (let x = xMin; x <= xMax; x += 0.05) {
+      if (x === xMin) ctx.moveTo(toX(x), toY(parseMath(g, x)));
+      else ctx.lineTo(toX(x), toY(parseMath(g, x)));
+    }
+    ctx.stroke();
+  }
+
+  // Volume calculator
+  document.getElementById("calc-vol")?.addEventListener("click", () => {
+    const f = (document.getElementById("vol-func") as HTMLInputElement).value;
+    const a = parseFloat(
+      (document.getElementById("vol-a") as HTMLInputElement).value,
+    );
+    const b = parseFloat(
+      (document.getElementById("vol-b") as HTMLInputElement).value,
+    );
+    const method = (document.getElementById("vol-method") as HTMLSelectElement)
+      .value;
+
+    let vol: number;
+    if (method === "discos") {
+      vol = Math.PI * integrate((x) => Math.pow(parseMath(f, x), 2), a, b);
+    } else {
+      vol = 2 * Math.PI * integrate((x) => x * parseMath(f, x), a, b);
+    }
+
+    document.getElementById("result-vol")!.innerHTML =
+      "Volumen = " +
+      vol.toFixed(4) +
+      " unidades cubicas (" +
+      (vol / Math.PI).toFixed(4) +
+      " pi)";
+  });
+
+  // Initialize
+  document.addEventListener("DOMContentLoaded", () => {
+    loadIndefExercise();
+    loadDefExercise();
+  });
+
+  declare global {
+    interface Window {
+      MathJax: any;
+    }
+  }
+
+  import nerdamer from "nerdamer";
+  import "nerdamer/Algebra.js";
+  import "nerdamer/Calculus.js";
+  import "nerdamer/Solve.js";
+
+  // Tutor logic
+  document.getElementById("tutor-check")?.addEventListener("click", () => {
+    try {
+      const func = (document.getElementById("tutor-func") as HTMLInputElement)
+        .value;
+      const userAnswer = (
+        document.getElementById("tutor-answer") as HTMLInputElement
+      ).value;
+      const feedback = document.getElementById("feedback-tutor")!;
+
+      if (!func || !userAnswer) {
+        feedback.className = "feedback incorrect";
+        feedback.textContent = "Por favor ingresa la funcion y tu respuesta.";
+        return;
+      }
+
+      // Calculate derivative of user answer to see if it matches function
+      // Or calculate integral of function and compare
+      const integration = nerdamer(`integrate(${func}, x)`);
+      const userVal = nerdamer(userAnswer);
+
+      // Compare: Is difference constant? (Indefinite integral can differ by C)
+      // d/dx(userAnswer) should equal func
+      const derivUser = nerdamer(`diff(${userAnswer}, x)`);
+      const funcExpr = nerdamer(func);
+
+      // Simplify difference
+      const diff = (
+        nerdamer(`${derivUser.toString()} - (${func})`) as any
+      ).simplify();
+
+      if (diff.toString() === "0") {
+        feedback.className = "feedback correct";
+        feedback.textContent =
+          "¡Correcto! Tu respuesta es una primitiva valida.";
+      } else {
+        feedback.className = "feedback incorrect";
+        feedback.textContent =
+          "Incorrecto. La derivada de tu respuesta no coincide con la funcion original.";
+      }
+    } catch (e) {
+      const feedback = document.getElementById("feedback-tutor")!;
+      feedback.className = "feedback incorrect";
+      feedback.textContent =
+        "Error al procesar. Revisa la sintaxis matematica.";
+      console.error(e);
+    }
+  });
+
+  document.getElementById("tutor-solve")?.addEventListener("click", () => {
+    try {
+      const func = (document.getElementById("tutor-func") as HTMLInputElement)
+        .value;
+      const feedback = document.getElementById("feedback-tutor")!;
+
+      if (!func) {
+        feedback.className = "feedback incorrect";
+        feedback.textContent = "Por favor ingresa una funcion.";
+        return;
+      }
+
+      const result = nerdamer(`integrate(${func}, x)`).toTeX();
+      feedback.className = "feedback";
+      feedback.innerHTML = `Solucion: $$ ${result} + C $$`;
+      if (window.MathJax) window.MathJax.typesetPromise?.();
+    } catch (e) {
+      document.getElementById("feedback-tutor")!.textContent =
+        "Error al resolver.";
+    }
+  });
+
+  document.getElementById("tutor-scan")?.addEventListener("click", () => {
+    // Simulation of photo scanning
+    const feedback = document.getElementById("feedback-tutor")!;
+    feedback.className = "feedback";
+    feedback.textContent =
+      "📷 Analizando imagen... (Simulado: detectado 'sin(x)^2')";
+
+    setTimeout(() => {
+      (document.getElementById("tutor-func") as HTMLInputElement).value =
+        "sin(x)^2";
+      feedback.textContent =
+        "Imagen procesada. Intenta resolver la integral detectada.";
+    }, 1500);
+  });
+</script>
