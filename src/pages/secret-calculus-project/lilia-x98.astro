@@ -16,21 +16,18 @@ import "../../styles/global.css";
         />
     </head>
     <body
-        class="bg-[#fdfbf7] text-[#5c5552] flex flex-col items-center justify-center min-h-screen antialiased selection:bg-rose-100 selection:text-rose-900"
+        class="bg-[#fdfbf7] text-[#5c5552] flex flex-col items-center justify-center min-h-screen overflow-hidden antialiased selection:bg-rose-100 selection:text-rose-900"
     >
-        <!-- Removed overflow-hidden from body to prevent accidental clipping of large SVG -->
-
         <main
             class="relative z-10 flex flex-col items-center w-full max-w-2xl p-8"
         >
             <!-- Lily Stage -->
-            <!-- Increased height to accommodate the taller viewBox -->
             <div
-                class="relative w-64 h-80 md:w-80 md:h-96 mb-12 transition-transform duration-700 ease-out cursor-pointer md:cursor-default"
+                class="relative w-64 h-64 md:w-80 md:h-80 mb-24 transition-transform duration-700 ease-out cursor-pointer md:cursor-default"
             >
                 <svg
                     id="lily-svg"
-                    viewBox="0 0 200 300"
+                    viewBox="0 0 200 200"
                     xmlns="http://www.w3.org/2000/svg"
                     class="w-full h-full overflow-visible"
                 >
@@ -46,10 +43,9 @@ import "../../styles/global.css";
                         class="origin-center opacity-0 scale-50"
                         style="transform-box: fill-box;"></g>
 
-                    <!-- Center seed/bulb -->
                     <circle
                         cx="100"
-                        cy="200"
+                        cy="100"
                         r="3"
                         fill="#FFE4E1"
                         class="opacity-80"></circle>
@@ -88,10 +84,12 @@ import "../../styles/global.css";
         </main>
 
         <style>
+            /* Custom tweaks */
             body {
                 font-family: "Cormorant Garamond", serif;
             }
 
+            /* Smooth reveal animation class */
             .bloom-active {
                 animation: bloom-spring 2.5s cubic-bezier(0.34, 1.56, 0.64, 1)
                     forwards;
@@ -108,12 +106,34 @@ import "../../styles/global.css";
                 }
             }
 
+            /* Subtle floating animation for petals */
+            @keyframes float-petal {
+                0%,
+                100% {
+                    transform: translateY(0);
+                }
+                50% {
+                    transform: translateY(-2px);
+                }
+            }
+
             @keyframes fadeIn {
                 from {
                     opacity: 0;
                 }
                 to {
                     opacity: 1;
+                }
+            }
+
+            @keyframes bloom-petal {
+                0% {
+                    opacity: 0;
+                    transform: scale(0) rotate(0deg);
+                }
+                100% {
+                    opacity: 1;
+                    transform: scale(1.5) rotate(var(--angle, 0deg));
                 }
             }
 
@@ -144,6 +164,7 @@ import "../../styles/global.css";
                 return Math.random() * (max - min) + min;
             }
 
+            // Split creation into two parts to handle layers
             function createFlower(
                 stemsGroup: HTMLElement,
                 headsGroup: HTMLElement,
@@ -156,10 +177,9 @@ import "../../styles/global.css";
 
                 // 1. Draw Stem
                 const stem = document.createElementNS(SVG_NS, "path");
-                // Anchor stem base at x=100, y=280 (bottom of new viewBox)
-                const startX = 100 + (x - 100) * 0.4;
-                const startY = 280;
-                const endY = y + 8;
+                const startX = 100 + (x - 100) * 0.5; // Tighter bunch at bottom
+                const startY = 190;
+                const endY = y + 8; // Go slightly higher into the head area
 
                 const cX = (startX + x) / 2 + randomRange(-5, 5);
                 const cY = (startY + endY) / 2;
@@ -196,19 +216,20 @@ import "../../styles/global.css";
 
                 // --- LAYER 2: FLOWER HEADS ---
 
-                // 3. Draw Tulip Emoji (User preference)
-                const flower = document.createElementNS(SVG_NS, "text");
-                flower.textContent = "🌷";
-                flower.setAttribute("x", x.toString());
-                flower.setAttribute("y", (y + 5).toString());
-                flower.setAttribute("text-anchor", "middle");
-                flower.setAttribute("dominant-baseline", "central");
-                flower.setAttribute("font-size", (28 * scale).toString());
+                // 3. Draw Rose Emoji
+                const rose = document.createElementNS(SVG_NS, "text");
+                rose.textContent = "🌷";
+                rose.setAttribute("x", x.toString());
+                rose.setAttribute("y", (y + 5).toString());
+                rose.setAttribute("text-anchor", "middle");
+                rose.setAttribute("dominant-baseline", "central");
+                rose.setAttribute("font-size", (28 * scale).toString()); // Slightly large
 
-                flower.style.opacity = "0";
-                flower.style.transformOrigin = `${x}px ${y}px`;
+                rose.style.opacity = "0";
+                rose.style.transformOrigin = `${x}px ${y}px`;
+                rose.style.animation = `bloom-emoji 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) ${delayBase + 0.5}s forwards`;
 
-                headsGroup.appendChild(flower);
+                headsGroup.appendChild(rose);
             }
 
             function generateBouquet() {
@@ -219,12 +240,13 @@ import "../../styles/global.css";
                 stemsGroup.innerHTML = "";
                 headsGroup.innerHTML = "";
 
-                // Heart shape parametric equations
+                // Heart shape parametric equations:
+                // x = 16 sin^3 t
+                // y = 13 cos t - 5 cos 2t - 2 cos 3t - cos 4t
                 const scaleX = 3.5;
                 const scaleY = 3.5;
                 const offsetX = 100;
-                // Move down significantly to avoid top clipping in the 300px height viewbox
-                const offsetY = 160;
+                const offsetY = 120; // Lowered center to fix clipping
 
                 const positions = [];
                 // Generate points along the heart curve
@@ -243,6 +265,8 @@ import "../../styles/global.css";
                         s: randomRange(0.8, 1.1),
                     });
                 }
+
+            
 
                 positions.forEach((pos, idx) => {
                     const nx = pos.x + randomRange(-2, 2);
@@ -303,10 +327,8 @@ import "../../styles/global.css";
                 });
             }
 
-            // Auto start bloom on desktop after small delay
-            if (window.matchMedia("(min-width: 768px)").matches) {
-                setTimeout(bloom, 800);
-            }
+            // Auto start bloom on ALL devices after small delay
+            setTimeout(bloom, 800);
 
             /**
              * TYPEWRITER LOGIC
@@ -314,7 +336,7 @@ import "../../styles/global.css";
             const messages = [
                 "Para el amor de mi vida:",
                 "Cuanto más tiempo estoy contigo más te amo.",
-                "Desde el dia que se cruzaron nuestras miradas.",
+                "Desde el dia que se cruzaron nuestras mirada",
                 "Me enamoré locamente de ti.",
                 "- I Love You!",
                 "-..",
@@ -338,35 +360,39 @@ import "../../styles/global.css";
             async function startTypewriter() {
                 if (!typeContainer || !cursor) return;
 
+                // Create a dedicated text span before the cursor
                 const textSpan = document.createElement("div");
                 typeContainer.insertBefore(textSpan, cursor);
 
                 for (let i = 0; i < messages.length; i++) {
                     const line = document.createElement("p");
                     if (i === messages.length - 1)
-                        line.className = "mt-4 font-bold text-rose-800";
+                        line.className = "mt-4 font-bold text-rose-800"; // Signature style
                     else line.className = "mb-3";
 
                     textSpan.appendChild(line);
 
                     await typeText(messages[i], line);
-                    await new Promise((r) => setTimeout(r, 800));
+                    await new Promise((r) => setTimeout(r, 800)); // Pause between lines
                 }
 
+                // Remove cursor at end
                 cursor.style.display = "none";
+
+                // Show counter
                 revealCounter();
             }
 
             /**
              * COUNTER LOGIC
              */
-            const START_DATE = new Date("2025-08-20T23:53:00+02:00");
+            const START_DATE = new Date("2025-08-20T23:53:00+02:00"); // Spain Time ISO
 
             function updateCounter() {
                 const now = new Date();
                 const diff = now.getTime() - START_DATE.getTime();
 
-                if (diff < 0) return;
+                if (diff < 0) return; // Future date safety
 
                 const days = Math.floor(diff / (1000 * 60 * 60 * 24));
                 const hours = Math.floor(
@@ -393,7 +419,7 @@ import "../../styles/global.css";
                 if (section) {
                     section.classList.remove("opacity-0", "translate-y-4");
                     setInterval(updateCounter, 1000);
-                    updateCounter();
+                    updateCounter(); // Immediate run
                 }
             }
         </script>
