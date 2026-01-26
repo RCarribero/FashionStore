@@ -207,7 +207,6 @@ import "../../styles/global.css";
 
                 flower.style.opacity = "0";
                 flower.style.transformOrigin = `${x}px ${y}px`;
-                flower.style.animation = `bloom-emoji 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) ${delayBase + 0.5}s forwards`;
 
                 headsGroup.appendChild(flower);
             }
@@ -242,15 +241,6 @@ import "../../styles/global.css";
                         x: offsetX + hx * scaleX,
                         y: offsetY + hy * scaleY - 15,
                         s: randomRange(0.8, 1.1),
-                    });
-                }
-
-                // Fill center
-                for (let i = 0; i < 6; i++) {
-                    positions.push({
-                        x: offsetX + randomRange(-20, 20),
-                        y: offsetY + randomRange(-20, 10),
-                        s: randomRange(0.7, 1.0),
                     });
                 }
 
