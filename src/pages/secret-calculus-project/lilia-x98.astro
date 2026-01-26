@@ -240,13 +240,17 @@ import "../../styles/global.css";
                 stemsGroup.innerHTML = "";
                 headsGroup.innerHTML = "";
 
+                // Responsive configuration
+                const isMobile = window.innerWidth < 768;
+
                 // Heart shape parametric equations:
                 // x = 16 sin^3 t
                 // y = 13 cos t - 5 cos 2t - 2 cos 3t - cos 4t
-                const scaleX = 3.5;
-                const scaleY = 3.5;
+                const scaleX = isMobile ? 2.5 : 3.5;
+                const scaleY = isMobile ? 2.5 : 3.5;
                 const offsetX = 100;
-                const offsetY = 120; // Lowered center to fix clipping
+                // Move UP on mobile (80) to leave room for text below, DOWN on desktop (120) for visual balance
+                const offsetY = isMobile ? 80 : 120;
 
                 const positions = [];
                 // Generate points along the heart curve
@@ -265,8 +269,6 @@ import "../../styles/global.css";
                         s: randomRange(0.8, 1.1),
                     });
                 }
-
-            
 
                 positions.forEach((pos, idx) => {
                     const nx = pos.x + randomRange(-2, 2);
