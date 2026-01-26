@@ -106,34 +106,12 @@
                 }
             }
 
-            /* Subtle floating animation for petals */
-            @keyframes float-petal {
-                0%,
-                100% {
-                    transform: translateY(0);
-                }
-                50% {
-                    transform: translateY(-2px);
-                }
-            }
-
             @keyframes fadeIn {
                 from {
                     opacity: 0;
                 }
                 to {
                     opacity: 1;
-                }
-            }
-
-            @keyframes bloom-petal {
-                0% {
-                    opacity: 0;
-                    transform: scale(0) rotate(0deg);
-                }
-                100% {
-                    opacity: 1;
-                    transform: scale(1.5) rotate(var(--angle, 0deg));
                 }
             }
 
@@ -216,20 +194,20 @@
 
                 // --- LAYER 2: FLOWER HEADS ---
 
-                // 3. Draw Rose Emoji
-                const rose = document.createElementNS(SVG_NS, "text");
-                rose.textContent = "🌷";
-                rose.setAttribute("x", x.toString());
-                rose.setAttribute("y", (y + 5).toString());
-                rose.setAttribute("text-anchor", "middle");
-                rose.setAttribute("dominant-baseline", "central");
-                rose.setAttribute("font-size", (28 * scale).toString()); // Slightly large
+                // 3. Draw Lily/Lotus Emoji
+                const flower = document.createElementNS(SVG_NS, "text");
+                flower.textContent = "🌷"; // Lotus for "Lirio"
+                flower.setAttribute("x", x.toString());
+                flower.setAttribute("y", (y + 5).toString());
+                flower.setAttribute("text-anchor", "middle");
+                flower.setAttribute("dominant-baseline", "central");
+                flower.setAttribute("font-size", (28 * scale).toString());
 
-                rose.style.opacity = "0";
-                rose.style.transformOrigin = `${x}px ${y}px`;
-                rose.style.animation = `bloom-emoji 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) ${delayBase + 0.5}s forwards`;
+                flower.style.opacity = "0";
+                flower.style.transformOrigin = `${x}px ${y}px`;
+                flower.style.animation = `bloom-emoji 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) ${delayBase + 0.5}s forwards`;
 
-                headsGroup.appendChild(rose);
+                headsGroup.appendChild(flower);
             }
 
             function generateBouquet() {
@@ -240,13 +218,11 @@
                 stemsGroup.innerHTML = "";
                 headsGroup.innerHTML = "";
 
-                // Heart shape parametric equations:
-                // x = 16 sin^3 t
-                // y = 13 cos t - 5 cos 2t - 2 cos 3t - cos 4t
+                // Heart shape parametric equations
                 const scaleX = 3.5;
                 const scaleY = 3.5;
                 const offsetX = 100;
-                const offsetY = 100;
+                const offsetY = 120; // LOWERED from 100 to 120 to fix clipping
 
                 const positions = [];
                 // Generate points along the heart curve
@@ -262,10 +238,18 @@
                     positions.push({
                         x: offsetX + hx * scaleX,
                         y: offsetY + hy * scaleY - 15,
-                        s: randomRange(0.8, 1.1), // Slightly bigger scale for emojis
+                        s: randomRange(0.8, 1.1),
                     });
                 }
 
+                // Fill center
+                for (let i = 0; i < 6; i++) {
+                    positions.push({
+                        x: offsetX + randomRange(-20, 20),
+                        y: offsetY + randomRange(-20, 10),
+                        s: randomRange(0.7, 1.0),
+                    });
+                }
 
                 positions.forEach((pos, idx) => {
                     const nx = pos.x + randomRange(-2, 2);
