@@ -193,6 +193,8 @@ export const POST: APIRoute = async ({ request }) => {
             } catch (error) {
                 console.error('Error saving order:', error);
             }
+        } else {
+            console.log('Processed guest order (not saved to DB), Session:', expandedSession.id);
         }
 
         // Clear stock reservations after successful purchase
