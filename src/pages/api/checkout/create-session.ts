@@ -59,6 +59,8 @@ export const POST: APIRoute = async ({ request }) => {
                 console.log('Checkout - No profile found, treating as first purchase');
                 isFirstPurchase = true;
             }
+        } else {
+            console.log('Checkout - Guest user, skipping first purchase check');
         }
 
         console.log('Checkout - isFirstPurchase:', isFirstPurchase);

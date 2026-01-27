@@ -134,7 +134,7 @@ export default function CheckoutForm() {
         setErrorMessage(null);
 
         try {
-            // Check if we need to save this new address
+                // Check if we need to save this new address (Only for logged in users)
             if (user && selectedAddressId === 'new' && saveNewAddress) {
                 const { error: saveError } = await supabase
                     .from('user_addresses')
