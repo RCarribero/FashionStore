@@ -27,7 +27,7 @@ export default function AuthPopover({ onClose }: Props) {
             </button>
 
             {/* Title */}
-            <h3 className="font-display font-bold text-lg leading-tight mb-6 mt-2 uppercase">
+            <h3 className="font-display font-bold text-lg leading-tight mb-6 mt-2 uppercase text-black">
                 ¡Registrate o crea tu cuenta para disfrutar de mas ventajas!
             </h3>
 

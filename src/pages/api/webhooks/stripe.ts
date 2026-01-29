@@ -2,9 +2,7 @@ import type { APIRoute } from 'astro';
 import Stripe from 'stripe';
 import { supabase } from '../../../modules/auth';
 
-const stripe = new Stripe(import.meta.env.STRIPE_SECRET_KEY || 'sk_test_51Snb87CFzYRW6R0mDBbMEZRsdMg3damRDQ4a0h4whl5OPZM0YO9NRdntcOw3GuPKPcdaPRQwT8OTw03zwYbgdU1200ivNMMn3i', {
-    apiVersion: '2024-12-18.acacia',
-});
+const stripe = new Stripe(import.meta.env.STRIPE_SECRET_KEY || 'sk_test_51Snb87CFzYRW6R0mDBbMEZRsdMg3damRDQ4a0h4whl5OPZM0YO9NRdntcOw3GuPKPcdaPRQwT8OTw03zwYbgdU1200ivNMMn3i');
 
 const endpointSecret = import.meta.env.STRIPE_WEBHOOK_SECRET;
 
@@ -130,71 +128,71 @@ export const POST: APIRoute = async ({ request }) => {
             }
         }
 
-        // Save order to database
-        if (userId) {
-            try {
-                // Build order items from line items
-                const orderItems = lineItems
-                    .filter(item => {
-                        const product = item.price?.product as Stripe.Product;
-                        return product?.metadata?.productId;
-                    })
-                    .map(item => {
-                        const product = item.price?.product as Stripe.Product;
-                        return {
-                            productId: product.metadata.productId,
-                            name: product.name,
-                            size: product.metadata.size,
-                            quantity: item.quantity,
-                            price: item.amount_total,
-                            image: product.images?.[0] || ''
-                        };
+        // Save order to database (both logged-in users and guests)
+        try {
+            // Build order items from line items
+            const orderItems = lineItems
+                .filter(item => {
+                    const product = item.price?.product as Stripe.Product;
+                    return product?.metadata?.productId;
+                })
+                .map(item => {
+                    const product = item.price?.product as Stripe.Product;
+                    return {
+                        productId: product.metadata.productId,
+                        name: product.name,
+                        size: product.metadata.size,
+                        quantity: item.quantity,
+                        price: item.amount_total,
+                        image: product.images?.[0] || ''
+                    };
+                });
+
+            // Get customer email from session
+            const customerEmail = expandedSession.customer_email || expandedSession.customer_details?.email;
+
+            const { error: orderError } = await supabase
+                .from('orders')
+                .insert({
+                    user_id: userId || null, // null for guest orders
+                    stripe_session_id: expandedSession.id,
+                    status: 'completed',
+                    total_amount: expandedSession.amount_total,
+                    discount_amount: expandedSession.total_details?.amount_discount || 0,
+                    shipping_amount: expandedSession.total_details?.amount_shipping || 0,
+                    items: orderItems,
+                    coupon_code: couponCode
+                });
+
+            if (orderError) {
+                console.error('Failed to save order:', orderError);
+            } else {
+                console.log(`Order saved ${userId ? `for user ${userId}` : `for guest (${customerEmail})`}`);
+
+                // Send order confirmation email
+                try {
+                    const siteUrl = import.meta.env.PUBLIC_SITE_URL || 'https://fashionstore.victoriafp.online';
+                    const emailResponse = await fetch(`${siteUrl}/api/email/order-confirmation`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            sessionId: expandedSession.id,
+                            userId: userId,
+                            customerEmail: customerEmail // Also send email for guests
+                        })
                     });
 
-                const { error: orderError } = await supabase
-                    .from('orders')
-                    .insert({
-                        user_id: userId,
-                        stripe_session_id: expandedSession.id,
-                        status: 'completed',
-                        total_amount: expandedSession.amount_total,
-                        discount_amount: expandedSession.total_details?.amount_discount || 0,
-                        shipping_amount: expandedSession.total_details?.amount_shipping || 0,
-                        items: orderItems,
-                        coupon_code: couponCode // Optional: Save which coupon was used if column exists (might need schema update)
-                    });
-
-                if (orderError) {
-                    console.error('Failed to save order:', orderError);
-                } else {
-                    console.log(`Order saved for user ${userId}`);
-
-                    // Send order confirmation email
-                    try {
-                        const siteUrl = import.meta.env.PUBLIC_SITE_URL || 'https://fashionstore.victoriafp.online';
-                        const emailResponse = await fetch(`${siteUrl}/api/email/order-confirmation`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                sessionId: expandedSession.id,
-                                userId: userId
-                            })
-                        });
-
-                        if (emailResponse.ok) {
-                            console.log('Order confirmation email sent');
-                        } else {
-                            console.error('Failed to send confirmation email:', await emailResponse.text());
-                        }
-                    } catch (emailError) {
-                        console.error('Error sending confirmation email:', emailError);
+                    if (emailResponse.ok) {
+                        console.log('Order confirmation email sent');
+                    } else {
+                        console.error('Failed to send confirmation email:', await emailResponse.text());
                     }
+                } catch (emailError) {
+                    console.error('Error sending confirmation email:', emailError);
                 }
-            } catch (error) {
-                console.error('Error saving order:', error);
             }
-        } else {
-            console.log('Processed guest order (not saved to DB), Session:', expandedSession.id);
+        } catch (error) {
+            console.error('Error saving order:', error);
         }
 
         // Clear stock reservations after successful purchase

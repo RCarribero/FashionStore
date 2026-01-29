@@ -34,7 +34,7 @@ const { count: userCount } = await supabase
 // Get total revenue
 const { data: revenueData } = await supabase
     .from("orders")
-    .select("total_amount, created_at, status");
+    .select("total_amount, created_at, status, shipping_status");
 
 const totalRevenue =
     revenueData?.reduce((sum, o) => sum + (o.total_amount || 0), 0) || 0;
@@ -84,20 +84,42 @@ const chartSalesData = {
     ],
 };
 
-// Calculate Order Status Distribution
-const statuses = ["pending", "processing", "shipped", "delivered", "cancelled"];
-const statusCounts = statuses.map(
-    (s) => revenueData?.filter((o) => o.status === s).length || 0,
+// Calculate Order Status Distribution (using shipping_status for order flow)
+const shippingStatuses = [
+    "processing",
+    "shipped",
+    "in_transit",
+    "delivered",
+    "cancelled",
+];
+const statusCounts = shippingStatuses.map(
+    (s) =>
+        revenueData?.filter((o: any) => (o.shipping_status || o.status) === s)
+            .length || 0,
 );
+
+// Also count completed orders without shipping_status as "processing"
+const completedWithoutShipping =
+    revenueData?.filter(
+        (o: any) => o.status === "completed" && !o.shipping_status,
+    ).length || 0;
+statusCounts[0] += completedWithoutShipping; // Add to processing
+
 const chartStatusData = {
-    labels: statuses.map((s) => s.charAt(0).toUpperCase() + s.slice(1)),
+    labels: [
+        "En Preparacion",
+        "Enviado",
+        "En Transito",
+        "Entregado",
+        "Cancelado",
+    ],
     datasets: [
         {
             data: statusCounts,
             backgroundColor: [
-                "#fbbf24", // pending - amber
-                "#3b82f6", // processing - blue
-                "#a855f7", // shipped - purple
+                "#fbbf24", // processing - amber
+                "#3b82f6", // shipped - blue
+                "#a855f7", // in_transit - purple
                 "#22c55e", // delivered - green
                 "#ef4444", // cancelled - red
             ],
