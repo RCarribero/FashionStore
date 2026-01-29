@@ -18,37 +18,50 @@ interface Props {
 
 const { title, description } = Astro.props;
 const currentPath = Astro.url.pathname;
+
+import { getActivePromotions } from "../../../shared/utils/promotions";
+
+const promotions = await getActivePromotions();
+const featuredPromotion = promotions.length > 0 ? promotions[0] : null;
 ---
 
 <BaseLayout title={title} description={description}>
     <div class="min-h-screen flex flex-col bg-black">
         <!-- Promo Banner - Animated Ticker -->
-        <div class="bg-black text-white py-2 overflow-hidden">
+        <div
+            class="bg-black text-white py-2 overflow-hidden border-b border-slate-800"
+        >
             <div class="animate-marquee whitespace-nowrap flex">
-                <span class="mx-8 text-sm font-medium tracking-wide"
-                    >ENVIO GRATIS EN PEDIDOS +100</span
-                >
-                <span class="mx-8 text-sm text-accent font-bold"
-                    >NUEVA COLECCION 2026</span
-                >
-                <span class="mx-8 text-sm font-medium tracking-wide"
-                    >DEVOLUCIONES GRATUITAS 30 DIAS</span
-                >
-                <span class="mx-8 text-sm text-accent font-bold"
-                    >-20% EN TU PRIMERA COMPRA</span
-                >
-                <span class="mx-8 text-sm font-medium tracking-wide"
-                    >ENVIO GRATIS EN PEDIDOS +100</span
-                >
-                <span class="mx-8 text-sm text-accent font-bold"
-                    >NUEVA COLECCION 2026</span
-                >
-                <span class="mx-8 text-sm font-medium tracking-wide"
-                    >DEVOLUCIONES GRATUITAS 30 DIAS</span
-                >
-                <span class="mx-8 text-sm text-accent font-bold"
-                    >-20% EN TU PRIMERA COMPRA</span
-                >
+                {
+                    /* Repetimos el contenido 4 veces para asegurar un scroll infinito fluido sin huecos */
+                }
+                {
+                    [1, 2, 3, 4].map(() => (
+                        <>
+                            {featuredPromotion && (
+                                <span class="mx-8 text-sm font-black tracking-wide text-[#E60000]">
+                                    {featuredPromotion.public_title}{" "}
+                                    {featuredPromotion.discount_type ===
+                                    "percentage"
+                                        ? `-${featuredPromotion.discount_value}%`
+                                        : `-${featuredPromotion.discount_value}€`}
+                                </span>
+                            )}
+                            <span class="mx-8 text-sm font-medium tracking-wide">
+                                ENVIO GRATIS EN PEDIDOS +100€
+                            </span>
+                            <span class="mx-8 text-sm text-accent font-bold">
+                                NUEVA COLECCION 2026
+                            </span>
+                            <span class="mx-8 text-sm font-medium tracking-wide">
+                                DEVOLUCIONES GRATUITAS 30 DIAS
+                            </span>
+                            <span class="mx-8 text-sm text-accent font-bold">
+                                -20% EN TU PRIMERA COMPRA
+                            </span>
+                        </>
+                    ))
+                }
             </div>
         </div>
 

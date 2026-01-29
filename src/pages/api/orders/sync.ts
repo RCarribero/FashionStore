@@ -105,93 +105,92 @@ export const POST: APIRoute = async ({ request }) => {
             console.log(`Marked first purchase for user ${userId}`);
         }
 
-        // 3. Create order record
-        if (userId) {
-            const orderItems = lineItems
-                .filter(item => {
-                    const product = item.price?.product as Stripe.Product;
-                    return product?.metadata?.productId;
-                })
-                .map(item => {
-                    const product = item.price?.product as Stripe.Product;
-                    return {
-                        productId: product.metadata.productId,
-                        name: product.name,
-                        size: product.metadata.size,
-                        quantity: item.quantity,
-                        price: item.amount_total
-                    };
-                });
+        // 3. Create order record (for both logged-in users and guests)
+        const orderItems = lineItems
+            .filter(item => {
+                const product = item.price?.product as Stripe.Product;
+                return product?.metadata?.productId;
+            })
+            .map(item => {
+                const product = item.price?.product as Stripe.Product;
+                return {
+                    productId: product.metadata.productId,
+                    name: product.name,
+                    size: product.metadata.size,
+                    quantity: item.quantity,
+                    price: item.amount_total
+                };
+            });
 
-            // Generate tracking number: FM-XXXXXXXX
-            const trackingNumber = 'FM-' + Math.random().toString(36).substring(2, 10).toUpperCase();
+        // Generate tracking number: FM-XXXXXXXX
+        const trackingNumber = 'FM-' + Math.random().toString(36).substring(2, 10).toUpperCase();
 
-            // Calculate estimated delivery (3-5 business days)
-            const estimatedDelivery = new Date();
-            estimatedDelivery.setDate(estimatedDelivery.getDate() + Math.floor(Math.random() * 3) + 3);
+        // Calculate estimated delivery (3-5 business days)
+        const estimatedDelivery = new Date();
+        estimatedDelivery.setDate(estimatedDelivery.getDate() + Math.floor(Math.random() * 3) + 3);
 
-            const { data: order, error } = await supabase
-                .from('orders')
-                .insert({
-                    user_id: userId,
-                    stripe_session_id: sessionId,
-                    status: 'completed',
-                    shipping_status: 'processing',
-                    tracking_number: trackingNumber,
-                    estimated_delivery: estimatedDelivery.toISOString(),
-                    total_amount: session.amount_total,
-                    discount_amount: session.total_details?.amount_discount || 0,
-                    shipping_amount: session.total_details?.amount_shipping || 0,
-                    items: orderItems
-                })
-                .select()
-                .single();
+        // Get customer email from session
+        const customerEmail = session.customer_email || session.customer_details?.email;
 
-            if (order) {
-                // Create initial shipment event
-                await supabase.from('shipment_events').insert({
-                    order_id: order.id,
-                    status: 'processing',
-                    location: 'Almacén FashionMarket',
-                    description: 'Pedido recibido y en preparación'
-                });
-            }
+        const { data: order, error } = await supabase
+            .from('orders')
+            .insert({
+                user_id: userId || null, // null for guest orders
+                stripe_session_id: sessionId,
+                status: 'completed',
+                shipping_status: 'processing',
+                tracking_number: trackingNumber,
+                estimated_delivery: estimatedDelivery.toISOString(),
+                total_amount: session.amount_total,
+                discount_amount: session.total_details?.amount_discount || 0,
+                shipping_amount: session.total_details?.amount_shipping || 0,
+                items: orderItems
+            })
+            .select()
+            .single();
 
-            if (error) {
-                console.error('Failed to create order:', error);
-                return new Response(JSON.stringify({ error: 'Failed to create order' }), { status: 500 });
-            }
-
-            // Send order confirmation email
-            const customerEmail = session.customer_details?.email;
-            if (customerEmail && order) {
-                try {
-                    await fetch(new URL('/api/email/order-confirmation', request.url).toString(), {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            orderId: order.id,
-                            recipientEmail: customerEmail
-                        })
-                    });
-                    console.log(`Confirmation email sent to ${customerEmail}`);
-                } catch (emailError) {
-                    console.error('Failed to send confirmation email:', emailError);
-                    // Don't fail the order sync if email fails
-                }
-            }
-
-            console.log(`Order created: ${order.id}`);
-            return new Response(JSON.stringify({
-                success: true,
-                orderId: order.id,
-                stockUpdated: true,
-                firstPurchaseMarked: isFirstPurchase,
-                emailSent: !!customerEmail
-            }), { status: 200 });
+        if (order) {
+            // Create initial shipment event
+            await supabase.from('shipment_events').insert({
+                order_id: order.id,
+                status: 'processing',
+                location: 'Almacén FashionMarket',
+                description: 'Pedido recibido y en preparación'
+            });
         }
 
-        return new Response(JSON.stringify({ success: true, message: 'Synced without user' }), { status: 200 });
+        if (error) {
+            console.error('Failed to create order:', error);
+            return new Response(JSON.stringify({ error: 'Failed to create order', details: error.message }), { status: 500 });
+        }
+
+        // Send order confirmation email
+        if (customerEmail && order) {
+            try {
+                await fetch(new URL('/api/email/order-confirmation', request.url).toString(), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        orderId: order.id,
+                        recipientEmail: customerEmail
+                    })
+                });
+                console.log(`Confirmation email sent to ${customerEmail}`);
+            } catch (emailError) {
+                console.error('Failed to send confirmation email:', emailError);
+                // Don't fail the order sync if email fails
+            }
+        }
+
+        console.log(`Order created: ${order.id} ${userId ? `for user ${userId}` : `for guest (${customerEmail})`}`);
+        return new Response(JSON.stringify({
+            success: true,
+            orderId: order.id,
+            stockUpdated: true,
+            firstPurchaseMarked: isFirstPurchase && !!userId,
+            emailSent: !!customerEmail,
+            isGuest: !userId
+        }), { status: 200 });
 
     } catch (error: any) {
         console.error('Sync error:', error);

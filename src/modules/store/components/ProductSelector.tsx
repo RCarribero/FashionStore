@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useStore } from '@nanostores/react';
 import { $isCartOpen, addToCart, openCart } from '../stores/cart.store';
 import type { Product } from '../../../shared/types';
-import Modal from '../../../shared/components/Modal';
 
 interface Variant {
     id: string;
@@ -19,7 +18,6 @@ interface ProductSelectorProps {
 export default function ProductSelector({ product, variants }: ProductSelectorProps) {
     const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
     const [isAdding, setIsAdding] = useState(false);
-    const [showLoginModal, setShowLoginModal] = useState(false);
 
     const selectedVariant = variants.find(v => v.id === selectedVariantId);
 
@@ -31,16 +29,6 @@ export default function ProductSelector({ product, variants }: ProductSelectorPr
 
     const handleAddToCart = async () => {
         if (!selectedVariant) return;
-
-        // Import on client-side only
-        const { getCurrentUser } = await import('../../auth/services/auth-client.service');
-
-        // Check if user is authenticated
-        const user = await getCurrentUser();
-        if (!user) {
-            setShowLoginModal(true);
-            return;
-        }
 
         setIsAdding(true);
         try {
@@ -143,17 +131,6 @@ export default function ProductSelector({ product, variants }: ProductSelectorPr
                     </>
                 )}
             </button>
-
-            {/* Login Required Modal */}
-            <Modal
-                isOpen={showLoginModal}
-                onClose={() => setShowLoginModal(false)}
-                title="Inicio de sesión requerido"
-                message="Debes iniciar sesión para añadir productos al carrito."
-                type="warning"
-                actionLabel="Iniciar Sesión"
-                onAction={() => window.location.href = '/auth/login'}
-            />
         </div>
     );
 }
