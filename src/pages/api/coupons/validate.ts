@@ -23,6 +23,14 @@ export const POST: APIRoute = async ({ request }) => {
             }), { status: 400 });
         }
 
+        // Require authentication for all coupons
+        if (!userId) {
+            return new Response(JSON.stringify({
+                valid: false,
+                error: 'Debes iniciar sesion para usar cupones'
+            }), { status: 200 });
+        }
+
         // Get coupon with product associations
         const { data: coupon, error } = await supabase
             .from('coupons')
