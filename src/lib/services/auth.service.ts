@@ -4,9 +4,9 @@
  */
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { APP_CONFIG } from '../../../config/app';
-import { AUTH_CONFIG } from '../config';
-import type { Session } from '../../../shared/types';
+import { APP_CONFIG } from '../config/app';
+import { AUTH_CONFIG } from '../db';
+import type { Session } from '../../shared/types';
 
 const supabaseUrl = APP_CONFIG.supabase.url || 'https://placeholder.supabase.co';
 const supabaseAnonKey = APP_CONFIG.supabase.anonKey || 'placeholder';
