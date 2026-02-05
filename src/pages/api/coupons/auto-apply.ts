@@ -14,7 +14,7 @@ export const prerender = false;
 
 export const POST: APIRoute = async ({ request }) => {
     try {
-        const { purchaseAmount, cartItems } = await request.json();
+        const { purchaseAmount, cartItems, userId } = await request.json();
 
         // fetch active automatic coupons
         const now = new Date().toISOString();
@@ -34,6 +34,25 @@ export const POST: APIRoute = async ({ request }) => {
         let maxDiscount = -1;
 
         for (const coupon of coupons) {
+            // Skip first_purchase_only coupons if user is not logged in
+            if (coupon.first_purchase_only && !userId) {
+                continue;
+            }
+
+            // If it's a first purchase coupon and user is logged in, check if they've already purchased
+            if (coupon.first_purchase_only && userId) {
+                const { data: profile } = await supabase
+                    .from('user_profiles')
+                    .select('has_made_purchase')
+                    .eq('id', userId)
+                    .single();
+
+                // Skip this coupon if user has already made a purchase
+                if (profile && profile.has_made_purchase === true) {
+                    continue;
+                }
+            }
+
             // Validate Dates
             const validFrom = coupon.valid_from ? new Date(coupon.valid_from) : null;
             const validUntil = coupon.valid_until ? new Date(coupon.valid_until) : null;

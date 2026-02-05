@@ -325,14 +325,21 @@ function CartFooter({ cart, cartTotal, onClose }: { cart: { items: CartItem[] };
                 quantity: item.quantity
             }));
 
-            // Get userId for first-purchase coupon validation
+            // Get userId - REQUIRED for coupon application
             let userId;
             try {
                 const { getCurrentUser } = await import('../../auth/services/auth-client.service');
                 const user = await getCurrentUser();
                 userId = user?.id;
             } catch (e) {
-                // User not logged in, continue without userId
+                // User not logged in
+            }
+
+            // Require authentication for coupon usage
+            if (!userId) {
+                setCouponError('Debes iniciar sesion para usar cupones');
+                setCouponLoading(false);
+                return;
             }
 
             // Parse multiple codes (comma or space separated)

@@ -103,54 +103,11 @@ export function clearCoupon() {
 
 /**
  * Check for automatic promotions
- * checks backend for best active promotion
+ * DISABLED - Coupons must be applied manually by logged-in users only
  */
 export async function checkAutomaticPromotions() {
-    const currentCoupon = $coupon.get();
-
-    // If a manual coupon is applied, don't overwrite it with auto-promo
-    if (currentCoupon && !currentCoupon.is_automatic) {
-        return;
-    }
-
-    const cart = $cart.get();
-    if (cart.items.length === 0) {
-        if (currentCoupon?.is_automatic) clearCoupon();
-        return;
-    }
-
-    const total = cart.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-
-    try {
-        const response = await fetch('/api/coupons/auto-apply', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                purchaseAmount: total,
-                cartItems: cart.items
-            })
-        });
-
-        const data = await response.json();
-
-        if (data.valid && data.coupon) {
-            setCoupon({
-                code: data.coupon.code,
-                discount_type: data.coupon.discount_type,
-                discount_value: data.coupon.discount_value,
-                discountAmount: data.discountAmount,
-                id: data.coupon.id,
-                is_automatic: true,
-                public_title: data.coupon.public_title
-            });
-        } else {
-            if (currentCoupon?.is_automatic) {
-                clearCoupon();
-            }
-        }
-    } catch (err) {
-        console.error("Auto-promo check failed", err);
-    }
+    // Auto-apply disabled - coupons require manual application by authenticated users
+    return;
 }
 
 /**

@@ -43,7 +43,7 @@ export default function UserButton() {
 
     return (
         <div
-            className="relative hidden lg:block"
+            className="relative"
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
         >
