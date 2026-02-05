@@ -17,7 +17,8 @@ export default defineConfig({
     ],
     vite: {
         ssr: {
-            noExternal: ['nanostores', '@nanostores/react', '@nanostores/persistent']
+            noExternal: ['nanostores', '@nanostores/react', '@nanostores/persistent'],
+            external: ['pdfkit', 'nodemailer']
         }
     },
     security: {
