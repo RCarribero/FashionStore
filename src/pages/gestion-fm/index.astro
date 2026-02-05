@@ -108,15 +108,15 @@ const chartStatusData = {
                 // Map tailwind classes to hex codes for Chart.js
                 // This is a simplification; ideally we'd have hex in the config or computed styles
                 const colorMap: Record<string, string> = {
-                    'bg-yellow-500': '#eab308',
-                    'bg-indigo-500': '#6366f1',
-                    'bg-blue-500': '#3b82f6',
-                    'bg-purple-500': '#a855f7',
-                    'bg-purple-600': '#9333ea',
-                    'bg-orange-500': '#f97316',
-                    'bg-green-500': '#22c55e',
-                    'bg-red-500': '#ef4444',
-                    'bg-gray-500': '#6b7280'
+                    "bg-yellow-500": "#eab308",
+                    "bg-indigo-500": "#6366f1",
+                    "bg-blue-500": "#3b82f6",
+                    "bg-purple-500": "#a855f7",
+                    "bg-purple-600": "#9333ea",
+                    "bg-orange-500": "#f97316",
+                    "bg-green-500": "#22c55e",
+                    "bg-red-500": "#ef4444",
+                    "bg-gray-500": "#6b7280"
                 };
                 return colorMap[ORDER_STATUSES[s].color] || '#cbd5e1';
             }),
