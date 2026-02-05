@@ -1,7 +1,9 @@
 ---
 import BaseLayout from '../../shared/layouts/BaseLayout.astro';
 import { createClient } from '@supabase/supabase-js';
-import ProductCard from '../../components/products/ProductCard';
+import ProductCard from '../../components/products/ProductCard.astro';
+
+export const prerender = false;
 
 const { slug } = Astro.params;
 
@@ -92,7 +94,7 @@ if (productIds.length > 0) {
                     return (
                         <div class="my-12 max-w-sm mx-auto p-6 bg-slate-50 rounded-xl border border-slate-200">
                             <div class="text-xs uppercase text-slate-500 font-bold mb-4 text-center">Producto Destacado</div>
-                            <ProductCard product={product} client:visible />
+                            <ProductCard product={product} />
                         </div>
                     );
                 }
