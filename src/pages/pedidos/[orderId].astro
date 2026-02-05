@@ -78,31 +78,35 @@ const { orderId } = Astro.params;
     }
 
     function renderTracking(data: any) {
-        const { order, events } = data;
+                const { order, events } = data;
 
-        const statusLabels: Record<string, string> = {
-            processing: "En Preparación",
-            shipped: "Enviado",
-            in_transit: "En Tránsito",
-            out_for_delivery: "En Reparto",
-            delivered: "Entregado",
+        // Import map (simulated as variable since we are inside a script tag without module system fully active for imports in this context unless using a store)
+        // Ideally we pass this from server side, but for now we reconstruct or pass as data attribute. 
+        // Better yet, let's just define the lookups based on the standard we just created to avoid script import complexity in Astro inline scripts.
+        
+        const statusConfig = {
+            pending: { label: 'Pendiente', color: 'bg-yellow-500' },
+            paid: { label: 'Pagado', color: 'bg-indigo-500' },
+            processing: { label: 'En Preparación', color: 'bg-blue-500' },
+            shipped: { label: 'Enviado', color: 'bg-purple-500' },
+            in_transit: { label: 'En Tránsito', color: 'bg-purple-600' },
+            out_for_delivery: { label: 'En Reparto', color: 'bg-orange-500' },
+            delivered: { label: 'Entregado', color: 'bg-green-500' },
+            cancelled: { label: 'Cancelado', color: 'bg-red-500' },
+            refunded: { label: 'Reembolsado', color: 'bg-gray-500' }
         };
 
-        const statusColors: Record<string, string> = {
-            processing: "bg-yellow-500",
-            shipped: "bg-blue-500",
-            in_transit: "bg-purple-500",
-            out_for_delivery: "bg-orange-500",
-            delivered: "bg-green-500",
-        };
+        const currentStatus = statusConfig[order.status] || { label: order.status, color: 'bg-slate-500' };
 
         const statusSteps = [
-            "processing",
-            "shipped",
-            "in_transit",
-            "out_for_delivery",
-            "delivered",
+            'processing',
+            'shipped',
+            'in_transit',
+            'out_for_delivery',
+            'delivered'
         ];
+        
+        const isCancelled = ['cancelled', 'refunded'].includes(order.status);
         const currentIndex = statusSteps.indexOf(order.status);
 
         // Format dates
@@ -133,8 +137,8 @@ const { orderId } = Astro.params;
                         <p class="text-slate-400 text-sm">Número de seguimiento</p>
                         <p class="text-white font-mono text-xl">${order.trackingNumber || "Pendiente"}</p>
                     </div>
-                    <span class="px-3 py-1 text-sm font-medium ${statusColors[order.status]} text-white rounded-full">
-                        ${statusLabels[order.status] || order.status}
+                    <span class="px-3 py-1 text-sm font-medium ${currentStatus.color} text-white rounded-full">
+                        ${currentStatus.label}
                     </span>
                 </div>
                 <div class="grid grid-cols-2 gap-4 text-sm">
@@ -144,12 +148,13 @@ const { orderId } = Astro.params;
                     </div>
                     <div>
                         <p class="text-slate-400">Entrega estimada</p>
-                        <p class="text-white">${formatDate(order.estimatedDelivery)}</p>
+                        <p class="text-white">${isCancelled ? 'Cancelado' : formatDate(order.estimatedDelivery)}</p>
                     </div>
                 </div>
             </div>
 
             <!-- Progress Bar -->
+            ${!isCancelled ? `
             <div class="bg-slate-900 border border-slate-800 p-6 mb-6">
                 <h2 class="text-white font-bold mb-6">Estado del Envío</h2>
                 <div class="flex justify-between relative">
@@ -165,7 +170,7 @@ const { orderId } = Astro.params;
                                 ${idx < currentIndex ? "✓" : idx + 1}
                             </div>
                             <p class="text-xs mt-2 ${idx <= currentIndex ? "text-white" : "text-slate-500"} text-center max-w-16">
-                                ${statusLabels[step]}
+                                ${statusConfig[step]?.label}
                             </p>
                         </div>
                     `,
@@ -173,8 +178,19 @@ const { orderId } = Astro.params;
                         .join("")}
                 </div>
             </div>
-
-            <!-- Timeline -->
+            ` : `
+            <div class="bg-slate-900 border border-red-900/50 p-6 mb-6">
+                <div class="flex items-center gap-4 text-red-400">
+                    <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div>
+                        <h2 class="font-bold text-lg">Este pedido ha sido cancelado</h2>
+                        <p class="text-white/80 text-sm">Si tienes dudas, contacta con soporte.</p>
+                    </div>
+                </div>
+            </div>
+            `}  <!-- Timeline -->
             <div class="bg-slate-900 border border-slate-800 p-6 mb-6">
                 <h2 class="text-white font-bold mb-6">Historial de Envío</h2>
                 <div class="space-y-4">
@@ -235,6 +251,36 @@ const { orderId } = Astro.params;
                         <span class="text-white">${(order.totalAmount / 100).toFixed(2)} €</span>
                     </div>
                 </div>
+            </div>
+          </div>
+
+            <div class="flex flex-col sm:flex-row gap-4 mt-8">
+                <a
+                    href="/api/orders/${order.id}/invoice"
+                    class="flex-1 bg-slate-800 hover:bg-slate-700 text-white text-center py-3 px-4 rounded-lg font-medium transition-colors"
+                    target="_blank"
+                >
+                    Descargar Factura
+                </a>
+                
+                ${['cancelled', 'refunded'].includes(order.status) ? `
+                    <a
+                        href="/api/orders/${order.id}/invoice?type=credit_note"
+                        class="flex-1 bg-slate-800 hover:bg-slate-700 text-white text-center py-3 px-4 rounded-lg font-medium transition-colors"
+                        target="_blank"
+                    >
+                        Descargar Nota de Crédito
+                    </a>
+                ` : ''}
+
+                ${['processing_return', 'return_approved'].includes(order.status) ? `
+                    <button
+                        class="flex-1 bg-white text-slate-900 border border-slate-200 hover:bg-slate-50 text-center py-3 px-4 rounded-lg font-medium transition-colors"
+                        onclick="alert('La etiqueta de devolución se enviará a tu correo cuando sea aprobada.')"
+                    >
+                        Solicitar Etiqueta
+                    </button>
+                ` : ''}
             </div>
         `;
     }
