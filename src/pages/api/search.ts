@@ -19,23 +19,38 @@ export const GET: APIRoute = async ({ url }) => {
     }
 
     try {
-        // Search products by name OR description (case-insensitive)
         const searchPattern = `%${query}%`;
-        const { data: products, error } = await supabase
-            .from('products')
-            .select('id, name, slug, description, price, stock, images, category_id')
-            .or(`name.ilike.${searchPattern},description.ilike.${searchPattern}`)
-            .order('name');
 
-        if (error) {
-            console.error('Search error:', error);
-            return new Response(JSON.stringify({ error: 'Search failed' }), {
-                status: 500,
-                headers: { 'Content-Type': 'application/json' }
-            });
+        // Parallel search: Products and Categories
+        const [productsResult, categoriesResult] = await Promise.all([
+            supabase
+                .from('products')
+                .select('id, name, slug, description, price, stock, images, category_id')
+                .or(`name.ilike.${searchPattern},description.ilike.${searchPattern}`)
+                .order('name')
+                .limit(10),
+
+            supabase
+                .from('categories')
+                .select('id, name, slug')
+                .ilike('name', searchPattern)
+                .limit(5)
+        ]);
+
+        if (productsResult.error) {
+            console.error('Search products error:', productsResult.error);
+            throw productsResult.error;
         }
 
-        return new Response(JSON.stringify({ products }), {
+        if (categoriesResult.error) {
+            console.error('Search categories error:', categoriesResult.error);
+            // We won't throw here, just return empty categories if this fails
+        }
+
+        return new Response(JSON.stringify({
+            products: productsResult.data || [],
+            categories: categoriesResult.data || []
+        }), {
             status: 200,
             headers: { 'Content-Type': 'application/json' }
         });

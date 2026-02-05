@@ -1,0 +1,82 @@
+---
+import BaseLayout from '../../shared/layouts/BaseLayout.astro';
+import { createClient } from '@supabase/supabase-js';
+import { ROUTES } from '../../config/routes';
+
+const supabase = createClient(
+    import.meta.env.PUBLIC_SUPABASE_URL,
+    import.meta.env.PUBLIC_SUPABASE_ANON_KEY
+);
+
+let articles = [];
+let error = null;
+
+try {
+    const { data, error: err } = await supabase
+        .from('articles')
+        .select('id, title, slug, excerpt, published_at')
+        .not('published_at', 'is', null) // Only published
+        .lte('published_at', new Date().toISOString()) // Only past dates
+        .order('published_at', { ascending: false });
+
+    if (err) throw err;
+    articles = data || [];
+} catch (e) {
+    console.error('Error fetching articles:', e);
+    error = 'No se pudieron cargar los artículos.';
+}
+---
+
+<BaseLayout title="Editorial | FashionMarket">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <header class="text-center mb-16">
+            <h1 class="font-display text-4xl md:text-5xl font-black text-slate-900 mb-4">
+                EDITORIAL
+            </h1>
+            <p class="text-lg text-slate-600 max-w-2xl mx-auto">
+                Descubre las últimas tendencias, historias detrás de nuestras colecciones y guías de estilo.
+            </p>
+        </header>
+
+        {error && (
+            <div class="text-center text-red-500 py-12">
+                {error}
+            </div>
+        )}
+
+        {!error && articles.length === 0 && (
+            <div class="text-center text-slate-500 py-12">
+                No hay artículos publicados aún.
+            </div>
+        )}
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {articles.map((article) => (
+                <article class="group bg-white border border-slate-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+                    <a href={ROUTES.EDITORIAL.DETAIL(article.slug)} class="block">
+                        <div class="aspect-[16/9] bg-slate-100 relative overflow-hidden">
+                            {/* Placeholder for cover image if we had one */}
+                            <div class="absolute inset-0 flex items-center justify-center text-slate-300 font-display text-4xl font-black opacity-20">
+                                ORBIT
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <div class="text-xs text-accent font-bold tracking-wider uppercase mb-2">
+                                {new Date(article.published_at).toLocaleDateString()}
+                            </div>
+                            <h2 class="font-display text-xl font-bold text-slate-900 mb-3 group-hover:text-accent transition-colors">
+                                {article.title}
+                            </h2>
+                            <p class="text-slate-600 line-clamp-3">
+                                {article.excerpt}
+                            </p>
+                            <div class="mt-4 text-sm font-bold text-slate-900 flex items-center gap-1 group-hover:gap-2 transition-all">
+                                Leer artículo →
+                            </div>
+                        </div>
+                    </a>
+                </article>
+            ))}
+        </div>
+    </div>
+</BaseLayout>

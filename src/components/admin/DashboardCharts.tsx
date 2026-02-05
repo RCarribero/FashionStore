@@ -40,9 +40,10 @@ interface DashboardChartsProps {
             backgroundColor: string[];
         }[];
     };
+    title?: string;
 }
 
-export default function DashboardCharts({ salesData, orderStatusData }: DashboardChartsProps) {
+export default function DashboardCharts({ salesData, orderStatusData, title }: DashboardChartsProps) {
     const lineOptions = {
         responsive: true,
         plugins: {
@@ -52,7 +53,7 @@ export default function DashboardCharts({ salesData, orderStatusData }: Dashboar
             },
             title: {
                 display: true,
-                text: 'Ventas de los Últimos 7 Días',
+                text: title || 'Ventas de los Últimos 7 Días',
                 color: '#fff'
             },
         },

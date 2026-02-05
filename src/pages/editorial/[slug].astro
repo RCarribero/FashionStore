@@ -1,0 +1,112 @@
+---
+import BaseLayout from '../../shared/layouts/BaseLayout.astro';
+import { createClient } from '@supabase/supabase-js';
+import ProductCard from '../../components/products/ProductCard.astro';
+
+export const prerender = false;
+
+const { slug } = Astro.params;
+
+const supabase = createClient(
+    import.meta.env.PUBLIC_SUPABASE_URL,
+    import.meta.env.PUBLIC_SUPABASE_ANON_KEY
+);
+
+// Fetch article
+const { data: article, error } = await supabase
+    .from('articles')
+    .select('*')
+    .eq('slug', slug)
+    .single();
+
+if (!article || error) {
+    return Astro.redirect('/404');
+}
+
+// Fetch products for product blocks
+const productIds = article.content
+    .filter((block: any) => block.type === 'product' && block.data.productId)
+    .map((block: any) => block.data.productId);
+
+let productsMap = {};
+if (productIds.length > 0) {
+    const { data: products } = await supabase
+        .from('products')
+        .select('id, name, price, images, slug')
+        .in('id', productIds);
+    
+    if (products) {
+        productsMap = products.reduce((acc: any, product: any) => {
+            acc[product.id] = product;
+            return acc;
+        }, {});
+    }
+}
+---
+
+<BaseLayout title={`${article.title} | Editorial FashionMarket`}>
+    <article class="max-w-4xl mx-auto px-4 sm:px-6 py-12">
+        <header class="text-center mb-12">
+            <div class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-4">
+                {new Date(article.published_at).toLocaleDateString()}
+            </div>
+            <h1 class="font-display text-4xl md:text-6xl font-black text-slate-900 mb-6 leading-tight">
+                {article.title}
+            </h1>
+            {article.excerpt && (
+                <p class="text-xl text-slate-600 italic max-w-2xl mx-auto">
+                    {article.excerpt}
+                </p>
+            )}
+        </header>
+
+        <div class="space-y-12">
+            {article.content.map((block: any) => {
+                if (block.type === 'text') {
+                    return (
+                        <div class="prose prose-lg prose-slate mx-auto max-w-2xl whitespace-pre-wrap">
+                            {block.data.content}
+                        </div>
+                    );
+                }
+                
+                if (block.type === 'image') {
+                    return (
+                        <figure class="my-12">
+                            <img 
+                                src={block.data.url} 
+                                alt={block.data.caption || 'Editorial image'} 
+                                class="w-full h-auto rounded-lg shadow-xl"
+                            />
+                            {block.data.caption && (
+                                <figcaption class="text-center text-sm text-slate-500 mt-3 italic">
+                                    {block.data.caption}
+                                </figcaption>
+                            )}
+                        </figure>
+                    );
+                }
+
+                if (block.type === 'product') {
+                    const product = productsMap[block.data.productId];
+                    if (!product) return null;
+                    
+                    return (
+                        <div class="my-12 max-w-sm mx-auto p-6 bg-slate-50 rounded-xl border border-slate-200">
+                            <div class="text-xs uppercase text-slate-500 font-bold mb-4 text-center">Producto Destacado</div>
+                            <ProductCard product={product} />
+                        </div>
+                    );
+                }
+                
+                return null;
+            })}
+        </div>
+        
+        <div class="mt-16 pt-8 border-t border-slate-200 text-center">
+            <a href="/editorial" class="inline-flex items-center gap-2 text-slate-600 hover:text-black font-medium transition-colors">
+                ← Volver a Editorial
+            </a>
+        </div>
+    </article>
+</BaseLayout>
