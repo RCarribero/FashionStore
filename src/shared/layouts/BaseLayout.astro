@@ -25,6 +25,19 @@ const canonicalURL = Astro.site
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/png" href="/logo.png" />
     <link rel="canonical" href={canonicalURL} />
+    <link rel="manifest" href="/manifest.json" />
+
+    <script is:inline>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').then(registration => {
+            console.log('SW registered: ', registration);
+          }).catch(registrationError => {
+            console.log('SW registration failed: ', registrationError);
+          });
+        });
+      }
+    </script>
 
     <!-- Primary Meta Tags -->
     <title>{title} | FashionMarket</title>
@@ -51,7 +64,12 @@ const canonicalURL = Astro.site
 
     <meta name="generator" content={Astro.generator} />
   </head>
-  <body class="min-h-screen flex flex-col">
-    <slot />
+  <body class="min-h-screen flex flex-col bg-slate-950 text-white selection:bg-accent selection:text-white">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 z-50 px-4 py-2 bg-accent text-white font-bold rounded ring-4 ring-slate-900">
+        Saltar al contenido principal
+    </a>
+    <main id="main-content" class="flex-1">
+      <slot />
+    </main>
   </body>
 </html>

@@ -15,7 +15,7 @@ const supabase = createClient(
 export const prerender = false;
 
 // Email HTML template
-const generateOrderConfirmationHTML = (order: any, items: any[]) => {
+const generateOrderConfirmationHTML = (order: any, items: any[], recommendations: any[] = []) => {
     const itemsHTML = items.map(item => `
         <tr>
             <td style="padding: 12px; border-bottom: 1px solid #333;">
@@ -25,6 +25,24 @@ const generateOrderConfirmationHTML = (order: any, items: any[]) => {
             <td style="padding: 12px; border-bottom: 1px solid #333; text-align: right;">${formatPrice(item.price)}</td>
         </tr>
     `).join('');
+
+    const recommendationsHTML = recommendations.length > 0 ? `
+        <div style="margin-top: 40px; border-top: 1px solid #334155; padding-top: 30px;">
+            <h3 style="color: #fff; text-align: center; margin-bottom: 20px;">Completa tu look</h3>
+            <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                    ${recommendations.map(prod => `
+                        <td width="50%" style="padding: 10px; text-align: center;">
+                            <img src="${prod.images?.[0] || 'https://via.placeholder.com/150'}" alt="${prod.name}" style="width: 100%; max-width: 150px; border-radius: 4px; border: 1px solid #334155; margin-bottom: 10px;">
+                            <p style="color: #cbd5e1; margin: 5px 0; font-size: 14px;">${prod.name}</p>
+                            <p style="color: #fff; font-weight: bold; margin: 0;">${formatPrice(prod.price)}</p>
+                            <a href="${import.meta.env.PUBLIC_SITE_URL || 'http://localhost:4321'}/productos/${prod.slug}" style="display: inline-block; margin-top: 8px; color: #ef4444; text-decoration: none; font-size: 13px;">Ver Producto</a>
+                        </td>
+                    `).join('')}
+                </tr>
+            </table>
+        </div>
+    ` : '';
 
     return `
 <!DOCTYPE html>
@@ -89,6 +107,8 @@ const generateOrderConfirmationHTML = (order: any, items: any[]) => {
                     </a>
                 </div>
 
+                ${recommendationsHTML}
+
                 <p style="text-align: center; color: #64748b; font-size: 12px; margin-top: 30px; border-top: 1px solid #334155; padding-top: 20px;">
                     © ${new Date().getFullYear()} FashionMarket
                 </p>
@@ -119,7 +139,13 @@ export const POST: APIRoute = async ({ request }) => {
             return new Response(JSON.stringify({ error: 'Order not found' }), { status: 404 });
         }
 
-        const emailHTML = generateOrderConfirmationHTML(order, order.items || []);
+        // Fetch 2 recommendation products (simple strategy: just take 2 items that are not in the order)
+        const { data: recommendations } = await supabase
+            .from('products')
+            .select('id, name, price, images, slug')
+            .limit(2);
+
+        const emailHTML = generateOrderConfirmationHTML(order, order.items || [], recommendations || []);
         const subject = `Confirmacion de Pedido ${order.tracking_number || '#' + order.id.slice(0, 8)}`;
 
         // Generate invoice PDF

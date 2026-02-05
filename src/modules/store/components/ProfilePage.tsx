@@ -21,6 +21,15 @@ interface OrderItem {
     quantity: number;
     price: number;
     image?: string;
+    slug?: string;
+}
+
+interface WishlistItem {
+    id: string; // product id
+    name: string;
+    price: number;
+    image: string;
+    slug: string;
 }
 
 interface Order {
@@ -57,11 +66,12 @@ export default function ProfilePage() {
     const [loading, setLoading] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
     const [saving, setSaving] = useState(false);
-    const [activeTab, setActiveTab] = useState<'info' | 'orders' | 'addresses'>('info');
+    const [activeTab, setActiveTab] = useState<'info' | 'orders' | 'addresses' | 'wishlist'>('info');
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
     const [addresses, setAddresses] = useState<Address[]>([]);
+    const [wishlist, setWishlist] = useState<any[]>([]);
     const [isEditingAddress, setIsEditingAddress] = useState(false);
     const [currentAddress, setCurrentAddress] = useState<Partial<Address>>({});
 
@@ -169,7 +179,7 @@ export default function ProfilePage() {
                 if (productIds.size > 0) {
                     const { data: products } = await supabase
                         .from('products')
-                        .select('id, images')
+                        .select('id, images, slug')
                         .in('id', Array.from(productIds));
 
                     if (products) {
@@ -177,20 +187,27 @@ export default function ProfilePage() {
                             if (p.images && p.images.length > 0) {
                                 productImages[p.id] = p.images[0];
                             }
+                            // Store slug too if needed, but we need to map it back to items
+                            // Better approach: create a lookup map for the whole product object
                         });
+
+                        // Enrich orders with product images and slugs
+                        const enrichedOrders = ordersData.map(order => ({
+                            ...order,
+                            items: order.items?.map((item: OrderItem) => {
+                                const product = products.find(p => p.id === item.productId);
+                                return {
+                                    ...item,
+                                    image: item.image || (product?.images?.[0] || ''),
+                                    slug: product?.slug || ''
+                                };
+                            })
+                        }));
+                        setOrders(enrichedOrders);
                     }
+                } else {
+                    setOrders(ordersData);
                 }
-
-                // Enrich orders with product images
-                const enrichedOrders = ordersData.map(order => ({
-                    ...order,
-                    items: order.items?.map((item: OrderItem) => ({
-                        ...item,
-                        image: item.image || productImages[item.productId] || ''
-                    }))
-                }));
-
-                setOrders(enrichedOrders);
             }
 
             // Load addresses
@@ -203,11 +220,45 @@ export default function ProfilePage() {
             if (addressesData) {
                 setAddresses(addressesData);
             }
+
+            // Load Wishlist
+            const { data: wishlistData } = await supabase
+                .from('wishlists')
+                .select('product_id, products (id, name, price, images, slug)')
+                .eq('user_id', currentUser.id);
+
+            if (wishlistData) {
+                const formattedWishlist = wishlistData.map((item: any) => ({
+                    id: item.products.id,
+                    name: item.products.name,
+                    price: item.products.price,
+                    image: item.products.images?.[0] || '',
+                    slug: item.products.slug
+                }));
+                setWishlist(formattedWishlist);
+            }
         } catch (error) {
             console.error('Error loading user:', error);
             window.location.href = '/auth/login';
         } finally {
             setLoading(false);
+        }
+    };
+
+    const removeFromWishlist = async (productId: string) => {
+        if (!user) return;
+        try {
+            const { error } = await supabase
+                .from('wishlists')
+                .delete()
+                .match({ user_id: user.id, product_id: productId });
+
+            if (error) throw error;
+
+            // Optimistic update
+            setWishlist(prev => prev.filter(item => item.id !== productId));
+        } catch (err) {
+            console.error('Error removing from wishlist:', err);
         }
     };
 
@@ -323,6 +374,20 @@ export default function ProfilePage() {
                                     {orders.length > 0 && (
                                         <span className="bg-slate-700 text-white text-xs px-2 py-0.5 rounded-full">
                                             {orders.length}
+                                        </span>
+                                    )}
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('wishlist')}
+                                    className={`w-full text-left px-4 py-2 font-medium transition-colors flex justify-between items-center ${activeTab === 'wishlist'
+                                        ? 'bg-accent text-white'
+                                        : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                                        }`}
+                                >
+                                    <span>Lista de Deseos</span>
+                                    {wishlist.length > 0 && (
+                                        <span className="bg-slate-700 text-white text-xs px-2 py-0.5 rounded-full">
+                                            {wishlist.length}
                                         </span>
                                     )}
                                 </button>
@@ -571,14 +636,14 @@ export default function ProfilePage() {
 
                                                         <div className="space-y-3 mb-4">
                                                             {order.items.map((item, idx) => (
-                                                                <div key={idx} className="flex gap-3 items-center">
+                                                                <div key={idx} className="flex gap-3 items-center group">
                                                                     {/* Product Image */}
-                                                                    <div className="w-14 h-14 flex-shrink-0 bg-slate-800 rounded overflow-hidden">
+                                                                    <a href={item.slug ? `/productos/${item.slug}` : '#'} className="w-14 h-14 flex-shrink-0 bg-slate-800 rounded overflow-hidden block">
                                                                         {item.image ? (
                                                                             <img
                                                                                 src={item.image}
                                                                                 alt={item.name}
-                                                                                className="w-full h-full object-cover"
+                                                                                className="w-full h-full object-cover group-hover:opacity-80 transition-opacity"
                                                                             />
                                                                         ) : (
                                                                             <div className="w-full h-full flex items-center justify-center text-slate-600">
@@ -587,15 +652,20 @@ export default function ProfilePage() {
                                                                                 </svg>
                                                                             </div>
                                                                         )}
-                                                                    </div>
+                                                                    </a>
                                                                     {/* Product Details */}
                                                                     <div className="flex-1 min-w-0">
-                                                                        <p className="text-slate-300 text-sm font-medium truncate">
+                                                                        <a href={item.slug ? `/productos/${item.slug}` : '#'} className="text-slate-300 text-sm font-medium truncate hover:text-accent transition-colors block">
                                                                             {item.name}
-                                                                        </p>
+                                                                        </a>
                                                                         <p className="text-slate-500 text-xs">
                                                                             Talla {item.size} x{item.quantity}
                                                                         </p>
+                                                                        {item.slug && (
+                                                                            <a href={`/productos/${item.slug}`} className="text-xs text-accent mt-1 inline-block hover:underline">
+                                                                                Volver a comprar
+                                                                            </a>
+                                                                        )}
                                                                     </div>
                                                                     {/* Price */}
                                                                     <span className="text-white text-sm font-medium">
@@ -677,6 +747,68 @@ export default function ProfilePage() {
                                                     </div>
                                                 );
                                             })}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {activeTab === 'wishlist' && (
+                            <div className="bg-slate-900 border border-slate-800 p-6">
+                                <h2 className="text-xl font-display text-white mb-6">
+                                    Mi Lista de Deseos
+                                </h2>
+
+                                {wishlist.length === 0 ? (
+                                    <div className="text-center py-12">
+                                        <svg className="mx-auto h-16 w-16 text-slate-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                        </svg>
+                                        <p className="text-slate-400 mb-4">Tu lista de deseos está vacía</p>
+                                        <a
+                                            href="/productos"
+                                            className="inline-block px-6 py-2 bg-accent hover:bg-red-700 text-white font-medium transition-colors"
+                                        >
+                                            Explorar Productos
+                                        </a>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        {wishlist.map((item) => (
+                                            <div key={item.id} className="border border-slate-700 p-4 flex gap-4 group relative">
+                                                <button
+                                                    onClick={() => removeFromWishlist(item.id)}
+                                                    className="absolute top-2 right-2 text-slate-500 hover:text-red-400 transition-colors z-10"
+                                                    title="Eliminar de la lista"
+                                                >
+                                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                    </svg>
+                                                </button>
+
+                                                <a href={`/productos/${item.slug}`} className="w-20 h-24 flex-shrink-0 block">
+                                                    <img
+                                                        src={item.image}
+                                                        alt={item.name}
+                                                        className="w-full h-full object-cover bg-slate-800"
+                                                    />
+                                                </a>
+                                                <div className="flex-1 min-w-0 flex flex-col justify-center">
+                                                    <a href={`/productos/${item.slug}`} className="text-white font-medium hover:text-accent transition-colors truncate block pr-6">
+                                                        {item.name}
+                                                    </a>
+                                                    <p className="text-slate-400 text-sm mb-2">{formatPrice(item.price)}</p>
+                                                    <a
+                                                        href={`/productos/${item.slug}`}
+                                                        className="text-xs text-accent font-medium hover:underline inline-flex items-center gap-1"
+                                                    >
+                                                        Ver Producto
+                                                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                                        </svg>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
                                 )}
                             </div>

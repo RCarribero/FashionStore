@@ -11,6 +11,10 @@ export const ROUTES = {
     CATEGORY: (slug: string) => `/categoria/${slug}`,
     SALE: '/ofertas',
     OUTLET: '/outlet',
+    EDITORIAL: {
+        LIST: '/editorial',
+        DETAIL: (slug: string) => `/editorial/${slug}`,
+    },
 
     // Auth Routes
     LOGIN: '/auth/login',
@@ -35,6 +39,11 @@ export const ROUTES = {
         COUPONS: '/gestion-fm/cupones',
         PROMOTIONS: '/gestion-fm/promociones',
         DESIGN: '/gestion-fm/diseno',
+        EDITORIAL: {
+            LIST: '/gestion-fm/editorial',
+            NEW: '/gestion-fm/editorial/nuevo',
+            EDIT: (id: string) => `/gestion-fm/editorial/${id}`,
+        },
     },
 
     // API Routes
@@ -69,6 +78,7 @@ export const ADMIN_NAV = [
     { name: 'Usuarios', href: ROUTES.ADMIN.USERS, icon: 'users' },
     { name: 'Cupones', href: ROUTES.ADMIN.COUPONS, icon: 'ticket' },
     { name: 'Promociones', href: ROUTES.ADMIN.PROMOTIONS, icon: 'tag' },
+    { name: 'Editorial', href: ROUTES.ADMIN.EDITORIAL.LIST, icon: 'document-text' },
     { name: 'Diseño Inicio', href: ROUTES.ADMIN.DESIGN, icon: 'layout' },
 ];
 

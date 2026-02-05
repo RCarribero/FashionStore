@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import Stripe from 'stripe';
 import { supabase } from '../../../modules/auth';
+import { checkLowStock } from '../../../lib/services/alerts';
 
 const stripe = new Stripe(import.meta.env.STRIPE_SECRET_KEY || 'sk_test_51Snb87CFzYRW6R0mDBbMEZRsdMg3damRDQ4a0h4whl5OPZM0YO9NRdntcOw3GuPKPcdaPRQwT8OTw03zwYbgdU1200ivNMMn3i');
 
@@ -70,6 +71,8 @@ export const POST: APIRoute = async ({ request }) => {
                         console.error(`Failed to update variant stock for ${variant.id}:`, updateError);
                     } else {
                         console.log(`Updated stock for variant ${variant.id}: ${variant.stock} -> ${newStock}`);
+                        // Check for low stock alert
+                        await checkLowStock(product.name, size, newStock);
                     }
 
                 } catch (error) {
