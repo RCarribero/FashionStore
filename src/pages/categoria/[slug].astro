@@ -6,6 +6,9 @@
 import StoreLayout from "../../modules/store/layouts/StoreLayout.astro";
 import { createAdminClient } from "../../modules/auth/services/auth.service";
 import { formatPrice } from "../../shared/utils";
+
+export const prerender = true;
+
 import {
     enrichProductsWithDiscounts,
     type ProductWithDiscount,
