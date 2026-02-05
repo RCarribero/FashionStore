@@ -107,7 +107,7 @@ const getIcon = (name: string) => {
 
     <script>
         // Check admin access on load
-        import { getCurrentUser } from "@/lib/services/auth-client";
+        import { getCurrentUser } from "@/lib/services";
         import { createClient } from "@supabase/supabase-js";
 
         const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
