@@ -73,7 +73,7 @@ const generateShippingUpdateHTML = (order: any, status: string) => {
                 </div>
 
                 <div style="text-align: center; margin-top: 20px;">
-                    <a href="${import.meta.env.PUBLIC_SITE_URL || 'http://localhost:4321'}/pedidos/${order.id}" 
+                    <a href="${import.meta.env.PUBLIC_SITE_URL || 'https://fashionmarket.es'}/pedidos/${order.id}" 
                        style="display: inline-block; padding: 14px 28px; background-color: #ef4444; color: #fff; text-decoration: none; font-weight: bold; border-radius: 4px;">
                         Ver Seguimiento
                     </a>

@@ -123,7 +123,7 @@ export const POST: APIRoute = async ({ request }) => {
         }
 
         // Build reset link
-        const siteUrl = import.meta.env.PUBLIC_SITE_URL || 'http://localhost:4321';
+        const siteUrl = import.meta.env.PUBLIC_SITE_URL || 'https://fashionmarket.es';
         const resetLink = `${siteUrl}/auth/cambiar-password?token=${token}`;
 
         // Send email
