@@ -58,12 +58,12 @@ import { ROUTES } from "../../config";
                             id="password"
                             name="password"
                             required
-                            minlength="6"
+                            minlength="8"
                             class="w-full px-4 py-3 bg-slate-800 border border-slate-700 text-white placeholder:text-slate-500 focus:outline-none focus:border-accent transition-colors"
                             placeholder="••••••••"
                         />
                         <p class="mt-1 text-xs text-slate-500">
-                            Mínimo 6 caracteres
+                            Mínimo 8 caracteres, 1 especial (!@#$%^&*) y 1 letra
                         </p>
                     </div>
 
@@ -80,7 +80,7 @@ import { ROUTES } from "../../config";
                             id="confirmPassword"
                             name="confirmPassword"
                             required
-                            minlength="6"
+                            minlength="8"
                             class="w-full px-4 py-3 bg-slate-800 border border-slate-700 text-white placeholder:text-slate-500 focus:outline-none focus:border-accent transition-colors"
                             placeholder="••••••••"
                         />
@@ -152,6 +152,26 @@ import { ROUTES } from "../../config";
         "successMessage",
     ) as HTMLDivElement;
 
+    // Función para validar los requisitos de la contraseña
+    function validatePassword(password: string): string | null {
+        // Mínimo 8 caracteres
+        if (password.length < 8) {
+            return "La contraseña debe tener mínimo 8 caracteres";
+        }
+
+        // Al menos 1 letra
+        if (!/[a-zA-Z]/.test(password)) {
+            return "La contraseña debe contener al menos 1 letra";
+        }
+
+        // Al menos 1 carácter especial (!@#$%^&*)
+        if (!/[!@#$%^&*]/.test(password)) {
+            return "La contraseña debe contener al menos 1 carácter especial (!@#$%^&*)";
+        }
+
+        return null;
+    }
+
     form?.addEventListener("submit", async (e) => {
         e.preventDefault();
 
@@ -167,6 +187,14 @@ import { ROUTES } from "../../config";
         // Validate passwords match
         if (password !== confirmPassword) {
             errorMessage.textContent = "Las contraseñas no coinciden";
+            errorMessage.classList.remove("hidden");
+            return;
+        }
+
+        // Validate password requirements
+        const passwordError = validatePassword(password);
+        if (passwordError) {
+            errorMessage.textContent = passwordError;
             errorMessage.classList.remove("hidden");
             return;
         }
