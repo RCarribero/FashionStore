@@ -32,6 +32,7 @@ export interface CartItem {
     price: number;
     size: string;
     quantity: number;
+    availableStock: number; // Max available stock for this size
     expiresAt?: number; // Reservation expiry timestamp (ms since epoch)
 }
 
