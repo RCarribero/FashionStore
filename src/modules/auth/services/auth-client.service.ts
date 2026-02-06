@@ -32,17 +32,25 @@ export interface RegisterData extends LoginCredentials {
 export async function register(data: RegisterData) {
     const { email, password } = data;
 
-    const { data: authData, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-            emailRedirectTo: `${window.location.origin}/auth/login`
-        }
+    // Use server-side registration to handle email sending via our SMTP
+    const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
     });
 
-    if (error) {
-        throw new Error(error.message);
+    const result = await response.json();
+
+    if (!response.ok) {
+        throw new Error(result.error || 'Error en el registro');
     }
+
+    // Return structure compatible with expected authData
+    // We don't have a session yet, but we have the user
+    const authData = {
+        user: result.user,
+        session: null
+    };
 
     // Associate any guest orders made with this email
     if (authData.user?.id) {
