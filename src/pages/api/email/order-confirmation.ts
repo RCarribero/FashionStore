@@ -36,7 +36,7 @@ const generateOrderConfirmationHTML = (order: any, items: any[], recommendations
                             <img src="${prod.images?.[0] || 'https://via.placeholder.com/150'}" alt="${prod.name}" style="width: 100%; max-width: 150px; border-radius: 4px; border: 1px solid #334155; margin-bottom: 10px;">
                             <p style="color: #cbd5e1; margin: 5px 0; font-size: 14px;">${prod.name}</p>
                             <p style="color: #fff; font-weight: bold; margin: 0;">${formatPrice(prod.price)}</p>
-                            <a href="${import.meta.env.PUBLIC_SITE_URL || 'http://localhost:4321'}/productos/${prod.slug}" style="display: inline-block; margin-top: 8px; color: #ef4444; text-decoration: none; font-size: 13px;">Ver Producto</a>
+                            <a href="${import.meta.env.PUBLIC_SITE_URL || 'https://fashionmarket.es'}/productos/${prod.slug}" style="display: inline-block; margin-top: 8px; color: #ef4444; text-decoration: none; font-size: 13px;">Ver Producto</a>
                         </td>
                     `).join('')}
                 </tr>
@@ -101,7 +101,7 @@ const generateOrderConfirmationHTML = (order: any, items: any[], recommendations
                 </table>
 
                 <div style="text-align: center; margin-top: 30px;">
-                    <a href="${import.meta.env.PUBLIC_SITE_URL || 'http://localhost:4321'}/pedidos/${order.id}" 
+                    <a href="${import.meta.env.PUBLIC_SITE_URL || 'https://fashionmarket.es'}/pedidos/${order.id}" 
                        style="display: inline-block; padding: 14px 28px; background-color: #ef4444; color: #fff; text-decoration: none; font-weight: bold; border-radius: 4px;">
                         Ver Seguimiento
                     </a>
