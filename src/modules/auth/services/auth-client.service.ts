@@ -34,7 +34,10 @@ export async function register(data: RegisterData) {
 
     const { data: authData, error } = await supabase.auth.signUp({
         email,
-        password
+        password,
+        options: {
+            emailRedirectTo: `${window.location.origin}/auth/login`
+        }
     });
 
     if (error) {
