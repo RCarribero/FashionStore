@@ -200,7 +200,15 @@ export const POST: APIRoute = async ({ request }) => {
                 userId: userId || '',
                 isFirstPurchase: isFirstPurchase ? 'true' : 'false',
                 couponCode: appliedCouponCode || '',
-                cartSessionId: cartSessionId || ''
+                cartSessionId: cartSessionId || '',
+                customerFirstName: customer?.firstName || '',
+                customerLastName: customer?.lastName || '',
+                customerPhone: customer?.phone || '',
+                shippingAddress: customer?.address || '',
+                shippingCity: customer?.city || '',
+                shippingState: customer?.state || '',
+                shippingZip: customer?.zip || '',
+                shippingCountry: customer?.country || 'ES'
             },
             customer_email: customer?.email,
         });

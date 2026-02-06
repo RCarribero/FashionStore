@@ -12,20 +12,7 @@ const supabase = createClient(
 export const GET: APIRoute = async ({ params, request, cookies }) => {
     const { id } = params;
 
-    // Auth check
-    const accessToken = cookies.get('sb-access-token')?.value;
-    if (!accessToken) return new Response('Unauthorized', { status: 401 });
-
-    const authClient = createClient(
-        import.meta.env.PUBLIC_SUPABASE_URL,
-        import.meta.env.PUBLIC_SUPABASE_ANON_KEY,
-        { global: { headers: { Authorization: `Bearer ${accessToken}` } } }
-    );
-
-    const { data: { user } } = await authClient.auth.getUser();
-    if (!user) return new Response('Unauthorized', { status: 401 });
-
-    // Fetch Order
+    // Fetch Order first
     const { data: order, error } = await supabase
         .from('orders')
         .select('*')
@@ -34,31 +21,61 @@ export const GET: APIRoute = async ({ params, request, cookies }) => {
 
     if (error || !order) return new Response('Order not found', { status: 404 });
 
-    // Verify ownership (or Admin)
-    // For demo, assume admin has access too, but simple check:
-    // If not admin (how to check? maybe email?) let's just check user_id if not admin.
-    // Assuming simple check for now:
-    // Verify ownership or Admin role
-    if (order.user_id !== user.id) {
-        const { data: callerProfile } = await supabase
-            .from('user_profiles')
-            .select('is_admin')
-            .eq('id', user.id)
-            .single();
+    // Auth check - try cookie auth first
+    const accessToken = cookies.get('sb-access-token')?.value;
+    let authenticatedUserId: string | null = null;
 
-        if (!callerProfile?.is_admin) {
-            return new Response('Unauthorized', { status: 403 });
-        }
+    if (accessToken) {
+        const authClient = createClient(
+            import.meta.env.PUBLIC_SUPABASE_URL,
+            import.meta.env.PUBLIC_SUPABASE_ANON_KEY,
+            { global: { headers: { Authorization: `Bearer ${accessToken}` } } }
+        );
+
+        const { data: { user } } = await authClient.auth.getUser();
+        if (user) authenticatedUserId = user.id;
     }
 
-    // Fetch User Profile for name
-    const { data: userProfile } = await supabase
-        .from('user_profiles')
-        .select('first_name, last_name, email')
-        .eq('id', order.user_id)
-        .single();
+    // Authorization: allow if user owns order, is admin, or order is a guest order (no user_id)
+    if (order.user_id) {
+        // Order belongs to a registered user - require auth
+        if (!authenticatedUserId) return new Response('Unauthorized', { status: 401 });
 
-    if (!userProfile) return new Response('User profile not found', { status: 404 });
+        if (order.user_id !== authenticatedUserId) {
+            const { data: callerProfile } = await supabase
+                .from('user_profiles')
+                .select('is_admin')
+                .eq('id', authenticatedUserId)
+                .single();
+
+            if (!callerProfile?.is_admin) {
+                return new Response('Unauthorized', { status: 403 });
+            }
+        }
+    }
+    // If order.user_id is null (guest order), allow download - 
+    // the order ID itself acts as a secret (UUID is unguessable)
+
+    // Fetch User Profile for name (if registered user)
+    let userProfile: any = null;
+    if (order.user_id) {
+        const { data } = await supabase
+            .from('user_profiles')
+            .select('first_name, last_name, email')
+            .eq('id', order.user_id)
+            .single();
+        userProfile = data;
+    }
+
+    // For guest orders, build profile from shipping_address or guest_email
+    if (!userProfile) {
+        const addr = order.shipping_address;
+        userProfile = {
+            first_name: addr?.name?.split(' ')[0] || 'Cliente',
+            last_name: addr?.name?.split(' ').slice(1).join(' ') || '',
+            email: order.guest_email || ''
+        };
+    }
 
     const url = new URL(request.url);
     const type = url.searchParams.get('type');
