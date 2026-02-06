@@ -236,6 +236,7 @@ export function addToCart(
             price: product.price,
             size,
             quantity,
+            availableStock,
         };
         newItems = [...cart.items, newItem];
     }
@@ -279,19 +280,28 @@ export function updateQuantity(
     productId: string,
     size: string,
     quantity: number
-): void {
+): boolean {
     if (quantity < 1) {
         removeFromCart(productId, size);
-        return;
+        return true;
     }
 
     const cart = $cart.get();
     const key = getCartItemKey(productId, size);
+    const existingItem = cart.items.find(item => getCartItemKey(item.productId, item.size) === key);
+
+    // Validate against available stock
+    if (existingItem && quantity > existingItem.availableStock) {
+        return false; // Cannot exceed available stock
+    }
+
+    // Also validate against max quantity config
+    const finalQuantity = Math.min(quantity, STORE_CONFIG.cart.maxQuantity);
 
     $cart.set({
         items: cart.items.map((item) =>
             getCartItemKey(item.productId, item.size) === key
-                ? { ...item, quantity: Math.min(quantity, STORE_CONFIG.cart.maxQuantity) }
+                ? { ...item, quantity: finalQuantity }
                 : item
         ),
         updatedAt: Date.now(),
@@ -302,8 +312,10 @@ export function updateQuantity(
     fetch('/api/stock/reserve', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId, productId, size, quantity })
+        body: JSON.stringify({ sessionId, productId, size, quantity: finalQuantity })
     }).catch(err => console.error('Update quantity reserve error:', err));
+
+    return true;
 }
 
 /**
