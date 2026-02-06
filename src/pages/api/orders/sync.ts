@@ -132,6 +132,24 @@ export const POST: APIRoute = async ({ request }) => {
         // Get customer email from session
         const customerEmail = session.customer_email || session.customer_details?.email;
 
+        // Build shipping address from Stripe metadata
+        const metadata = session.metadata || {};
+        const shippingAddress = session.shipping_details?.address ? {
+            name: session.shipping_details.name || `${metadata.customerFirstName || ''} ${metadata.customerLastName || ''}`.trim(),
+            line1: session.shipping_details.address.line1 || metadata.shippingAddress || '',
+            line2: session.shipping_details.address.line2 || '',
+            city: session.shipping_details.address.city || metadata.shippingCity || '',
+            postal_code: session.shipping_details.address.postal_code || metadata.shippingZip || '',
+            country: session.shipping_details.address.country || metadata.shippingCountry || 'ES'
+        } : metadata.shippingAddress ? {
+            name: `${metadata.customerFirstName || ''} ${metadata.customerLastName || ''}`.trim(),
+            line1: metadata.shippingAddress,
+            line2: '',
+            city: metadata.shippingCity || '',
+            postal_code: metadata.shippingZip || '',
+            country: metadata.shippingCountry || 'ES'
+        } : null;
+
         const { data: order, error } = await supabase
             .from('orders')
             .insert({
@@ -144,7 +162,9 @@ export const POST: APIRoute = async ({ request }) => {
                 total_amount: session.amount_total,
                 discount_amount: session.total_details?.amount_discount || 0,
                 shipping_amount: session.total_details?.amount_shipping || 0,
-                items: orderItems
+                items: orderItems,
+                guest_email: !userId ? customerEmail : null,
+                shipping_address: shippingAddress
             })
             .select()
             .single();
@@ -186,6 +206,8 @@ export const POST: APIRoute = async ({ request }) => {
         return new Response(JSON.stringify({
             success: true,
             orderId: order.id,
+            trackingNumber: order.tracking_number,
+            orderNumber: order.order_number,
             stockUpdated: true,
             firstPurchaseMarked: isFirstPurchase && !!userId,
             emailSent: !!customerEmail,

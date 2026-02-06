@@ -44,6 +44,19 @@ export async function register(data: RegisterData) {
         throw new Error(error.message);
     }
 
+    // Associate any guest orders made with this email
+    if (authData.user?.id) {
+        try {
+            await fetch('/api/auth/associate-guest-orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, userId: authData.user.id })
+            });
+        } catch (e) {
+            console.error('Failed to associate guest orders on register:', e);
+        }
+    }
+
     return authData;
 }
 
@@ -60,6 +73,18 @@ export async function login(credentials: LoginCredentials) {
 
     if (error) {
         throw new Error(error.message);
+    }
+
+    // Associate any guest orders made with this email
+    try {
+        await fetch('/api/auth/associate-guest-orders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, userId: data.user?.id })
+        });
+    } catch (e) {
+        // Don't block login if association fails
+        console.error('Failed to associate guest orders:', e);
     }
 
     return data;

@@ -154,7 +154,25 @@ export const POST: APIRoute = async ({ request }) => {
             // Get customer email from session
             const customerEmail = expandedSession.customer_email || expandedSession.customer_details?.email;
 
-            const { error: orderError } = await supabase
+            // Build shipping address from Stripe metadata or session
+            const metadata = expandedSession.metadata || {};
+            const shippingAddress = expandedSession.shipping_details?.address ? {
+                name: expandedSession.shipping_details.name || `${metadata.customerFirstName || ''} ${metadata.customerLastName || ''}`.trim(),
+                line1: expandedSession.shipping_details.address.line1 || metadata.shippingAddress || '',
+                line2: expandedSession.shipping_details.address.line2 || '',
+                city: expandedSession.shipping_details.address.city || metadata.shippingCity || '',
+                postal_code: expandedSession.shipping_details.address.postal_code || metadata.shippingZip || '',
+                country: expandedSession.shipping_details.address.country || metadata.shippingCountry || 'ES'
+            } : metadata.shippingAddress ? {
+                name: `${metadata.customerFirstName || ''} ${metadata.customerLastName || ''}`.trim(),
+                line1: metadata.shippingAddress,
+                line2: '',
+                city: metadata.shippingCity || '',
+                postal_code: metadata.shippingZip || '',
+                country: metadata.shippingCountry || 'ES'
+            } : null;
+
+            const { data: savedOrder, error: orderError } = await supabase
                 .from('orders')
                 .insert({
                     user_id: userId || null, // null for guest orders
@@ -164,8 +182,12 @@ export const POST: APIRoute = async ({ request }) => {
                     discount_amount: expandedSession.total_details?.amount_discount || 0,
                     shipping_amount: expandedSession.total_details?.amount_shipping || 0,
                     items: orderItems,
-                    coupon_code: couponCode
-                });
+                    coupon_code: couponCode,
+                    guest_email: !userId ? customerEmail : null,
+                    shipping_address: shippingAddress
+                })
+                .select()
+                .single();
 
             if (orderError) {
                 console.error('Failed to save order:', orderError);
@@ -173,25 +195,26 @@ export const POST: APIRoute = async ({ request }) => {
                 console.log(`Order saved ${userId ? `for user ${userId}` : `for guest (${customerEmail})`}`);
 
                 // Send order confirmation email
-                try {
-                    const siteUrl = import.meta.env.PUBLIC_SITE_URL || 'https://fashionstore.victoriafp.online';
-                    const emailResponse = await fetch(`${siteUrl}/api/email/order-confirmation`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            sessionId: expandedSession.id,
-                            userId: userId,
-                            customerEmail: customerEmail // Also send email for guests
-                        })
-                    });
+                if (customerEmail && savedOrder) {
+                    try {
+                        const siteUrl = import.meta.env.PUBLIC_SITE_URL || 'https://fashionstore.victoriafp.online';
+                        const emailResponse = await fetch(`${siteUrl}/api/email/order-confirmation`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                orderId: savedOrder.id,
+                                recipientEmail: customerEmail
+                            })
+                        });
 
-                    if (emailResponse.ok) {
-                        console.log('Order confirmation email sent');
-                    } else {
-                        console.error('Failed to send confirmation email:', await emailResponse.text());
+                        if (emailResponse.ok) {
+                            console.log('Order confirmation email sent');
+                        } else {
+                            console.error('Failed to send confirmation email:', await emailResponse.text());
+                        }
+                    } catch (emailError) {
+                        console.error('Error sending confirmation email:', emailError);
                     }
-                } catch (emailError) {
-                    console.error('Error sending confirmation email:', emailError);
                 }
             }
         } catch (error) {
