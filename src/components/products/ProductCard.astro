@@ -1,7 +1,8 @@
 ---
 import { ROUTES } from "../../config";
 import { formatPrice } from "../../shared/utils";
-import LazyImage from "../ui/LazyImage";
+import { ResponsiveImage } from "../ui/ResponsiveImage";
+import { extractPublicId, isCloudinaryUrl } from "../../lib/services/cloudinary-url";
 
 interface Props {
   product: any;
@@ -9,6 +10,19 @@ interface Props {
 }
 
 const { product, index = 0 } = Astro.props;
+
+const PRODUCT_IMAGE_WIDTH = 700;
+const PRODUCT_IMAGE_HEIGHT = 800;
+
+const getImagePublicId = (imageUrl?: string) => {
+  if (!imageUrl) return null;
+  if (isCloudinaryUrl(imageUrl)) return extractPublicId(imageUrl);
+  // If it's already a public ID (no scheme), use it directly
+  if (!imageUrl.startsWith("http://") && !imageUrl.startsWith("https://")) {
+    return imageUrl;
+  }
+  return null;
+};
 ---
 
 <a
@@ -18,12 +32,34 @@ const { product, index = 0 } = Astro.props;
   <!-- Image -->
   <div class="relative aspect-[3/4] bg-slate-100 overflow-hidden">
     {product.images[0] ? (
-      <LazyImage
-        client:visible
-        src={product.images[0]}
-        alt={product.name}
-        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-      />
+      (() => {
+        const publicId = getImagePublicId(product.images[0]);
+        if (publicId) {
+          return (
+            <ResponsiveImage
+              client:visible
+              publicId={publicId}
+              alt={product.name}
+              type="product"
+              width={PRODUCT_IMAGE_WIDTH}
+              height={PRODUCT_IMAGE_HEIGHT}
+              className="w-full h-full"
+            />
+          );
+        }
+
+        return (
+          <img
+            src={product.images[0]}
+            alt={product.name}
+            width={PRODUCT_IMAGE_WIDTH}
+            height={PRODUCT_IMAGE_HEIGHT}
+            class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+            loading="lazy"
+            decoding="async"
+          />
+        );
+      })()
     ) : (
       <div class="w-full h-full flex items-center justify-center text-slate-300">
         <svg class="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">

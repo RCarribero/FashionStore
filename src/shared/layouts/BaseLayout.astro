@@ -1,5 +1,6 @@
 ---
 import "../../styles/global.css";
+import criticalCSS from "../../styles/critical.css?raw";
 
 interface Props {
   title: string;
@@ -26,6 +27,9 @@ const canonicalURL = Astro.site
     <link rel="icon" type="image/png" href="/logo.png" />
     <link rel="canonical" href={canonicalURL} />
     <link rel="manifest" href="/manifest.json" />
+
+    <!-- Inline Critical CSS for above-the-fold rendering -->
+    <style is:inline set:html={criticalCSS}></style>
 
     <script is:inline>
       if ('serviceWorker' in navigator) {
@@ -58,9 +62,28 @@ const canonicalURL = Astro.site
     <meta property="twitter:description" content={description} />
     <meta property="twitter:image" content={image} />
 
-    <!-- Fonts preload -->
+    <!-- DNS prefetch and preconnect for external resources -->
+    <link rel="dns-prefetch" href="https://res.cloudinary.com" />
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+
+    <link rel="preconnect" href="https://res.cloudinary.com" crossorigin />
+
+    <!-- Fonts optimization with swap display strategy -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link 
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap" 
+      rel="stylesheet"
+      media="print"
+      onload="this.media='all'; this.onload=null;"
+    />
+    <noscript>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet"
+      />
+    </noscript>
 
     <meta name="generator" content={Astro.generator} />
   </head>

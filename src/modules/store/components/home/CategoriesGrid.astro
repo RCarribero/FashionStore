@@ -1,16 +1,28 @@
 ---
 import { ROUTES } from "../../../../config";
 import { getCatalogCategories } from "../../services/catalog.service";
+import {
+    buildCloudinaryUrl,
+    buildResponsiveSet,
+    extractPublicId,
+    isCloudinaryUrl
+} from "../../../../lib/services/cloudinary-url";
 
 const { data: categories } = await getCatalogCategories();
 
 // Fallback images for categories that don't have an image set in DB
 const fallbackImages: Record<string, string> = {
-    'zapatillas': 'https://res.cloudinary.com/dzaka0idb/image/upload/v1768292616/fashionstore/categories/zapatillas.webp',
-    'sudaderas': 'https://res.cloudinary.com/dzaka0idb/image/upload/v1768292618/fashionstore/categories/sudaderas.webp',
-    'pantalones': 'https://res.cloudinary.com/dzaka0idb/image/upload/v1768292619/fashionstore/categories/pantalones.webp',
-    'camisetas': 'https://res.cloudinary.com/dzaka0idb/image/upload/v1768292621/fashionstore/categories/camisetas.webp',
-    'chaquetas': 'https://res.cloudinary.com/dzaka0idb/image/upload/v1768292621/fashionstore/categories/chaquetas.webp'
+    'zapatillas': 'fashionstore/categories/zapatillas',
+    'sudaderas': 'fashionstore/categories/sudaderas',
+    'pantalones': 'fashionstore/categories/pantalones',
+    'camisetas': 'fashionstore/categories/camisetas',
+    'chaquetas': 'fashionstore/categories/chaquetas'
+};
+
+// Image dimensions by category position
+const imageDimensions = {
+    large: { width: 1024, height: 800 }, // First category (md:row-span-2)
+    small: { width: 1048, height: 800 } // Other categories
 };
 ---
 <section class="py-16 lg:py-24 bg-white">
@@ -29,21 +41,44 @@ const fallbackImages: Record<string, string> = {
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
             {
                 categories?.map((category, index) => {
-                    const categoryImage = category.image || fallbackImages[category.slug];
+                    const rawCategoryImage = category.image || fallbackImages[category.slug];
+                    const isAbsoluteUrl = rawCategoryImage?.startsWith("http://") || rawCategoryImage?.startsWith("https://");
+                    const categoryPublicId = rawCategoryImage
+                        ? (isCloudinaryUrl(rawCategoryImage)
+                            ? extractPublicId(rawCategoryImage)
+                            : (isAbsoluteUrl ? null : rawCategoryImage))
+                        : null;
+                    const dims = index === 0 ? imageDimensions.large : imageDimensions.small;
+                    // Use optimized Cloudinary URL with transformations
+                                        const categoryImage = categoryPublicId 
+                                            ? buildCloudinaryUrl(categoryPublicId, 'category', { 
+                                                width: dims.width, 
+                                                height: dims.height 
+                                              })
+                                            : (isAbsoluteUrl ? rawCategoryImage : null);
+                                        const categorySrcSet = categoryPublicId
+                                            ? buildResponsiveSet(categoryPublicId, 'category')
+                                            : undefined;
                     
                     return (
                         <a
                             href={ROUTES.CATEGORY(category.slug)}
-                            class={`group relative overflow-hidden ${index === 0 ? 'md:row-span-2' : ''}`}
+                            class={`group relative overflow-hidden rounded ${index === 0 ? 'md:row-span-2' : ''}`}
                             style={`min-height: ${index === 0 ? '600px' : '290px'}`}
                         >
-                            <!-- Background Image -->
+                            <!-- Background Image with explicit dimensions to prevent CLS -->
                             <div class="absolute inset-0 bg-slate-200">
                                 {categoryImage ? (
                                     <img 
-                                        src={categoryImage} 
+                                        src={categoryImage}
+                                        srcset={categorySrcSet}
+                                        sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
                                         alt={category.name}
+                                        width={dims.width}
+                                        height={dims.height}
                                         class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                        loading="lazy"
+                                        decoding="async"
                                     />
                                 ) : (
                                     <div class="w-full h-full bg-gradient-to-br from-slate-300 to-slate-400"></div>
