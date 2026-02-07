@@ -10,6 +10,12 @@ import { formatPrice } from "../../../shared/utils";
 import { ROUTES } from "../../../config";
 import { STORE_CONFIG } from "../config";
 import type { Product } from "../../../shared/types";
+import {
+    buildCloudinaryUrl,
+    buildResponsiveSet,
+    extractPublicId,
+    isCloudinaryUrl
+} from "../../../lib/services/cloudinary-url";
 
 // Get product slug from URL
 const { slug } = Astro.params;
@@ -32,6 +38,61 @@ const { data: relatedProducts } = await supabase
     .eq("category_id", product.category_id)
     .neq("id", product.id)
     .limit(4);
+
+const PRODUCT_IMAGE_WIDTH = 700;
+const PRODUCT_IMAGE_HEIGHT = 800;
+const THUMBNAIL_SIZE = 200;
+
+const getOptimizedImage = (imageUrl?: string) => {
+    if (!imageUrl) return null;
+
+    const isAbsoluteUrl = imageUrl.startsWith("http://") || imageUrl.startsWith("https://");
+
+    if (isAbsoluteUrl && !isCloudinaryUrl(imageUrl)) {
+        return { src: imageUrl, srcset: undefined };
+    }
+
+    const publicId = isCloudinaryUrl(imageUrl)
+        ? extractPublicId(imageUrl)
+        : imageUrl;
+
+    if (!publicId) {
+        return { src: imageUrl, srcset: undefined };
+    }
+
+    return {
+        src: buildCloudinaryUrl(publicId, "product", {
+            width: PRODUCT_IMAGE_WIDTH,
+            height: PRODUCT_IMAGE_HEIGHT
+        }),
+        srcset: buildResponsiveSet(publicId, "product")
+    };
+};
+
+const getOptimizedThumbnail = (imageUrl?: string) => {
+    if (!imageUrl) return null;
+
+    const isAbsoluteUrl = imageUrl.startsWith("http://") || imageUrl.startsWith("https://");
+
+    if (isAbsoluteUrl && !isCloudinaryUrl(imageUrl)) {
+        return imageUrl;
+    }
+
+    const publicId = isCloudinaryUrl(imageUrl)
+        ? extractPublicId(imageUrl)
+        : imageUrl;
+
+    if (!publicId) return imageUrl;
+
+    return buildCloudinaryUrl(publicId, "product", {
+        width: THUMBNAIL_SIZE,
+        height: THUMBNAIL_SIZE,
+        crop: "fill",
+        gravity: "auto"
+    });
+};
+
+const mainImage = getOptimizedImage(product.images?.[0]);
 ---
 
 <StoreLayout title={product.name} description={product.description}>
@@ -80,10 +141,16 @@ const { data: relatedProducts } = await supabase
                         {
                             product.images?.[0] ? (
                                 <img
-                                    src={product.images[0]}
+                                    src={mainImage?.src}
+                                    srcset={mainImage?.srcset}
+                                    sizes="(max-width: 768px) 100vw, 50vw"
                                     alt={product.name}
+                                    width={PRODUCT_IMAGE_WIDTH}
+                                    height={PRODUCT_IMAGE_HEIGHT}
                                     class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                                     id="main-image"
+                                    loading="eager"
+                                    decoding="async"
                                 />
                             ) : (
                                 <div class="w-full h-full flex items-center justify-center text-slate-300">
@@ -143,9 +210,13 @@ const { data: relatedProducts } = await supabase
                                             data-image={img}
                                         >
                                             <img
-                                                src={img}
+                                                src={getOptimizedThumbnail(img) || img}
                                                 alt={`${product.name} ${idx + 1}`}
+                                                width={THUMBNAIL_SIZE}
+                                                height={THUMBNAIL_SIZE}
                                                 class="w-full h-full object-cover"
+                                                loading="lazy"
+                                                decoding="async"
                                             />
                                         </button>
                                     ))}

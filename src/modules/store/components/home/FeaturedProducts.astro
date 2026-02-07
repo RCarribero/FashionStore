@@ -3,9 +3,50 @@ import { ROUTES } from "../../../../config";
 import { getHomepageFeatured } from "../../services/catalog.service";
 import { enrichProductsWithDiscounts } from "../../../../shared/utils/promotions";
 import { formatPrice } from "../../../../shared/utils";
+import {
+    buildCloudinaryUrl,
+    buildResponsiveSet,
+    extractPublicId,
+    isCloudinaryUrl
+} from "../../../../lib/services/cloudinary-url";
 
 const { data: rawFeaturedProducts } = await getHomepageFeatured(8);
 const featuredProducts = await enrichProductsWithDiscounts(rawFeaturedProducts || []);
+
+const PRODUCT_IMAGE_WIDTH = 700;
+const PRODUCT_IMAGE_HEIGHT = 800;
+
+const getOptimizedImage = (imageUrl?: string) => {
+    if (!imageUrl) return null;
+
+    const isAbsoluteUrl = imageUrl.startsWith("http://") || imageUrl.startsWith("https://");
+
+    if (isAbsoluteUrl && !isCloudinaryUrl(imageUrl)) {
+        return {
+            src: imageUrl,
+            srcset: undefined
+        };
+    }
+
+    const publicId = isCloudinaryUrl(imageUrl)
+        ? extractPublicId(imageUrl)
+        : imageUrl;
+
+    if (!publicId) {
+        return {
+            src: imageUrl,
+            srcset: undefined
+        };
+    }
+
+    return {
+        src: buildCloudinaryUrl(publicId, "product", {
+            width: PRODUCT_IMAGE_WIDTH,
+            height: PRODUCT_IMAGE_HEIGHT
+        }),
+        srcset: buildResponsiveSet(publicId, "product")
+    };
+};
 ---
 {
     featuredProducts && featuredProducts.length > 0 && (
@@ -34,7 +75,10 @@ const featuredProducts = await enrichProductsWithDiscounts(rawFeaturedProducts |
 
                 <!-- Products Grid -->
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-                    {featuredProducts.map((product, index) => (
+                    {featuredProducts.map((product, index) => {
+                        const optimizedImage = getOptimizedImage(product.images[0]);
+
+                        return (
                         <a
                             href={ROUTES.PRODUCT_DETAIL(product.slug)}
                             class="group bg-white overflow-hidden"
@@ -43,10 +87,15 @@ const featuredProducts = await enrichProductsWithDiscounts(rawFeaturedProducts |
                             <div class="relative aspect-[3/4] bg-slate-100 overflow-hidden">
                                 {product.images[0] ? (
                                     <img
-                                        src={product.images[0]}
+                                        src={optimizedImage?.src}
+                                        srcset={optimizedImage?.srcset}
+                                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                                         alt={product.name}
+                                        width={PRODUCT_IMAGE_WIDTH}
+                                        height={PRODUCT_IMAGE_HEIGHT}
                                         class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                         loading="lazy"
+                                        decoding="async"
                                     />
                                 ) : (
                                     <div class="w-full h-full flex items-center justify-center text-slate-300">
@@ -94,7 +143,7 @@ const featuredProducts = await enrichProductsWithDiscounts(rawFeaturedProducts |
                                 </div>
                             </div>
                         </a>
-                    ))}
+                    )})}
                 </div>
             </div>
         </section>
