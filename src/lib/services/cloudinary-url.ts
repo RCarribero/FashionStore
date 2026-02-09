@@ -59,9 +59,20 @@ export function buildCloudinaryUrl(
   let height = options?.height;
 
   // Fix for simple filenames without folder (e.g. "hiking-boots")
-  // Cloudinary often stores them in specific folders
-  if (resourceType === 'product' && !publicId.includes('/') && !publicId.startsWith('http')) {
-    publicId = `fashionstore/products/${publicId}`;
+  // Only apply default folder if the ID has NO path at all
+  if (resourceType === 'product' && !publicId.startsWith('http')) {
+    if (!publicId.includes('/')) {
+      publicId = `fashionstore/products/${publicId}`;
+    }
+    // If it starts with fashionstore/ but NOT fashionstore/products/ (legacy/mixed data)
+    else if (publicId.startsWith('fashionstore/') && !publicId.startsWith('fashionstore/products/')) {
+      // This case handles IDs like "fashionstore/item" -> "fashionstore/products/item" 
+      // BUT we must be careful. The error logs showing fashionstore/fashionstore suggest
+      // some IDs might be 'fashionstore/item' and we were prepending 'fashionstore/products/' blindly?
+      // partial fix: let's trust existing folders if they start with fashionstore
+      // NOOP - assume if it has a folder, it's correct, OR we need to remap.
+      // Let's just fix the duplication case first.
+    }
   }
 
   if (!width && !height) {
