@@ -1,6 +1,3 @@
 User-agent: *
 Allow: /
-Disallow: /admin/
-Disallow: /api/
-Disallow: /auth/
-Sitemap: https://fashionstore.victoriafp.online/sitemap.xml
+Sitemap: https://fashionstore.victoriafp.online/sitemap-index.xml
