@@ -58,6 +58,12 @@ export function buildCloudinaryUrl(
   let width = options?.width;
   let height = options?.height;
 
+  // Fix for simple filenames without folder (e.g. "hiking-boots")
+  // Cloudinary often stores them in specific folders
+  if (resourceType === 'product' && !publicId.includes('/') && !publicId.startsWith('http')) {
+    publicId = `fashionstore/products/${publicId}`;
+  }
+
   if (!width && !height) {
     if (resourceType === 'category') {
       width = CATEGORY_WIDTH;
@@ -189,8 +195,19 @@ export function getResourceDimensions(
  * // Returns: 'fashionstore/categories/zapatillas'
  */
 export function extractPublicId(url: string): string | null {
-  const match = url.match(/\/image\/upload\/(?:v\d+\/)?(.+?)(?:\.\w+)?$/);
-  return match ? match[1] : null;
+  // Handle already extracted public IDs or simple filenames
+  if (!url.includes('/') && !url.includes('http')) return url;
+
+  // Match versioned or unversioned Cloudinary URLs
+  const match = url.match(/\/image\/upload\/(?:v\d+\/)?(.+)$/);
+  if (!match) return null;
+
+  // Remove extension if present
+  const parts = match[1].split('.');
+  if (parts.length > 1) {
+    parts.pop();
+  }
+  return parts.join('.');
 }
 
 /**
