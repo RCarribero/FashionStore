@@ -68,11 +68,9 @@ const imageDimensions = {
                         >
                             <!-- Background Image with explicit dimensions to prevent CLS -->
                             <div class="absolute inset-0 bg-slate-200">
-                                {categoryImage ? (
+                                {rawCategoryImage ? (
                                     <img 
-                                        src={categoryImage}
-                                        srcset={categorySrcSet}
-                                        sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                                        src={rawCategoryImage}
                                         alt={category.name}
                                         width={dims.width}
                                         height={dims.height}
