@@ -4,6 +4,8 @@ import react from '@astrojs/react';
 import tailwind from '@astrojs/tailwind';
 import node from '@astrojs/node';
 
+import sitemap from '@astrojs/sitemap';
+
 // https://astro.build/config
 export default defineConfig({
     site: 'https://fashionstore.victoriafp.online',
@@ -13,7 +15,8 @@ export default defineConfig({
     }),
     integrations: [
         react(),
-        tailwind()
+        tailwind(),
+        sitemap()
     ],
     vite: {
         ssr: {

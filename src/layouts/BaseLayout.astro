@@ -60,8 +60,8 @@ const canonicalURL = Astro.site
         <!-- Fonts optimization with swap display strategy -->
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-        <link 
-            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap" 
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap"
             rel="stylesheet"
             media="print"
             onload="this.media='all'; this.onload=null;"
@@ -74,8 +74,17 @@ const canonicalURL = Astro.site
         </noscript>
 
         <meta name="generator" content={Astro.generator} />
+        <link rel="manifest" href="/manifest.json" />
     </head>
     <body class="min-h-screen flex flex-col">
-        <slot />
+        <a
+            href="#main-content"
+            class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 px-4 py-2 bg-black text-white font-bold transition-all"
+        >
+            Saltar al contenido principal
+        </a>
+        <main id="main-content" class="flex-grow flex flex-col">
+            <slot />
+        </main>
     </body>
 </html>

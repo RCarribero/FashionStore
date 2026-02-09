@@ -75,8 +75,7 @@ self.addEventListener('fetch', (event) => {
                 .catch(() => {
                     // Fallback for navigation requests
                     if (event.request.mode === 'navigate') {
-                        // We could return a custom offline page here
-                        // return caches.match('/offline.html');
+                        return caches.match('/offline.html');
                     }
                 });
         })
