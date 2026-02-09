@@ -132,8 +132,6 @@ export const POST: APIRoute = async ({ request }) => {
             discountAmount = coupon.discount_value;
         }
 
-        // Cap discount at total amount (or eligible amount? Usually total)
-        // Ensure we don't refund more than purchase
         if (discountAmount > purchaseAmount) {
             discountAmount = purchaseAmount;
         }
