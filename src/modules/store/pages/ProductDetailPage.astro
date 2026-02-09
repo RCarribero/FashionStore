@@ -14,7 +14,7 @@ import {
     buildCloudinaryUrl,
     buildResponsiveSet,
     extractPublicId,
-    isCloudinaryUrl
+    isCloudinaryUrl,
 } from "../../../lib/services/cloudinary-url";
 
 // Get product slug from URL
@@ -46,7 +46,8 @@ const THUMBNAIL_SIZE = 200;
 const getOptimizedImage = (imageUrl?: string) => {
     if (!imageUrl) return null;
 
-    const isAbsoluteUrl = imageUrl.startsWith("http://") || imageUrl.startsWith("https://");
+    const isAbsoluteUrl =
+        imageUrl.startsWith("http://") || imageUrl.startsWith("https://");
 
     if (isAbsoluteUrl && !isCloudinaryUrl(imageUrl)) {
         return { src: imageUrl, srcset: undefined };
@@ -63,16 +64,17 @@ const getOptimizedImage = (imageUrl?: string) => {
     return {
         src: buildCloudinaryUrl(publicId, "product", {
             width: PRODUCT_IMAGE_WIDTH,
-            height: PRODUCT_IMAGE_HEIGHT
+            height: PRODUCT_IMAGE_HEIGHT,
         }),
-        srcset: buildResponsiveSet(publicId, "product")
+        srcset: buildResponsiveSet(publicId, "product"),
     };
 };
 
 const getOptimizedThumbnail = (imageUrl?: string) => {
     if (!imageUrl) return null;
 
-    const isAbsoluteUrl = imageUrl.startsWith("http://") || imageUrl.startsWith("https://");
+    const isAbsoluteUrl =
+        imageUrl.startsWith("http://") || imageUrl.startsWith("https://");
 
     if (isAbsoluteUrl && !isCloudinaryUrl(imageUrl)) {
         return imageUrl;
@@ -88,7 +90,7 @@ const getOptimizedThumbnail = (imageUrl?: string) => {
         width: THUMBNAIL_SIZE,
         height: THUMBNAIL_SIZE,
         crop: "fill",
-        gravity: "auto"
+        gravity: "auto",
     });
 };
 
@@ -203,21 +205,30 @@ const mainImage = getOptimizedImage(product.images?.[0]);
                         product.images && product.images.length > 1 && (
                             <div class="grid grid-cols-4 gap-2">
                                 {product.images
-                                    .slice(0, 4)
-                                    .map((img: string, idx: number) => (
+                                    .map((img: string, idx: number) => {
+                                        const optimizedFull = getOptimizedImage(img);
+                                        return (
                                         <button
                                             class={`aspect-square bg-slate-100 overflow-hidden border-2 transition-colors ${idx === 0 ? "border-black" : "border-transparent hover:border-slate-300"}`}
                                             data-image={img}
+                                            data-optimized-src={optimizedFull?.src}
+                                            data-optimized-srcset={optimizedFull?.srcset}
                                         >
                                             <img
-                                                src={getOptimizedThumbnail(img) || img}
+                                                src={
+                                                    getOptimizedThumbnail(
+                                                        img,
+                                                    ) || img
+                                                }
                                                 alt={`${product.name} ${idx + 1}`}
                                                 width={THUMBNAIL_SIZE}
                                                 height={THUMBNAIL_SIZE}
                                                 class="w-full h-full object-cover"
                                                 loading="lazy"
                                                 decoding="async"
-                                            />
+                                                />
+                                        </button>
+                                    )})}                                            />
                                         </button>
                                     ))}
                             </div>
@@ -509,4 +520,39 @@ const mainImage = getOptimizedImage(product.images?.[0]);
             </section>
         )
     }
+    <!-- Scripts -->
+    <script>
+        // Thumbnail selection
+        const mainImage = document.getElementById(
+            "main-image",
+        ) as HTMLImageElement;
+        const thumbnails = document.querySelectorAll("[data-image]");
+
+        thumbnails.forEach((thumb) => {
+            thumb.addEventListener("click", () => {
+                const newImageSrc = thumb.getAttribute("data-optimized-src");
+                const newImageSrcset = thumb.getAttribute(
+                    "data-optimized-srcset",
+                );
+
+                if (mainImage && newImageSrc) {
+                    // Update main image
+                    mainImage.src = newImageSrc;
+                    if (newImageSrcset) {
+                        mainImage.srcset = newImageSrcset;
+                    } else {
+                        mainImage.removeAttribute("srcset");
+                    }
+
+                    // Update active state
+                    thumbnails.forEach((t) => {
+                        t.classList.remove("border-black");
+                        t.classList.add("border-transparent");
+                    });
+                    thumb.classList.remove("border-transparent");
+                    thumb.classList.add("border-black");
+                }
+            });
+        });
+    </script>
 </StoreLayout>
