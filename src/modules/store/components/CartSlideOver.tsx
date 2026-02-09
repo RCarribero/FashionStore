@@ -241,8 +241,8 @@ function CartItemRow({ item }: { item: CartItem }) {
                             onClick={() => handleQuantityChange(item.quantity + 1)}
                             disabled={isAtStockLimit}
                             className={`w-8 h-8 flex items-center justify-center transition-colors ${isAtStockLimit
-                                    ? 'text-slate-300 cursor-not-allowed bg-slate-50'
-                                    : 'text-slate-600 hover:bg-slate-100'
+                                ? 'text-slate-300 cursor-not-allowed bg-slate-50'
+                                : 'text-slate-600 hover:bg-slate-100'
                                 }`}
                             title={isAtStockLimit ? 'Stock maximo alcanzado' : ''}
                         >
@@ -323,6 +323,8 @@ function CartFooter({ cart, cartTotal, onClose }: { cart: { items: CartItem[] };
             }
         } catch (error) {
             console.error('Coupon revalidation failed:', error);
+            // If validation fails (e.g. network error, server error), better to clear potential invalid coupon
+            clearCoupon();
         }
     };
 
