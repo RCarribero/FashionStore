@@ -3,7 +3,7 @@
  * Converts Cloudinary URLs to optimized versions with transformations
  */
 
-import { buildCloudinaryUrl, extractPublicId, isCloudinaryUrl, type ResourceType } from './cloudinary-url';
+import { buildCloudinaryUrl, buildResponsiveSet, extractPublicId, isCloudinaryUrl, type ResourceType } from './cloudinary-url';
 
 /**
  * Optimize a single product image URL
@@ -42,10 +42,10 @@ export function optimizeProductImages(images: string[]): string[] {
  */
 export function getOptimizedProductImage(images: string[] | string | null): string {
   if (!images) return '';
-  
+
   const imageArray = Array.isArray(images) ? images : [images];
   const firstImage = imageArray[0];
-  
+
   return optimizeProductImageUrl(firstImage);
 }
 
@@ -54,18 +54,11 @@ export function getOptimizedProductImage(images: string[] | string | null): stri
  */
 export function buildProductImageSrcset(imageUrl: string): string {
   const publicId = isCloudinaryUrl(imageUrl) ? extractPublicId(imageUrl) : imageUrl;
-  
-  if (!publicId) return imageUrl;
 
-  const baseUrl = 'https://res.cloudinary.com/dzaka0idb/image/upload';
-  const baseTransforms = 'f_auto,q_auto:eco,fl_lossy';
+  if (!publicId) return '';
 
-  return [
-    `${baseUrl}/w_400,${baseTransforms}/${publicId}.auto 400w`,
-    `${baseUrl}/w_600,${baseTransforms}/${publicId}.auto 600w`,
-    `${baseUrl}/w_700,${baseTransforms}/${publicId}.auto 700w`,
-    `${baseUrl}/w_1024,${baseTransforms}/${publicId}.auto 1024w`,
-  ].join(', ');
+  // Use the centralized builder which now handles folder paths correctly
+  return buildResponsiveSet(publicId, 'product');
 }
 
 /**
