@@ -62,7 +62,7 @@ export function buildCloudinaryUrl(
   // Only apply default folder if the ID has NO path at all
   if (resourceType === 'product' && !publicId.startsWith('http')) {
     if (!publicId.includes('/')) {
-      publicId = `fashionstore/products/${publicId}`;
+      publicId = `fashionstore/${publicId}`;
     }
     // If it starts with fashionstore/ but NOT fashionstore/products/ (legacy/mixed data)
     else if (publicId.startsWith('fashionstore/') && !publicId.startsWith('fashionstore/products/')) {
@@ -143,7 +143,7 @@ export function buildResponsiveSet(
   // Fix for simple filenames without folder (same as buildCloudinaryUrl)
   if (resourceType === 'product' && !publicId.startsWith('http')) {
     if (!publicId.includes('/')) {
-      publicId = `fashionstore/products/${publicId}`;
+      publicId = `fashionstore/${publicId}`;
     }
   }
 
