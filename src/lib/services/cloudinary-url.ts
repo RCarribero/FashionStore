@@ -140,6 +140,13 @@ export function buildResponsiveSet(
   const baseUrl = `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/image/upload`;
   const baseTransforms = 'f_auto,q_auto:eco,fl_lossy';
 
+  // Fix for simple filenames without folder (same as buildCloudinaryUrl)
+  if (resourceType === 'product' && !publicId.startsWith('http')) {
+    if (!publicId.includes('/')) {
+      publicId = `fashionstore/products/${publicId}`;
+    }
+  }
+
   if (resourceType === 'product') {
     // Standard product sizes: mobile, tablet, desktop
     return [
