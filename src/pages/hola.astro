@@ -1,0 +1,52 @@
+---
+import StoreLayout from "../modules/store/layouts/StoreLayout.astro";
+import { ROUTES } from "../config";
+---
+
+<StoreLayout title="Hola Mundo">
+    <section
+        class="relative min-h-[70vh] bg-gradient-to-br from-slate-950 via-slate-900 to-black text-white overflow-hidden"
+    >
+        <div
+            class="pointer-events-none absolute inset-0 opacity-50 bg-[radial-gradient(circle_at_20%_20%,rgba(239,68,68,0.25),transparent_35%),radial-gradient(circle_at_80%_10%,rgba(14,165,233,0.2),transparent_30%),radial-gradient(circle_at_50%_80%,rgba(99,102,241,0.18),transparent_35%)]"
+        ></div>
+
+        <div class="relative max-w-5xl mx-auto px-6 py-20 text-center space-y-10">
+            <span
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-800/70 border border-slate-700 text-xs font-semibold uppercase tracking-widest"
+            >
+                Nueva vista
+                <span class="block h-2 w-2 rounded-full bg-accent animate-pulse"></span>
+            </span>
+
+            <div class="space-y-6">
+                <p class="text-sm uppercase tracking-[0.4em] text-slate-400">
+                    Astro + Tailwind
+                </p>
+                <h1 class="font-display text-5xl md:text-6xl font-black leading-tight">
+                    Hola Mundo
+                </h1>
+                <p class="text-lg md:text-xl text-slate-300 max-w-3xl mx-auto">
+                    Esta es una vista de demostracion creada en Astro y decorada con
+                    Tailwind CSS. Personaliza este espacio para experimentar con nuevos
+                    componentes o mensajes rapidos.
+                </p>
+            </div>
+
+            <div class="flex items-center justify-center gap-4 flex-wrap">
+                <a
+                    href={ROUTES.HOME}
+                    class="px-6 py-3 rounded-full bg-accent text-white font-semibold uppercase tracking-wide hover:bg-red-700 transition-colors"
+                >
+                    Ir al inicio
+                </a>
+                <a
+                    href={ROUTES.PRODUCTS}
+                    class="px-6 py-3 rounded-full border border-slate-700 text-slate-200 hover:border-white hover:text-white transition-colors"
+                >
+                    Ver catalogo
+                </a>
+            </div>
+        </div>
+    </section>
+</StoreLayout>

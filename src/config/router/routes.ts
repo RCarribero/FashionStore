@@ -6,6 +6,7 @@
 export const ROUTES = {
     // Public Store Routes
     HOME: '/',
+    HOLA: '/hola',
     PRODUCTS: '/productos',
     PRODUCT_DETAIL: (slug: string) => `/productos/${slug}`,
     CATEGORY: (slug: string) => `/categoria/${slug}`,
