@@ -13,6 +13,7 @@ export const ROUTES = {
     OUTLET: '/tienda/outlet',
     SEARCH: '/tienda/buscar',
     CONTACT: '/info/contacto',
+    VALENTINES: '/d',
 
     // Legal Pages
     LEGAL: {
