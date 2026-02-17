@@ -12,15 +12,15 @@ export const ROUTES = {
     SALE: '/ofertas',
     OUTLET: '/outlet',
     SEARCH: '/buscar',
-    CONTACT: '/contacto',
+    CONTACT: '/info/contacto',
 
     // Legal Pages
     LEGAL: {
-        PRIVACY: '/privacidad',
-        TERMS: '/terminos',
-        COOKIES: '/cookies',
-        RETURNS: '/devoluciones',
-        SHIPPING: '/envio',
+        PRIVACY: '/legal/privacidad',
+        TERMS: '/legal/terminos',
+        COOKIES: '/legal/cookies',
+        RETURNS: '/legal/devoluciones',
+        SHIPPING: '/info/envio',
     },
 
     // Auth Routes
