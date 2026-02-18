@@ -412,6 +412,15 @@ export default function ProfilePage() {
 
                     {/* Main Content */}
                     <div className="lg:col-span-2">
+                        {message && (
+                            <div className={`mb-6 p-4 border ${message.type === 'success'
+                                ? 'bg-green-500/10 border-green-500/50 text-green-400'
+                                : 'bg-red-500/10 border-red-500/50 text-red-400'
+                                }`}>
+                                {message.text}
+                            </div>
+                        )}
+
                         {activeTab === 'info' && (
                             <div className="bg-slate-900 border border-slate-800 p-6">
                                 <div className="flex justify-between items-center mb-6">
@@ -427,15 +436,6 @@ export default function ProfilePage() {
                                         </button>
                                     )}
                                 </div>
-
-                                {message && (
-                                    <div className={`mb-6 p-4 border ${message.type === 'success'
-                                        ? 'bg-green-500/10 border-green-500/50 text-green-400'
-                                        : 'bg-red-500/10 border-red-500/50 text-red-400'
-                                        }`}>
-                                        {message.text}
-                                    </div>
-                                )}
 
                                 <div className="space-y-6">
                                     <div>
@@ -703,17 +703,30 @@ export default function ProfilePage() {
                                                                         onClick={async () => {
                                                                             if (!confirm('¿Seguro que quieres cancelar este pedido? Esta accion no se puede deshacer.')) return;
                                                                             try {
+                                                                                const { data: { session } } = await supabase.auth.getSession();
+                                                                                const accessToken = session?.access_token;
+
                                                                                 const res = await fetch('/api/orders/cancel', {
                                                                                     method: 'POST',
-                                                                                    headers: { 'Content-Type': 'application/json' },
+                                                                                    credentials: 'same-origin',
+                                                                                    headers: {
+                                                                                        'Content-Type': 'application/json',
+                                                                                        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
+                                                                                    },
                                                                                     body: JSON.stringify({ orderId: order.id })
                                                                                 });
                                                                                 const data = await res.json();
                                                                                 if (!res.ok) throw new Error(data.error);
-                                                                                alert('Pedido cancelado correctamente. El stock ha sido restaurado.');
+                                                                                setMessage({
+                                                                                    type: 'success',
+                                                                                    text: 'Pedido cancelado correctamente. El stock ha sido restaurado.'
+                                                                                });
                                                                                 loadUser(); // Refresh orders
                                                                             } catch (err: any) {
-                                                                                alert(err.message || 'Error al cancelar el pedido');
+                                                                                setMessage({
+                                                                                    type: 'error',
+                                                                                    text: err.message || 'Error al cancelar el pedido'
+                                                                                });
                                                                             }
                                                                         }}
                                                                         className="px-4 py-2 bg-red-900/30 hover:bg-red-900/60 border border-red-500/30 hover:border-red-500/60 text-red-400 text-sm font-medium transition-colors"

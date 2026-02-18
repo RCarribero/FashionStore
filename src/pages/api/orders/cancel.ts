@@ -3,14 +3,22 @@
  * Performs atomic cancellation: updates order status and restores stock
  */
 import type { APIRoute } from 'astro';
-import { createClient } from '@supabase/supabase-js';
+import { AUTH_CONFIG, createAdminClient, supabase as publicSupabase } from '../../../modules/auth';
 
 export const prerender = false;
 
-const supabase = createClient(
-    import.meta.env.PUBLIC_SUPABASE_URL,
-    import.meta.env.SUPABASE_SERVICE_ROLE_KEY
-);
+const adminSupabase = createAdminClient();
+
+function getAccessTokenFromRequest(request: Request, cookies: { get: (name: string) => { value?: string } | undefined }): string | null {
+    const authorization = request.headers.get('authorization') || request.headers.get('Authorization');
+    if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
+        const token = authorization.slice('bearer '.length).trim();
+        return token.length > 0 ? token : null;
+    }
+
+    const cookieToken = cookies.get(AUTH_CONFIG.cookies.accessToken)?.value;
+    return cookieToken ?? null;
+}
 
 interface OrderItem {
     productId: string;
@@ -30,8 +38,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             }), { status: 400 });
         }
 
-        // Get access token from cookies to verify user
-        const accessToken = cookies.get('sb-access-token')?.value;
+        const accessToken = getAccessTokenFromRequest(request, cookies);
 
         if (!accessToken) {
             return new Response(JSON.stringify({
@@ -39,18 +46,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             }), { status: 401 });
         }
 
-        // Create client with user's session to get user ID
-        const userSupabase = createClient(
-            import.meta.env.PUBLIC_SUPABASE_URL,
-            import.meta.env.PUBLIC_SUPABASE_ANON_KEY,
-            {
-                global: {
-                    headers: { Authorization: `Bearer ${accessToken}` }
-                }
-            }
-        );
-
-        const { data: { user }, error: userError } = await userSupabase.auth.getUser();
+        const { data: { user }, error: userError } = await publicSupabase.auth.getUser(accessToken);
 
         if (userError || !user) {
             return new Response(JSON.stringify({
@@ -59,7 +55,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         }
 
         // Get order and verify ownership and status
-        const { data: order, error: orderError } = await supabase
+        const { data: order, error: orderError } = await adminSupabase
             .from('orders')
             .select('*')
             .eq('id', orderId)
@@ -100,7 +96,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             // 1. First, restore stock for each item
             for (const item of orderItems) {
                 // Find the variant by product_id and size
-                const { data: variant, error: variantError } = await supabase
+                const { data: variant, error: variantError } = await adminSupabase
                     .from('product_variants')
                     .select('id, stock')
                     .eq('product_id', item.productId)
@@ -116,7 +112,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
                 const newStock = previousStock + item.quantity;
 
                 // Update stock
-                const { error: updateError } = await supabase
+                const { error: updateError } = await adminSupabase
                     .from('product_variants')
                     .update({ stock: newStock })
                     .eq('id', variant.id);
@@ -133,7 +129,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             }
 
             // 2. Update order status to cancelled
-            const { error: cancelError } = await supabase
+            const { error: cancelError } = await adminSupabase
                 .from('orders')
                 .update({
                     status: 'cancelled',
@@ -145,7 +141,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             if (cancelError) {
                 // Rollback stock updates
                 for (const update of stockUpdates) {
-                    await supabase
+                    await adminSupabase
                         .from('product_variants')
                         .update({ stock: update.previousStock })
                         .eq('id', update.variantId);
