@@ -4,12 +4,8 @@ import { createClient } from '@supabase/supabase-js';
 
 dotenv.config({ path: new URL('../.env', import.meta.url) });
 
-const SUPABASE_URL = process.env.PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || 'https://dixaynqqloclazirzgik.supabase.co';
-const SUPABASE_ANON_KEY =
-  process.env.PUBLIC_SUPABASE_ANON_KEY ||
-  process.env.SUPABASE_ANON_KEY ||
-  // Legacy anon key (not secret)
-  'JWT_REDACTED';
+const SUPABASE_URL = process.env.PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
 
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -28,6 +24,8 @@ function requireEnv(name, value) {
 }
 
 async function main() {
+  requireEnv('PUBLIC_SUPABASE_URL (or SUPABASE_URL)', SUPABASE_URL);
+  requireEnv('PUBLIC_SUPABASE_ANON_KEY (or SUPABASE_ANON_KEY)', SUPABASE_ANON_KEY);
   requireEnv('SUPABASE_SERVICE_ROLE_KEY', SERVICE_ROLE_KEY);
 
   const adminClient = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
