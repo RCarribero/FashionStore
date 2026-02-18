@@ -1,43 +1,81 @@
-# Astro Starter Kit: Minimal
+# FashionMarket
 
-```sh
-npm create astro@latest -- --template minimal
+Plataforma e-commerce de moda masculina premium desarrollada con Astro, React, TailwindCSS y Supabase.
+
+## Stack
+
+- **Framework:** Astro v5 (SSR con Node adapter)
+- **UI:** React 19 + TailwindCSS 3
+- **Backend:** Supabase (PostgreSQL + Auth)
+- **Pagos:** Stripe
+- **Imagenes:** Cloudinary
+- **Email:** Nodemailer
+- **Estado:** Nanostores
+
+## Instalacion
+
+```bash
+npm install
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## Variables de entorno
 
-## 🚀 Project Structure
+Crea un archivo `.env` en la raiz con las siguientes variables:
 
-Inside of your Astro project, you'll see the following folders and files:
+```env
+# Supabase
+PUBLIC_SUPABASE_URL=
+PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
 
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+# Cloudinary
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+
+# Stripe
+STRIPE_SECRET_KEY=
+STRIPE_PUBLISHABLE_KEY=
+STRIPE_WEBHOOK_SECRET=
+
+# Email (Nodemailer)
+NODEMAILER_HOST=
+NODEMAILER_USER=
+NODEMAILER_PASS=
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+## Desarrollo
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+```bash
+npm run dev        # Servidor en http://localhost:4321
+```
 
-Any static assets, like images, can be placed in the `public/` directory.
+## Produccion
 
-## 🧞 Commands
+```bash
+npm run build      # Build de produccion
+npm run preview    # Preview del build
+```
 
-All commands are run from the root of the project, from a terminal:
+## Estructura del proyecto
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+```
+src/
+├── config/          # Rutas y constantes
+├── modules/
+│   ├── admin/       # Panel de administracion (/gestion-fm)
+│   ├── auth/        # Autenticacion
+│   ├── store/       # Tienda publica
+│   └── checkout/    # Proceso de compra
+├── pages/           # Rutas de Astro
+├── shared/          # Componentes y utilidades compartidas
+└── lib/             # Servicios externos (Supabase, Cloudinary, Stripe)
+```
 
-## 👀 Want to learn more?
+## Deploy
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+Configurado para deploy con Nixpacks (Railway). Ver `nixpacks.toml`.
+
+## Documentacion
+
+Consulta [DOCUMENTACION.md](./DOCUMENTACION.md) para la documentacion completa del proyecto.

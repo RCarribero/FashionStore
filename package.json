@@ -29,7 +29,6 @@
     "dotenv": "^17.2.3",
     "framer-motion": "^12.26.2",
     "nanostores": "^1.1.0",
-    "nerdamer": "^1.1.13",
     "nodemailer": "^7.0.12",
     "pdfkit": "^0.17.2",
     "postcss": "^8.5.6",
