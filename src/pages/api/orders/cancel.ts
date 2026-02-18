@@ -22,7 +22,10 @@ function getAccessTokenFromRequest(request: Request, cookies: { get: (name: stri
     return cookieToken ?? null;
 }
 
-const jsonHeaders = { 'Content-Type': 'application/json' };
+const jsonHeaders = {
+    'Content-Type': 'application/json',
+    'X-Cancel-Endpoint-Version': 'rpc-v1',
+};
 
 export const POST: APIRoute = async ({ request, cookies }) => {
     try {
