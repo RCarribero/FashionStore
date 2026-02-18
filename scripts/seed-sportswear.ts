@@ -11,17 +11,24 @@ import * as dotenv from 'dotenv';
 // Load environment variables
 dotenv.config();
 
+function requireEnv(name: string, value: string | undefined) {
+    if (!value) {
+        throw new Error(`Missing ${name} in environment`);
+    }
+    return value;
+}
+
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const stripe = new Stripe('sk_REDACTED51Snb87CFzYRW6R0mDBbMEZRsdMg3damRDQ4a0h4whl5OPZM0YO9NRdntcOw3GuPKPcdaPRQwT8OTw03zwYbgdU1200ivNMMn3i');
+const stripe = new Stripe(requireEnv('STRIPE_SECRET_KEY', process.env.STRIPE_SECRET_KEY));
 
 const supabase = createClient(
-    process.env.PUBLIC_SUPABASE_URL || 'https://dixaynqqloclazirzgik.supabase.co',
-    process.env.SUPABASE_SERVICE_ROLE_KEY || 'JWT_REDACTED'
+    requireEnv('PUBLIC_SUPABASE_URL', process.env.PUBLIC_SUPABASE_URL),
+    requireEnv('SUPABASE_SERVICE_ROLE_KEY', process.env.SUPABASE_SERVICE_ROLE_KEY)
 );
 
 interface ProductData {

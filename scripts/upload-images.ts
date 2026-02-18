@@ -4,15 +4,25 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
+import * as dotenv from 'dotenv';
 import * as fs from 'fs';
 import * as path from 'path';
 
+dotenv.config();
+
+function requireEnv(name: string, value: string | undefined) {
+    if (!value) {
+        throw new Error(`Missing ${name} in environment`);
+    }
+    return value;
+}
+
 const supabase = createClient(
-    'https://dixaynqqloclazirzgik.supabase.co',
-    'JWT_REDACTED'
+    requireEnv('PUBLIC_SUPABASE_URL', process.env.PUBLIC_SUPABASE_URL),
+    requireEnv('SUPABASE_SERVICE_ROLE_KEY', process.env.SUPABASE_SERVICE_ROLE_KEY)
 );
 
-const IMAGES_DIR = 'C:/Users/RBX/.gemini/antigravity/brain/7fea5eb9-eb09-453c-a0db-7e8584789331';
+const IMAGES_DIR = requireEnv('IMAGES_DIR', process.env.IMAGES_DIR);
 
 const productImages: { [slug: string]: string } = {
     'camisa-oxford-azul-marino': 'camisa_oxford_azul_1767947971871.png',
