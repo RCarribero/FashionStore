@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getCurrentUser, logout, supabase } from '../../auth/services/auth-client.service';
+import Modal from '../../../components/ui/Modal';
 import { ReturnModal } from './ReturnModal';
 
 interface User {
@@ -75,6 +76,11 @@ export default function ProfilePage() {
     const [isEditingAddress, setIsEditingAddress] = useState(false);
     const [currentAddress, setCurrentAddress] = useState<Partial<Address>>({});
 
+    // Cancel Order Modal State
+    const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+    const [orderToCancel, setOrderToCancel] = useState<Order | null>(null);
+    const [isCancellingOrder, setIsCancellingOrder] = useState(false);
+
     // Return Modal State
     const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
     const [selectedOrderForReturn, setSelectedOrderForReturn] = useState<{ id: string, number: number } | null>(null);
@@ -89,6 +95,50 @@ export default function ProfilePage() {
     const openReturnModal = (orderId: string, orderNumber: number) => {
         setSelectedOrderForReturn({ id: orderId, number: orderNumber });
         setIsReturnModalOpen(true);
+    };
+
+    const closeCancelModal = () => {
+        if (isCancellingOrder) return;
+        setIsCancelModalOpen(false);
+        setOrderToCancel(null);
+    };
+
+    const confirmCancelOrder = async () => {
+        if (!orderToCancel) return;
+        setIsCancellingOrder(true);
+        try {
+            setMessage(null);
+            const { data: { session } } = await supabase.auth.getSession();
+            const accessToken = session?.access_token;
+
+            const res = await fetch('/api/orders/cancel', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
+                },
+                body: JSON.stringify({ orderId: orderToCancel.id })
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+
+            setMessage({
+                type: 'success',
+                text: 'Pedido cancelado correctamente. El stock ha sido restaurado.'
+            });
+            setIsCancelModalOpen(false);
+            setOrderToCancel(null);
+            loadUser();
+        } catch (err: any) {
+            setMessage({
+                type: 'error',
+                text: err.message || 'Error al cancelar el pedido'
+            });
+        } finally {
+            setIsCancellingOrder(false);
+        }
     };
 
     const handleChangePassword = async () => {
@@ -421,6 +471,36 @@ export default function ProfilePage() {
                             </div>
                         )}
 
+                        <Modal
+                            isOpen={isCancelModalOpen}
+                            onClose={closeCancelModal}
+                            title="Cancelar pedido"
+                        >
+                            <div className="space-y-4">
+                                <p className="text-slate-300 text-sm">
+                                    ¿Seguro que quieres cancelar este pedido? Esta acción no se puede deshacer.
+                                </p>
+                                <div className="flex gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={closeCancelModal}
+                                        disabled={isCancellingOrder}
+                                        className="flex-1 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-sm font-medium transition-colors disabled:opacity-50"
+                                    >
+                                        Volver
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={confirmCancelOrder}
+                                        disabled={isCancellingOrder}
+                                        className="flex-1 px-4 py-2 bg-red-900/40 hover:bg-red-900/70 border border-red-500/30 hover:border-red-500/60 text-red-200 text-sm font-medium transition-colors disabled:opacity-50"
+                                    >
+                                        {isCancellingOrder ? 'Cancelando...' : 'Confirmar'}
+                                    </button>
+                                </div>
+                            </div>
+                        </Modal>
+
                         {activeTab === 'info' && (
                             <div className="bg-slate-900 border border-slate-800 p-6">
                                 <div className="flex justify-between items-center mb-6">
@@ -701,33 +781,8 @@ export default function ProfilePage() {
                                                                 !['shipped', 'in_transit', 'out_for_delivery', 'delivered', 'cancelled'].includes(order.shipping_status) && (
                                                                     <button
                                                                         onClick={async () => {
-                                                                            if (!confirm('¿Seguro que quieres cancelar este pedido? Esta accion no se puede deshacer.')) return;
-                                                                            try {
-                                                                                const { data: { session } } = await supabase.auth.getSession();
-                                                                                const accessToken = session?.access_token;
-
-                                                                                const res = await fetch('/api/orders/cancel', {
-                                                                                    method: 'POST',
-                                                                                    credentials: 'same-origin',
-                                                                                    headers: {
-                                                                                        'Content-Type': 'application/json',
-                                                                                        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
-                                                                                    },
-                                                                                    body: JSON.stringify({ orderId: order.id })
-                                                                                });
-                                                                                const data = await res.json();
-                                                                                if (!res.ok) throw new Error(data.error);
-                                                                                setMessage({
-                                                                                    type: 'success',
-                                                                                    text: 'Pedido cancelado correctamente. El stock ha sido restaurado.'
-                                                                                });
-                                                                                loadUser(); // Refresh orders
-                                                                            } catch (err: any) {
-                                                                                setMessage({
-                                                                                    type: 'error',
-                                                                                    text: err.message || 'Error al cancelar el pedido'
-                                                                                });
-                                                                            }
+                                                                            setOrderToCancel(order);
+                                                                            setIsCancelModalOpen(true);
                                                                         }}
                                                                         className="px-4 py-2 bg-red-900/30 hover:bg-red-900/60 border border-red-500/30 hover:border-red-500/60 text-red-400 text-sm font-medium transition-colors"
                                                                     >
