@@ -1,15 +1,20 @@
 import type { APIRoute } from 'astro';
 import Stripe from 'stripe';
-import { supabase } from '../../../modules/auth';
+import { createAdminClient } from '../../../modules/auth';
 import { checkLowStock } from '../../../lib/services/alerts';
 
-const stripe = new Stripe(import.meta.env.STRIPE_SECRET_KEY || 'sk_REDACTED51Snb87CFzYRW6R0mDBbMEZRsdMg3damRDQ4a0h4whl5OPZM0YO9NRdntcOw3GuPKPcdaPRQwT8OTw03zwYbgdU1200ivNMMn3i');
+const stripeSecretKey = import.meta.env.STRIPE_SECRET_KEY;
+if (!stripeSecretKey) {
+    throw new Error('Missing STRIPE_SECRET_KEY environment variable');
+}
+const stripe = new Stripe(stripeSecretKey);
 
 const endpointSecret = import.meta.env.STRIPE_WEBHOOK_SECRET;
 
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request }) => {
+    const supabase = createAdminClient();
     const signature = request.headers.get('stripe-signature');
 
     if (!signature || !endpointSecret) {

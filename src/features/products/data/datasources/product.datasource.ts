@@ -5,16 +5,19 @@
 
 import { createClient } from '@supabase/supabase-js';
 import type { Product, ProductFormData, ProductFilters } from '../models';
+import { createAdminClient } from '../../../../modules/auth';
 
 const supabase = createClient(
     import.meta.env.PUBLIC_SUPABASE_URL,
     import.meta.env.PUBLIC_SUPABASE_ANON_KEY
 );
 
-const adminClient = () => createClient(
-    import.meta.env.PUBLIC_SUPABASE_URL,
-    import.meta.env.SUPABASE_SERVICE_ROLE_KEY
-);
+const adminClient = () => {
+    if (typeof window !== 'undefined') {
+        throw new Error('Admin datasource is server-only');
+    }
+    return createAdminClient();
+};
 
 /**
  * Fetch all products with optional category info

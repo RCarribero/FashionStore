@@ -3,14 +3,15 @@
  */
 import type { APIRoute } from 'astro';
 import Stripe from 'stripe';
-import { createClient } from '@supabase/supabase-js';
+import { createAdminClient } from '../../../modules/auth';
 
-const stripe = new Stripe('sk_REDACTED51Snb87CFzYRW6R0mDBbMEZRsdMg3damRDQ4a0h4whl5OPZM0YO9NRdntcOw3GuPKPcdaPRQwT8OTw03zwYbgdU1200ivNMMn3i');
+const stripeSecretKey = import.meta.env.STRIPE_SECRET_KEY;
+if (!stripeSecretKey) {
+    throw new Error('Missing STRIPE_SECRET_KEY environment variable');
+}
+const stripe = new Stripe(stripeSecretKey);
 
-const supabase = createClient(
-    import.meta.env.PUBLIC_SUPABASE_URL,
-    import.meta.env.SUPABASE_SERVICE_ROLE_KEY
-);
+const supabase = createAdminClient();
 
 export const prerender = false;
 

@@ -3,7 +3,8 @@
  * Supabase authentication functions
  */
 
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { APP_CONFIG } from '../config/app';
 import { AUTH_CONFIG } from '../db';
 import type { Session } from '../../shared/types';
@@ -65,15 +66,26 @@ export async function getSession(request: Request): Promise<Session | null> {
         return null;
     }
 
-    const accessToken = cookies
-        .split(';')
-        .find(c => c.trim().startsWith(`${AUTH_CONFIG.cookies.accessToken}=`))
-        ?.split('=')[1];
+    const parsedCookies = Object.fromEntries(
+        cookies
+            .split(';')
+            .map((part) => part.trim())
+            .filter(Boolean)
+            .map((part) => {
+                const eq = part.indexOf('=');
+                if (eq === -1) return [part, ''];
+                const key = part.slice(0, eq).trim();
+                const value = part.slice(eq + 1);
+                try {
+                    return [key, decodeURIComponent(value)];
+                } catch {
+                    return [key, value];
+                }
+            })
+    );
 
-    const refreshToken = cookies
-        .split(';')
-        .find(c => c.trim().startsWith(`${AUTH_CONFIG.cookies.refreshToken}=`))
-        ?.split('=')[1];
+    const accessToken = parsedCookies[AUTH_CONFIG.cookies.accessToken];
+    const refreshToken = parsedCookies[AUTH_CONFIG.cookies.refreshToken];
 
     if (!accessToken || !refreshToken) {
         return null;
@@ -96,9 +108,10 @@ export async function getSession(request: Request): Promise<Session | null> {
  * Create auth cookies for response
  */
 export function createAuthCookies(accessToken: string, refreshToken: string): string[] {
+    const secure = import.meta.env.PROD ? '; Secure' : '';
     return [
-        `${AUTH_CONFIG.cookies.accessToken}=${accessToken}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${AUTH_CONFIG.cookies.maxAge.access}`,
-        `${AUTH_CONFIG.cookies.refreshToken}=${refreshToken}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${AUTH_CONFIG.cookies.maxAge.refresh}`,
+        `${AUTH_CONFIG.cookies.accessToken}=${encodeURIComponent(accessToken)}; Path=/; HttpOnly; SameSite=Lax${secure}; Max-Age=${AUTH_CONFIG.cookies.maxAge.access}`,
+        `${AUTH_CONFIG.cookies.refreshToken}=${encodeURIComponent(refreshToken)}; Path=/; HttpOnly; SameSite=Lax${secure}; Max-Age=${AUTH_CONFIG.cookies.maxAge.refresh}`,
     ];
 }
 
@@ -106,8 +119,9 @@ export function createAuthCookies(accessToken: string, refreshToken: string): st
  * Create logout cookies (delete cookies)
  */
 export function createLogoutCookies(): string[] {
+    const secure = import.meta.env.PROD ? '; Secure' : '';
     return [
-        `${AUTH_CONFIG.cookies.accessToken}=; Path=/; HttpOnly; Max-Age=0`,
-        `${AUTH_CONFIG.cookies.refreshToken}=; Path=/; HttpOnly; Max-Age=0`,
+        `${AUTH_CONFIG.cookies.accessToken}=; Path=/; HttpOnly; SameSite=Lax${secure}; Max-Age=0`,
+        `${AUTH_CONFIG.cookies.refreshToken}=; Path=/; HttpOnly; SameSite=Lax${secure}; Max-Age=0`,
     ];
 }

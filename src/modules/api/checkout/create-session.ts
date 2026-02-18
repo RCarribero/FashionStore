@@ -6,7 +6,11 @@
 import type { APIRoute } from 'astro';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(import.meta.env.STRIPE_SECRET_KEY || 'sk_REDACTED51Snb87CFzYRW6R0mDBbMEZRsdMg3damRDQ4a0h4whl5OPZM0YO9NRdntcOw3GuPKPcdaPRQwT8OTw03zwYbgdU1200ivNMMn3i');
+const stripeSecretKey = import.meta.env.STRIPE_SECRET_KEY;
+if (!stripeSecretKey) {
+    throw new Error('Missing STRIPE_SECRET_KEY environment variable');
+}
+const stripe = new Stripe(stripeSecretKey);
 
 export const prerender = false;
 
