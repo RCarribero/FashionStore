@@ -24,6 +24,14 @@ if (!order) {
     return Astro.redirect("/gestion-fm/pedidos");
 }
 
+const { data: existingReturn } = await supabase
+    .from("returns")
+    .select("id, status, created_at")
+    .eq("order_id", id)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
 const { data: userProfile } = await supabase
     .from("user_profiles")
     .select("first_name, last_name")
@@ -264,26 +272,20 @@ const statusColors: Record<string, string> = {
             <div class="bg-slate-900 border border-slate-800 p-6">
                 <h3 class="font-bold text-white mb-4">Acciones</h3>
                 {
-                    order.status !== "refunded" ? (
+                    existingReturn ? (
+                        <a
+                            href={`/gestion-fm/devoluciones/${existingReturn.id}`}
+                            class="block w-full text-center bg-slate-800 hover:bg-slate-700 text-white py-2 font-medium transition-colors mb-2"
+                        >
+                            Revisar Devolución
+                        </a>
+                    ) : (
                         <button
-                            id="processRefund"
+                            id="markReturnPending"
                             class="w-full bg-red-600 hover:bg-red-700 text-white py-2 font-medium transition-colors mb-2"
                         >
-                            Procesar Devolución Total
+                            Marcar Pendiente de Devolución
                         </button>
-                    ) : (
-                        <div class="text-center">
-                            <span class="inline-block px-3 py-1 bg-red-500/20 text-red-400 border border-red-500 rounded text-sm mb-3">
-                                Pedido Reembolsado
-                            </span>
-                            <a
-                                href={`/api/orders/${order.id}/invoice?type=credit_note`}
-                                target="_blank"
-                                class="block w-full text-center px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-sm font-medium rounded transition-colors"
-                            >
-                                Descargar Factura de Abono
-                            </a>
-                        </div>
                     )
                 }
             </div>
@@ -383,11 +385,11 @@ const statusColors: Record<string, string> = {
         });
 
     document
-        .getElementById("processRefund")
+        .getElementById("markReturnPending")
         ?.addEventListener("click", async () => {
             if (
                 !confirm(
-                    "¿Estás seguro de que quieres procesar la devolución TOTAL de este pedido? Esto restaurará el stock y marcará el pedido como reembolsado.",
+                    "¿Marcar este pedido como pendiente de devolución? Se creará una solicitud para revisar en el panel de devoluciones.",
                 )
             )
                 return;
@@ -395,13 +397,22 @@ const statusColors: Record<string, string> = {
             const res = await fetch("/api/admin/orders/refund", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ orderId: orderId, items: [] }), // Empty items implies full refund based on API logic
+                body: JSON.stringify({ orderId: orderId }),
             });
 
             if (res.ok) {
+                const data = await res.json();
+                if (data?.returnId) {
+                    window.location.href = `/gestion-fm/devoluciones/${data.returnId}`;
+                    return;
+                }
                 window.location.reload();
             } else {
-                showNotification("Error al procesar devolución", "error");
+                const data = await res.json().catch(() => ({}));
+                showNotification(
+                    data?.error || "Error al crear solicitud de devolución",
+                    "error",
+                );
             }
         });
 </script>

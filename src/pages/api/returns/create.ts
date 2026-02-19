@@ -18,7 +18,22 @@ export const POST: APIRoute = async ({ request }) => {
             return new Response(JSON.stringify({ message: "Faltan datos requeridos" }), { status: 400 });
         }
 
-        // 1. Insert Return Record
+        // 1. Validate order ownership
+        const { data: order, error: orderError } = await supabase
+            .from('orders')
+            .select('id, user_id, order_number, total_amount, stripe_session_id')
+            .eq('id', orderId)
+            .single();
+
+        if (orderError || !order) {
+            return new Response(JSON.stringify({ message: "Pedido no encontrado" }), { status: 404 });
+        }
+
+        if (order.user_id !== userId) {
+            return new Response(JSON.stringify({ message: "No autorizado" }), { status: 403 });
+        }
+
+        // 2. Insert Return Record
         const { data: returnRecord, error: dbError } = await supabase
             .from('returns')
             .insert({
@@ -37,13 +52,13 @@ export const POST: APIRoute = async ({ request }) => {
             return new Response(JSON.stringify({ message: "Error al guardar en base de datos" }), { status: 500 });
         }
 
-        // 2. Fetch Order and User details for Email
-        const { data: order } = await supabase
+        // 3. Mark order as pending return
+        await supabase
             .from('orders')
-            .select('*')
-            .eq('id', orderId)
-            .single();
+            .update({ status: 'processing_return' })
+            .eq('id', orderId);
 
+        // 4. Fetch User details for Email
         const { data: userProfile } = await supabase
             .from('user_profiles')
             .select('*')
@@ -56,10 +71,11 @@ export const POST: APIRoute = async ({ request }) => {
             not_as_described: "No coincide con descripción",
             changed_mind: "Cambio de opinión",
             cancelled_by_user: "Cancelado por usuario",
+            admin_initiated: "Creada por administrador",
             other: "Otro motivo",
         };
 
-        // 3. Send Email to Customer
+        // 5. Send Email to Customer
         if (userProfile?.email) {
             await sendEmail({
                 to: userProfile.email,
@@ -84,7 +100,7 @@ export const POST: APIRoute = async ({ request }) => {
             });
         }
 
-        // 4. Send Email to Admin
+        // 6. Send Email to Admin
         const adminEmail = import.meta.env.ADMIN_EMAIL || import.meta.env.SMTP_USER;
         if (adminEmail) {
             await sendEmail({
