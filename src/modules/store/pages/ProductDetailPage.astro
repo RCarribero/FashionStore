@@ -31,6 +31,32 @@ if (!product) {
     return Astro.redirect("/404");
 }
 
+// Enrich variants with available stock (real stock - active reservations from other sessions)
+// We call the internal API directly via Supabase to avoid an HTTP round-trip
+if (product.variants?.length) {
+    try {
+        // Build availability map: { size -> availableQty }
+        for (const variant of product.variants) {
+            const { data: reservations } = await supabase
+                .from("stock_reservations")
+                .select("quantity")
+                .eq("variant_id", variant.id)
+                .gt("expires_at", new Date().toISOString());
+
+            const reservedByOthers =
+                reservations?.reduce(
+                    (sum: number, r: { quantity: number }) => sum + r.quantity,
+                    0,
+                ) || 0;
+            // Replace variant stock with available quantity
+            variant.stock = Math.max(0, variant.stock - reservedByOthers);
+        }
+    } catch (e) {
+        // If enrichment fails, keep original stock values (safe fallback)
+        console.error("Failed to enrich variant stock with reservations:", e);
+    }
+}
+
 // Get related products
 const { data: relatedProducts } = await supabase
     .from("products")

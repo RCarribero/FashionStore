@@ -12,6 +12,7 @@ import {
     $isCartEmpty,
     $isCartOpen,
     $coupon,
+    $cartExpiresAt,
     setCoupon,
     clearCoupon,
     openCart,
@@ -30,12 +31,48 @@ interface CartSlideOverProps {
     onClose: () => void;
 }
 
+/**
+ * Hook that returns a formatted mm:ss countdown string until expiresAt timestamp.
+ * Returns null if no active reservation.
+ */
+function useReservationCountdown(): string | null {
+    const expiresAt = useStore($cartExpiresAt);
+    const isEmpty = useStore($isCartEmpty);
+    const [timeLeft, setTimeLeft] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!expiresAt || isEmpty) {
+            setTimeLeft(null);
+            return;
+        }
+
+        function compute() {
+            const remaining = expiresAt - Date.now();
+            if (remaining <= 0) {
+                setTimeLeft(null);
+                return;
+            }
+            const totalSeconds = Math.floor(remaining / 1000);
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            setTimeLeft(`${minutes}:${seconds.toString().padStart(2, '0')}`);
+        }
+
+        compute();
+        const interval = setInterval(compute, 1000);
+        return () => clearInterval(interval);
+    }, [expiresAt, isEmpty]);
+
+    return timeLeft;
+}
+
 export default function CartSlideOver({ isOpen, onClose }: CartSlideOverProps) {
     const cart = useStore($cart);
     const cartCount = useStore($cartCount);
     const cartTotal = useStore($cartTotal);
     const isEmpty = useStore($isCartEmpty);
     const [isMounted, setIsMounted] = useState(false);
+    const countdown = useReservationCountdown();
 
     useEffect(() => {
         setIsMounted(true);
@@ -121,6 +158,20 @@ export default function CartSlideOver({ isOpen, onClose }: CartSlideOverProps) {
                         </svg>
                     </button>
                 </div>
+
+                {/* Reservation Countdown Timer */}
+                {!effectiveIsEmpty && isMounted && countdown && (
+                    <div className="px-6 py-2.5 bg-amber-50 border-b border-amber-200 flex items-center gap-2">
+                        <svg className="w-4 h-4 text-amber-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p className="text-xs text-amber-800 font-medium">
+                            Reserva expira en{' '}
+                            <span className="font-bold tabular-nums">{countdown}</span>
+                            {' '}&mdash; completa tu pedido antes de que otro lo tome
+                        </p>
+                    </div>
+                )}
 
                 {/* Free Shipping Banner */}
                 {!effectiveIsEmpty && effectiveCartTotal < 10000 && (
