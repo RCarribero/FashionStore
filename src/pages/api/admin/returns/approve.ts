@@ -46,18 +46,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             return new Response(JSON.stringify({ error: 'Return not found' }), { status: 404 });
         }
 
-        // 1. Update Return Request Status
-        const { error: updateError } = await supabase
-            .from('returns')
-            .update({ status: 'approved' })
-            .eq('id', returnId);
-
-        if (updateError) {
-            console.error('Error updating return:', updateError);
-            return new Response(JSON.stringify({ error: 'Failed to approve return' }), { status: 500 });
-        }
-
-        // 2. Fetch full order + customer
+        // 1. Fetch full order + customer
         const { data: order, error: orderFetchError } = await supabase
             .from('orders')
             .select('*')
@@ -74,7 +63,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             .eq('id', order.user_id)
             .single();
 
-        // 3. Refund in Stripe (on approval)
+        // 2. Refund in Stripe (on approval)
         const stripeSecretKey = import.meta.env.STRIPE_SECRET_KEY;
         if (!stripeSecretKey) {
             return new Response(JSON.stringify({ error: 'Missing STRIPE_SECRET_KEY' }), { status: 500 });
@@ -93,27 +82,48 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             return new Response(JSON.stringify({ error: 'Unable to resolve Stripe payment_intent' }), { status: 500 });
         }
 
-        await stripe.refunds.create(
-            {
-                payment_intent: paymentIntentId,
-                // Full refund by default. If partial refunds are needed later, pass amount.
-            },
-            {
-                idempotencyKey: `return_${returnId}`,
-            },
-        );
+        try {
+            await stripe.refunds.create(
+                {
+                    payment_intent: paymentIntentId,
+                    // Full refund by default. If partial refunds are needed later, pass amount.
+                },
+                {
+                    idempotencyKey: `return_${returnId}`,
+                },
+            );
+        } catch (err: any) {
+            // If already refunded, treat as success; otherwise propagate.
+            const code = err?.code || err?.raw?.code;
+            if (code !== 'charge_already_refunded' && code !== 'already_refunded') {
+                console.error('Stripe refund error:', err);
+                return new Response(JSON.stringify({ error: 'Stripe refund failed' }), { status: 502 });
+            }
+        }
 
-        // 4. Update order status now that refund was processed in Stripe
+        // 3. Update DB statuses now that refund is (or was) processed in Stripe
+        if (returnReq.status !== 'approved' && returnReq.status !== 'completed') {
+            const { error: updateError } = await supabase
+                .from('returns')
+                .update({ status: 'approved' })
+                .eq('id', returnId);
+
+            if (updateError) {
+                console.error('Error updating return:', updateError);
+                return new Response(JSON.stringify({ error: 'Failed to approve return' }), { status: 500 });
+            }
+        }
+
         await supabase
             .from('orders')
             .update({ status: 'refunded' })
             .eq('id', order.id);
 
-        // 5. Generate Credit Note
+        // 4. Generate Credit Note
         if (customer) {
             const creditNoteBuffer = await generateCreditNote(order, customer);
 
-            // 6. Notify customer
+            // 5. Notify customer
             if (customer.email) {
                 await sendEmail({
                     to: customer.email,
