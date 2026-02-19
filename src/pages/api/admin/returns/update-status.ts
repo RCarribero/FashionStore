@@ -3,7 +3,9 @@ import { createClient } from '@supabase/supabase-js';
 
 export const POST: APIRoute = async ({ request, cookies }) => {
     // Auth Check
-    const accessToken = cookies.get('sb-access-token')?.value;
+    const authHeader = request.headers.get('authorization') || request.headers.get('Authorization');
+    const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice('Bearer '.length) : undefined;
+    const accessToken = cookies.get('sb-access-token')?.value || bearerToken;
     if (!accessToken) {
         return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
     }

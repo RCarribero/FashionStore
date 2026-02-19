@@ -10,10 +10,11 @@ const supabase = createClient(
 
 export const POST: APIRoute = async ({ request, cookies }) => {
     // 1. Auth Check - Server Side
-    const accessToken = cookies.get('sb-access-token')?.value;
-    const refreshToken = cookies.get('sb-refresh-token')?.value;
+    const authHeader = request.headers.get('authorization') || request.headers.get('Authorization');
+    const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice('Bearer '.length) : undefined;
+    const accessToken = cookies.get('sb-access-token')?.value || bearerToken;
 
-    if (!accessToken || !refreshToken) {
+    if (!accessToken) {
         return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
     }
 

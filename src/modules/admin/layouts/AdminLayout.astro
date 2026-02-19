@@ -60,8 +60,8 @@ const getIcon = (name: string) => {
     style="display: none;"
   >
     <!-- Sidebar -->
-    <aside class="w-64 bg-slate-900 border-r border-slate-800 fixed h-full">
-      <div class="p-6 border-b border-slate-800">
+    <aside class="w-64 bg-slate-900 border-r border-slate-800 fixed h-full flex flex-col">
+      <div class="p-6 border-b border-slate-800 flex-shrink-0">
         <a
           href="/gestion-fm"
           class="font-display text-xl font-black text-white"
@@ -73,7 +73,7 @@ const getIcon = (name: string) => {
         </a>
       </div>
 
-      <nav class="p-4">
+  <nav class="p-4 flex-1 overflow-y-auto">
         <ul class="space-y-1">
           {
             ADMIN_NAV.map((item) => (
@@ -97,9 +97,7 @@ const getIcon = (name: string) => {
         </ul>
       </nav>
 
-      <div
-        class="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-800"
-      >
+      <div class="p-4 border-t border-slate-800 flex-shrink-0">
         <a
           href="/"
           class="flex items-center gap-3 px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors rounded"

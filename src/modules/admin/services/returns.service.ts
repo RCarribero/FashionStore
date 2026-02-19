@@ -10,7 +10,8 @@ import type { Return, ReturnWithRelations, ReturnStatus, ApiResponse } from '../
  * Get all returns with related order and user info
  */
 export async function getReturns() {
-    return await supabase
+    const adminClient = createAdminClient();
+    return await adminClient
         .from('returns')
         .select(`
             *,
@@ -24,7 +25,8 @@ export async function getReturns() {
  * Get returns filtered by status
  */
 export async function getReturnsByStatus(status: ReturnStatus) {
-    return await supabase
+    const adminClient = createAdminClient();
+    return await adminClient
         .from('returns')
         .select(`
             *,
@@ -39,7 +41,8 @@ export async function getReturnsByStatus(status: ReturnStatus) {
  * Get return by ID with full details
  */
 export async function getReturnById(id: string) {
-    return await supabase
+    const adminClient = createAdminClient();
+    return await adminClient
         .from('returns')
         .select(`
             *,
@@ -81,7 +84,8 @@ export async function updateReturnStatus(id: string, status: ReturnStatus): Prom
  * Get pending returns count
  */
 export async function getPendingReturnsCount(): Promise<number> {
-    const { count } = await supabase
+    const adminClient = createAdminClient();
+    const { count } = await adminClient
         .from('returns')
         .select('*', { count: 'exact', head: true })
         .eq('status', 'pending');
@@ -107,7 +111,8 @@ export async function getReturnsByUserId(userId: string) {
  * Get returns statistics
  */
 export async function getReturnsStats() {
-    const { data: returns } = await supabase
+    const adminClient = createAdminClient();
+    const { data: returns } = await adminClient
         .from('returns')
         .select('status');
 

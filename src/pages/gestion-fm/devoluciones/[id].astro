@@ -409,6 +409,8 @@ const reasonLabels: Record<string, string> = {
 </AdminLayout>
 
 <script define:vars={{ returnId: id }}>
+    import { getSession } from "../../../modules/auth/services/auth-client.service";
+
     // Notification helper
     function showNotification(message, type = "success") {
         const area = document.getElementById("notification-area");
@@ -435,6 +437,24 @@ const reasonLabels: Record<string, string> = {
         }, 3000);
     }
 
+    async function buildAuthHeaders() {
+        const headers = {
+            "Content-Type": "application/json",
+        };
+
+        try {
+            const session = await getSession();
+            const accessToken = session?.access_token;
+            if (accessToken) {
+                headers.Authorization = `Bearer ${accessToken}`;
+            }
+        } catch {
+            // Fallback to cookies if present
+        }
+
+        return headers;
+    }
+
     // Approve return
     document
         .getElementById("approveReturn")
@@ -448,7 +468,7 @@ const reasonLabels: Record<string, string> = {
 
             const res = await fetch("/api/admin/returns/approve", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: await buildAuthHeaders(),
                 body: JSON.stringify({ returnId }),
             });
 
@@ -475,7 +495,7 @@ const reasonLabels: Record<string, string> = {
 
             const res = await fetch("/api/admin/returns/reject", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: await buildAuthHeaders(),
                 body: JSON.stringify({ returnId, rejectionReason: reason }),
             });
 
@@ -504,7 +524,7 @@ const reasonLabels: Record<string, string> = {
 
             const res = await fetch("/api/admin/returns/update-status", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: await buildAuthHeaders(),
                 body: JSON.stringify({ returnId, status: "completed" }),
             });
 

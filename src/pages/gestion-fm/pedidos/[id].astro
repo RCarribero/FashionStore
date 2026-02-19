@@ -335,6 +335,8 @@ const statusColors: Record<string, string> = {
 </AdminLayout>
 
 <script define:vars={{ orderId: id }}>
+    import { getSession } from "../../../modules/auth/services/auth-client.service";
+
     // Notification helper
     /**
      * @param {string} message
@@ -366,6 +368,24 @@ const statusColors: Record<string, string> = {
         }, 3000);
     }
 
+    async function buildAuthHeaders() {
+        const headers = {
+            "Content-Type": "application/json",
+        };
+
+        try {
+            const session = await getSession();
+            const accessToken = session?.access_token;
+            if (accessToken) {
+                headers.Authorization = `Bearer ${accessToken}`;
+            }
+        } catch {
+            // Fallback to cookies if present
+        }
+
+        return headers;
+    }
+
     document
         .getElementById("updateStatus")
         ?.addEventListener("click", async () => {
@@ -373,7 +393,7 @@ const statusColors: Record<string, string> = {
 
             const res = await fetch("/api/admin/orders/update-status", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: await buildAuthHeaders(),
                 body: JSON.stringify({ orderId, status }),
             });
 
@@ -396,7 +416,7 @@ const statusColors: Record<string, string> = {
 
             const res = await fetch("/api/admin/orders/refund", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: await buildAuthHeaders(),
                 body: JSON.stringify({ orderId: orderId }),
             });
 
