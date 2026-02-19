@@ -108,10 +108,13 @@ export async function getSession(request: Request): Promise<Session | null> {
  * Create auth cookies for response
  */
 export function createAuthCookies(accessToken: string, refreshToken: string): string[] {
+    // Always use Secure in production, and set SameSite=Strict for better security
     const secure = import.meta.env.PROD ? '; Secure' : '';
+    const sameSite = 'Lax'; // Lax allows cookies on navigation, Strict would block
+    
     return [
-        `${AUTH_CONFIG.cookies.accessToken}=${encodeURIComponent(accessToken)}; Path=/; HttpOnly; SameSite=Lax${secure}; Max-Age=${AUTH_CONFIG.cookies.maxAge.access}`,
-        `${AUTH_CONFIG.cookies.refreshToken}=${encodeURIComponent(refreshToken)}; Path=/; HttpOnly; SameSite=Lax${secure}; Max-Age=${AUTH_CONFIG.cookies.maxAge.refresh}`,
+        `${AUTH_CONFIG.cookies.accessToken}=${encodeURIComponent(accessToken)}; Path=/; HttpOnly; SameSite=${sameSite}${secure}; Max-Age=${AUTH_CONFIG.cookies.maxAge.access}`,
+        `${AUTH_CONFIG.cookies.refreshToken}=${encodeURIComponent(refreshToken)}; Path=/; HttpOnly; SameSite=${sameSite}${secure}; Max-Age=${AUTH_CONFIG.cookies.maxAge.refresh}`,
     ];
 }
 
@@ -120,8 +123,10 @@ export function createAuthCookies(accessToken: string, refreshToken: string): st
  */
 export function createLogoutCookies(): string[] {
     const secure = import.meta.env.PROD ? '; Secure' : '';
+    const sameSite = 'Lax';
+    
     return [
-        `${AUTH_CONFIG.cookies.accessToken}=; Path=/; HttpOnly; SameSite=Lax${secure}; Max-Age=0`,
-        `${AUTH_CONFIG.cookies.refreshToken}=; Path=/; HttpOnly; SameSite=Lax${secure}; Max-Age=0`,
+        `${AUTH_CONFIG.cookies.accessToken}=; Path=/; HttpOnly; SameSite=${sameSite}${secure}; Max-Age=0`,
+        `${AUTH_CONFIG.cookies.refreshToken}=; Path=/; HttpOnly; SameSite=${sameSite}${secure}; Max-Age=0`,
     ];
 }

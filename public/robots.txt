@@ -1,3 +1,9 @@
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /gestion-fm/
+Disallow: /checkout/
+Disallow: /cuenta/
+Disallow: /perfil
+
 Sitemap: https://fashionstore.victoriafp.online/sitemap-index.xml
