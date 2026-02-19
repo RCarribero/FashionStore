@@ -52,12 +52,6 @@ export const POST: APIRoute = async ({ request }) => {
             return new Response(JSON.stringify({ message: "Error al guardar en base de datos" }), { status: 500 });
         }
 
-        // 3. Mark order as pending return
-        await supabase
-            .from('orders')
-            .update({ status: 'processing_return' })
-            .eq('id', orderId);
-
         // 4. Fetch User details for Email
         const { data: userProfile } = await supabase
             .from('user_profiles')

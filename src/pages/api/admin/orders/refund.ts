@@ -96,17 +96,6 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         return new Response(JSON.stringify({ error: 'Failed to create return request' }), { status: 500 });
     }
 
-    // 5. Mark order as pending return (do NOT refund yet)
-    const { error: updateError } = await supabase
-        .from('orders')
-        .update({ status: 'processing_return' })
-        .eq('id', orderId);
-
-    if (updateError) {
-        console.error('Order status update error:', updateError);
-        // Keep return created; still return success so admin can review.
-    }
-
     return new Response(
         JSON.stringify({ message: 'Return request created', returnId: returnRecord.id, status: returnRecord.status }),
         {
