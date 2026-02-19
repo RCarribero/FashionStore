@@ -9,7 +9,7 @@ import AdminLayout from "../../../modules/admin/layouts/AdminLayout.astro";
 import { getReturns } from "../../../modules/admin/services/returns.service";
 import { ROUTES } from "../../../config";
 
-const { data: returns } = await getReturns();
+const { data: returns, error } = await getReturns();
 
 const formatDate = (dateStr: string) =>
     new Date(dateStr).toLocaleDateString("es-ES", {
@@ -191,7 +191,25 @@ const reasonLabels: Record<string, string> = {
         </table>
 
         {
-            !returns || returns.length === 0 ? (
+            error ? (
+                <div class="text-center py-12 text-red-400">
+                    <svg
+                        class="mx-auto h-12 w-12 text-red-500/60 mb-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="1"
+                            d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                    </svg>
+                    <p class="font-medium">Error cargando devoluciones</p>
+                    <p class="text-sm text-slate-500 mt-1">{error.message}</p>
+                </div>
+            ) : !returns || returns.length === 0 ? (
                 <div class="text-center py-12 text-slate-400">
                     <svg
                         class="mx-auto h-12 w-12 text-slate-600 mb-4"
@@ -214,8 +232,10 @@ const reasonLabels: Record<string, string> = {
 </AdminLayout>
 
 <script>
-    // Notification helper
-    function showNotification(message: string, type: "success" | "error" = "success") {
+    /**
+     * @type {(message: string, type?: "success" | "error") => void}
+     */
+    const showNotification = (message, type = "success") => {
         const area = document.getElementById("notification-area");
         const content = document.getElementById("notification-content");
 
@@ -238,11 +258,13 @@ const reasonLabels: Record<string, string> = {
         setTimeout(() => {
             area.classList.add("translate-x-full", "opacity-0");
         }, 3000);
-    }
+    };
 
     // Filter Logic
-    const statusSelect = document.getElementById("statusFilter") as HTMLSelectElement;
-    const searchInput = document.getElementById("searchReturn") as HTMLInputElement;
+    /** @type {HTMLSelectElement | null} */
+    const statusSelect = document.getElementById("statusFilter");
+    /** @type {HTMLInputElement | null} */
+    const searchInput = document.getElementById("searchReturn");
 
     function filterReturns() {
         const statusVal = statusSelect?.value || "";
@@ -256,9 +278,9 @@ const reasonLabels: Record<string, string> = {
             const matchSearch = !searchVal || rowSearch?.includes(searchVal);
 
             if (matchStatus && matchSearch) {
-                (row as HTMLElement).style.display = "";
+                /** @type {HTMLElement} */ (row).style.display = "";
             } else {
-                (row as HTMLElement).style.display = "none";
+                /** @type {HTMLElement} */ (row).style.display = "none";
             }
         });
     }
