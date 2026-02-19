@@ -55,6 +55,7 @@ export const POST: APIRoute = async ({ request }) => {
             damaged: "Producto dañado",
             not_as_described: "No coincide con descripción",
             changed_mind: "Cambio de opinión",
+            cancelled_by_user: "Cancelado por usuario",
             other: "Otro motivo",
         };
 

@@ -50,6 +50,7 @@ const reasonLabels: Record<string, string> = {
     damaged: "Producto dañado",
     not_as_described: "No coincide con descripción",
     changed_mind: "Cambio de opinión",
+    cancelled_by_user: "Cancelado por usuario",
     other: "Otro motivo",
 };
 ---
@@ -177,7 +178,7 @@ const reasonLabels: Record<string, string> = {
                             Evidencia ({returnReq.images.length} imágenes)
                         </h3>
                         <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                            {returnReq.images.map((image) => (
+                            {returnReq.images.map((image: string) => (
                                 <a
                                     href={image}
                                     target="_blank"
