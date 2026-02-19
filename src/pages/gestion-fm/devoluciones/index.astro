@@ -232,10 +232,9 @@ const reasonLabels: Record<string, string> = {
 </AdminLayout>
 
 <script>
-    /**
-     * @type {(message: string, type?: "success" | "error") => void}
-     */
-    const showNotification = (message, type = "success") => {
+    // @ts-nocheck
+    // Notification helper
+    function showNotification(message, type = "success") {
         const area = document.getElementById("notification-area");
         const content = document.getElementById("notification-content");
 
@@ -258,17 +257,21 @@ const reasonLabels: Record<string, string> = {
         setTimeout(() => {
             area.classList.add("translate-x-full", "opacity-0");
         }, 3000);
-    };
+    }
 
     // Filter Logic
-    /** @type {HTMLSelectElement | null} */
-    const statusSelect = document.getElementById("statusFilter");
-    /** @type {HTMLInputElement | null} */
-    const searchInput = document.getElementById("searchReturn");
+    const statusSelectEl = document.getElementById("statusFilter");
+    const searchInputEl = document.getElementById("searchReturn");
 
     function filterReturns() {
-        const statusVal = statusSelect?.value || "";
-        const searchVal = searchInput?.value.toLowerCase() || "";
+        const statusVal =
+            statusSelectEl instanceof HTMLSelectElement
+                ? statusSelectEl.value
+                : "";
+        const searchVal =
+            searchInputEl instanceof HTMLInputElement
+                ? searchInputEl.value.toLowerCase()
+                : "";
 
         document.querySelectorAll(".return-row").forEach((row) => {
             const rowStatus = row.getAttribute("data-status");
@@ -278,21 +281,21 @@ const reasonLabels: Record<string, string> = {
             const matchSearch = !searchVal || rowSearch?.includes(searchVal);
 
             if (matchStatus && matchSearch) {
-                /** @type {HTMLElement} */ (row).style.display = "";
+                if (row instanceof HTMLElement) row.style.display = "";
             } else {
-                /** @type {HTMLElement} */ (row).style.display = "none";
+                if (row instanceof HTMLElement) row.style.display = "none";
             }
         });
     }
 
-    statusSelect?.addEventListener("change", filterReturns);
-    searchInput?.addEventListener("input", filterReturns);
+    if (statusSelectEl) statusSelectEl.addEventListener("change", filterReturns);
+    if (searchInputEl) searchInputEl.addEventListener("input", filterReturns);
 
     // Auto-filter if URL has ?filter=pending
     const urlParams = new URLSearchParams(window.location.search);
     const filterParam = urlParams.get("filter");
-    if (filterParam && statusSelect) {
-        statusSelect.value = filterParam;
+    if (filterParam && statusSelectEl instanceof HTMLSelectElement) {
+        statusSelectEl.value = filterParam;
         filterReturns();
     }
 </script>
