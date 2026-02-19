@@ -6,6 +6,7 @@
 import { supabase } from '../../auth';
 import type { DashboardStats } from '../../../shared/types';
 import { ADMIN_CONFIG } from '../config';
+import { getPendingReturnsCount } from './returns.service';
 
 /**
  * Get dashboard statistics
@@ -32,6 +33,9 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     const outOfStockCount = products?.filter(p => p.stock === 0).length || 0;
     const lowStockCount = products?.filter(p => p.stock > 0 && p.stock < ADMIN_CONFIG.dashboard.lowStockThreshold).length || 0;
 
+    // Get pending returns count
+    const pendingReturnsCount = await getPendingReturnsCount();
+
     return {
         productCount: productCount || 0,
         categoryCount: categoryCount || 0,
@@ -40,6 +44,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
         lowStockCount,
         outOfStockCount,
         featuredCount,
+        pendingReturnsCount,
     };
 }
 

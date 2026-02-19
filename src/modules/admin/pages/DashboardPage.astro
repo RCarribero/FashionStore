@@ -133,6 +133,48 @@ const { data: lowStockProducts } = await getLowStockProducts();
         </div>
     </div>
 
+    <!-- Returns Alert (Second Row) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Pending Returns -->
+        <a
+            href={`${ROUTES.ADMIN.RETURNS}?filter=pending`}
+            class="bg-white p-6 shadow-elegant hover:shadow-xl transition-shadow cursor-pointer group"
+        >
+            <div class="flex items-center gap-4">
+                <div
+                    class="p-3 bg-orange-100 text-orange-600 rounded-lg group-hover:bg-orange-200 transition-colors"
+                >
+                    <svg
+                        class="h-6 w-6"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="1.5"
+                            d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
+                        ></path>
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-sm text-charcoal-500">
+                        Devoluciones Pendientes
+                    </p>
+                    <p class="text-2xl font-display text-navy-900">
+                        {stats.pendingReturnsCount || 0}
+                    </p>
+                </div>
+            </div>
+            <p
+                class="text-xs text-charcoal-400 mt-2 group-hover:text-navy-600 transition-colors"
+            >
+                Click para revisar →
+            </p>
+        </a>
+    </div>
+
     <!-- Quick Actions -->
     <div class="flex flex-wrap gap-4 mb-8">
         <a href={ROUTES.ADMIN.PRODUCTS.NEW} class="btn-primary">

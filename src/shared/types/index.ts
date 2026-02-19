@@ -80,4 +80,8 @@ export interface DashboardStats {
     lowStockCount: number;
     outOfStockCount: number;
     featuredCount: number;
+    pendingReturnsCount?: number;
 }
+
+// Export return types
+export type { Return, ReturnWithRelations, ReturnFormData, ReturnStatus } from './returns';
