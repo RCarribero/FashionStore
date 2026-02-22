@@ -99,23 +99,58 @@ export const POST: APIRoute = async ({ request }) => {
                 .single();
 
             if (variant) {
-                // 1. Subtract stock immediately
-                await supabase
-                    .from('product_variants')
-                    .update({ stock: Math.max(0, variant.stock - item.quantity) })
-                    .eq('id', variant.id);
-
-                // 2. Create reservation
-                await supabase
+                // Check if this session already reserved this exact variant
+                const { data: existingReservation } = await supabase
                     .from('stock_reservations')
-                    .insert({
-                        session_id: reservationSessionId,
-                        product_id: item.productId,
-                        variant_id: variant.id,
-                        size: item.size,
-                        quantity: item.quantity,
-                        expires_at: dbExpiresAt.toISOString()
-                    });
+                    .select('id, quantity')
+                    .eq('session_id', reservationSessionId)
+                    .eq('variant_id', variant.id)
+                    .single();
+
+                if (existingReservation) {
+                    // Update only expires_at and optionally adjust stock if quantity changed
+                    const quantityDiff = item.quantity - existingReservation.quantity;
+
+                    if (quantityDiff > 0) {
+                        // Needs to reserve more
+                        await supabase
+                            .from('product_variants')
+                            .update({ stock: Math.max(0, variant.stock - quantityDiff) })
+                            .eq('id', variant.id);
+                    } else if (quantityDiff < 0) {
+                        // Restoring some stock
+                        await supabase
+                            .from('product_variants')
+                            .update({ stock: variant.stock + Math.abs(quantityDiff) })
+                            .eq('id', variant.id);
+                    }
+
+                    await supabase
+                        .from('stock_reservations')
+                        .update({
+                            quantity: item.quantity,
+                            expires_at: dbExpiresAt.toISOString()
+                        })
+                        .eq('id', existingReservation.id);
+                } else {
+                    // 1. Subtract stock immediately
+                    await supabase
+                        .from('product_variants')
+                        .update({ stock: Math.max(0, variant.stock - item.quantity) })
+                        .eq('id', variant.id);
+
+                    // 2. Create reservation
+                    await supabase
+                        .from('stock_reservations')
+                        .insert({
+                            session_id: reservationSessionId,
+                            product_id: item.productId,
+                            variant_id: variant.id,
+                            size: item.size,
+                            quantity: item.quantity,
+                            expires_at: dbExpiresAt.toISOString()
+                        });
+                }
             }
         }
         // --- END TEMPORAL STOCK RESERVATION LOGIC ---
