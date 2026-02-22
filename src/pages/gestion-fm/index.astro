@@ -9,7 +9,6 @@ import DashboardCharts from "../../components/admin/DashboardCharts";
 import CohortChart from "../../components/admin/CohortChart";
 import { createClient } from "@supabase/supabase-js";
 import {
-    getStatusColor,
     ORDER_STATUSES,
     type OrderStatus,
 } from "../../config/constants/order-status";
@@ -31,34 +30,55 @@ const STATUS_COLOR_MAP: Record<string, string> = {
     "bg-gray-500": "#6b7280",
 };
 
-// Get stats
-const { count: productCount } = await supabase
-    .from("products")
-    .select("*", { count: "exact", head: true });
-// Total Orders
-const { count: orderCount } = await supabase
-    .from("orders")
-    .select("*", { count: "exact", head: true });
-// Pending Orders
-const { count: pendingOrdersCount } = await supabase
-    .from("orders")
-    .select("*", { count: "exact", head: true })
-    .in("status", ["pending", "processing", "paid"]);
+const range = Astro.url.searchParams.get("range") || "7d";
+const daysToFetch = range === "30d" ? 30 : 7;
 
-const { count: userCount } = await supabase
-    .from("user_profiles")
-    .select("*", { count: "exact", head: true });
+// Date boundaries
+const now = new Date();
+const ninetyDaysAgo = new Date(now);
+ninetyDaysAgo.setDate(now.getDate() - 90);
+const ninetyDaysAgoISO = ninetyDaysAgo.toISOString();
 
-// Get total revenue
-const { data: revenueData } = await supabase
-    .from("orders")
-    .select("total_amount, created_at, status, shipping_status");
+// Run all queries in parallel
+const [
+    { count: productCount },
+    { count: orderCount },
+    { count: pendingOrdersCount },
+    { count: userCount },
+    { data: revenueData },
+    { data: ordersWithItems },
+    { data: recentOrders },
+] = await Promise.all([
+    supabase.from("products").select("*", { count: "exact", head: true }),
+    supabase.from("orders").select("*", { count: "exact", head: true }),
+    supabase
+        .from("orders")
+        .select("*", { count: "exact", head: true })
+        .in("status", ["pending", "processing", "paid"]),
+    supabase.from("user_profiles").select("*", { count: "exact", head: true }),
+    // Limit to last 90 days instead of fetching all orders
+    supabase
+        .from("orders")
+        .select("total_amount, created_at, status, shipping_status")
+        .gte("created_at", ninetyDaysAgoISO),
+    // Last 100 orders for product sales analysis
+    supabase
+        .from("orders")
+        .select("items")
+        .order("created_at", { ascending: false })
+        .limit(100),
+    // Recent orders table
+    supabase
+        .from("orders")
+        .select(
+            "id, created_at, total_amount, shipping_status, tracking_number",
+        )
+        .order("created_at", { ascending: false })
+        .limit(5),
+]);
 
 const totalRevenue =
     revenueData?.reduce((sum, o) => sum + (o.total_amount || 0), 0) || 0;
-
-const range = Astro.url.searchParams.get("range") || "7d";
-const daysToFetch = range === "30d" ? 30 : 7;
 
 // Calculate Sales Last X Days
 const dateLabels = new Array(daysToFetch)
@@ -85,7 +105,7 @@ const salesData = dateLabels.map((date) => {
                     ].includes(o.status),
             )
             .reduce((sum, o) => sum + (o.total_amount || 0), 0) || 0;
-    return dayTotal / 100; // Convert to EUR
+    return dayTotal / 100;
 });
 
 const chartSalesData = {
@@ -130,13 +150,6 @@ const chartStatusData = {
 };
 
 // Calculate Best Selling Product
-// Fetch last 100 orders to analyze items
-const { data: ordersWithItems } = await supabase
-    .from("orders")
-    .select("items")
-    .order("created_at", { ascending: false })
-    .limit(100);
-
 const productSales: Record<
     string,
     { name: string; qty: number; total: number }
@@ -158,13 +171,6 @@ ordersWithItems?.forEach((order) => {
 const bestSellingProduct = Object.values(productSales).sort(
     (a, b) => b.qty - a.qty,
 )[0] || { name: "N/A", qty: 0 };
-
-// Get recent orders for table
-const { data: recentOrders } = await supabase
-    .from("orders")
-    .select("id, created_at, total_amount, shipping_status, tracking_number")
-    .order("created_at", { ascending: false })
-    .limit(5);
 
 const formatPrice = (cents: number) => (cents / 100).toFixed(2) + " EUR";
 const formatDate = (dateStr: string) =>
@@ -477,7 +483,8 @@ const getStatusColor = (status: string) => {
                             </p>
                             <p class="text-2xl font-bold text-white">
                                 2.4 <span class="text-lg text-slate-400"
-                                    >uds</span>
+                                    >uds</span
+                                >
                             </p>
                         </div>
                         <div
