@@ -207,9 +207,13 @@ export function addToCart(
     if (product.variants?.length) {
         const variant = product.variants.find(v => v.size === size);
         availableStock = variant ? variant.stock : 0;
+        console.log(`[AddToCart] Using variant stock for size ${size}: ${availableStock}`);
+    } else {
+        console.log(`[AddToCart] No variants array, using fallback product.stock: ${availableStock}`);
     }
 
     if (currentQty + quantity > availableStock) {
+        console.log(`[AddToCart OOS OOM] Cannot add ${quantity}. Current: ${currentQty}, limit: ${availableStock}`);
         return false;
     }
 
@@ -399,16 +403,24 @@ export async function revalidateCartStock(): Promise<void> {
         let needsUpdate = false;
         const newItems = cart.items.map(item => {
             const update = stockUpdates.find(u => u.productId === item.productId);
-            if (!update) return item;
+            if (!update) {
+                console.log(`[Revalidate] No update from API for ${item.productId}`);
+                return item;
+            }
 
             let currentAvailable = 0;
             if (update.availability && Object.keys(update.availability).length > 0) {
                 currentAvailable = update.availability[item.size] ?? 0;
+                console.log(`[Revalidate] Using availability map for ${item.productId} size ${item.size}: ${currentAvailable}`);
             } else if (update.fallbackStock !== undefined && update.fallbackStock !== null) {
                 currentAvailable = update.fallbackStock;
+                console.log(`[Revalidate] Using fallbackStock for ${item.productId}: ${currentAvailable}`);
+            } else {
+                console.log(`[Revalidate] No availability map and no fallbackStock for ${item.productId}! Assuming 0.`);
             }
 
             if (item.availableStock !== currentAvailable) {
+                console.log(`[Revalidate] Stock changed for ${item.productId} (${item.size}): ${item.availableStock} -> ${currentAvailable}`);
                 needsUpdate = true;
 
                 // If current cart quantity exceeds the newly available stock, reduce it
@@ -424,6 +436,7 @@ export async function revalidateCartStock(): Promise<void> {
         });
 
         if (needsUpdate) {
+            console.log(`[Revalidate] Cart needs update. Before:`, cart.items.map(i => ({ id: i.productId, qty: i.quantity })), `After:`, newItems.map(i => ({ id: i.productId, qty: i.quantity })));
             // Remove items that dropped to 0 quantity
             const validItems = newItems.filter(item => item.quantity > 0);
             $cart.set({
