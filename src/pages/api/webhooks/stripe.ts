@@ -7,7 +7,9 @@ const stripeSecretKey = import.meta.env.STRIPE_SECRET_KEY;
 if (!stripeSecretKey) {
     throw new Error('Missing STRIPE_SECRET_KEY environment variable');
 }
-const stripe = new Stripe(stripeSecretKey);
+const stripe = new Stripe(stripeSecretKey, {
+    httpClient: Stripe.createFetchHttpClient(),
+});
 
 const endpointSecret = import.meta.env.STRIPE_WEBHOOK_SECRET;
 

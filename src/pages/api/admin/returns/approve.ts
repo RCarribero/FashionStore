@@ -69,7 +69,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             return new Response(JSON.stringify({ error: 'Missing STRIPE_SECRET_KEY' }), { status: 500 });
         }
 
-        const stripe = new Stripe(stripeSecretKey);
+        const stripe = new Stripe(stripeSecretKey, {
+            httpClient: Stripe.createFetchHttpClient(),
+        });
 
         const session = await stripe.checkout.sessions.retrieve(order.stripe_session_id, {
             expand: ['payment_intent'],

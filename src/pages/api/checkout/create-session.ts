@@ -9,7 +9,9 @@ const stripeSecretKey = import.meta.env.STRIPE_SECRET_KEY;
 if (!stripeSecretKey) {
     throw new Error('Missing STRIPE_SECRET_KEY environment variable');
 }
-const stripe = new Stripe(stripeSecretKey);
+const stripe = new Stripe(stripeSecretKey, {
+    httpClient: Stripe.createFetchHttpClient(),
+});
 
 const supabase = createAdminClient();
 
@@ -188,14 +190,12 @@ export const POST: APIRoute = async ({ request }) => {
             locale: 'es',
             discounts: discounts,
             payment_method_types: [
-                'card',           // Tarjetas + Apple Pay + Google Pay (automático)
+                'card',           // Tarjetas + Apple Pay + Google Pay (automatico)
                 'paypal',         // PayPal
                 'klarna',         // Klarna - pago a plazos
-                'link',           // Link - checkout rápido
-                'bancontact',     // Bancontact - Bélgica
+                'link',           // Link - checkout rapido
+                'bancontact',     // Bancontact - Belgica
                 'eps',            // EPS - Austria
-                'revolut_pay',    // Revolut Pay - Europa
-                'samsung_pay',    // Samsung Pay
             ],
             metadata: {
                 userId: userId || '',
