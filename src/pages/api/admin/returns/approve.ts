@@ -135,8 +135,12 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             stripeRefunded = true;
         } catch (stripeErr: any) {
             const code = stripeErr?.code || stripeErr?.raw?.code;
-            if (code === 'charge_already_refunded' || code === 'already_refunded') {
-                stripeRefunded = true;
+            if (
+                code === 'charge_already_refunded' ||
+                code === 'already_refunded' ||
+                code === 'resource_missing'   // session from a different env/account
+            ) {
+                stripeRefunded = code !== 'resource_missing';
             } else {
                 return new Response(
                     JSON.stringify({ error: `Stripe refund failed: ${stripeErr?.message || 'Unknown error'}` }),
@@ -202,6 +206,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         success: true,
         stripeRefunded,
         message: 'Return approved successfully',
+        stripeNote: stripeRefunded ? undefined : 'Stripe session not found in this environment. Process refund manually in Stripe dashboard.',
     }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
