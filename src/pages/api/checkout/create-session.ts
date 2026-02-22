@@ -290,7 +290,7 @@ export const POST: APIRoute = async ({ request }) => {
             mode: 'payment',
             expires_at: expiresAtEpochSeconds,
             success_url: `${new URL(request.url).origin}/success?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${new URL(request.url).origin}/checkout`,
+            cancel_url: `${new URL(request.url).origin}/api/checkout/cancel-session?session_id={CHECKOUT_SESSION_ID}`,
             locale: 'es',
             discounts: discounts,
             payment_method_types: [
