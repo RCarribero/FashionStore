@@ -84,7 +84,17 @@ export const POST: APIRoute = async ({ request }) => {
                 .eq('size', item.size)
                 .single();
 
-            if (variantError || !variant || variant.stock < item.quantity) {
+            if (variantError && variantError.code !== 'PGRST116') {
+                return new Response(JSON.stringify({ error: `Error verificando stock: ${variantError.message}` }), { status: 500 });
+            }
+
+            if (!variant) {
+                // Fallback validation against absolute product stock without size dependency
+                const { data: product } = await supabase.from('products').select('stock').eq('id', item.productId).single();
+                if (!product || product.stock < item.quantity) {
+                    return new Response(JSON.stringify({ error: `No hay suficiente stock para ${item.productName}. Por favor reduce la cantidad.` }), { status: 400 });
+                }
+            } else if (variant.stock < item.quantity) {
                 return new Response(JSON.stringify({ error: `No hay suficiente stock para ${item.productName} (Talla: ${item.size}). Por favor reduce la cantidad.` }), { status: 400 });
             }
         }
@@ -150,6 +160,12 @@ export const POST: APIRoute = async ({ request }) => {
                             quantity: item.quantity,
                             expires_at: dbExpiresAt.toISOString()
                         });
+                }
+            } else {
+                // Fallback for products without variants - subtract generically without reservation DB lock tracking
+                const { data: product } = await supabase.from('products').select('stock').eq('id', item.productId).single();
+                if (product) {
+                    await supabase.from('products').update({ stock: Math.max(0, product.stock - item.quantity) }).eq('id', item.productId);
                 }
             }
         }

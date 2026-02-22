@@ -28,24 +28,36 @@ export const GET: APIRoute = async ({ url }) => {
             .select('id, size, stock')
             .eq('product_id', productId);
 
-        if (variantsError || !variants) {
+        if (variantsError && variantsError.code !== 'PGRST116') {
             return new Response(JSON.stringify({ error: 'Failed to fetch variants' }), { status: 500 });
         }
 
-        // For each variant, available stock is simply the db stock 
-        // because reservations are ALREADY physically deducted from stock during checkout
         const availabilityMap: Record<string, number> = {};
+        let fallbackStock: number | null = null;
 
-        for (const variant of variants) {
-            availabilityMap[variant.size] = variant.stock;
+        if (variants && variants.length > 0) {
+            for (const variant of variants) {
+                availabilityMap[variant.size] = variant.stock;
+            }
+        } else {
+            // Fallback to product.stock if no variants exist
+            const { data: product } = await supabase
+                .from('products')
+                .select('stock')
+                .eq('id', productId)
+                .single();
+            if (product) {
+                fallbackStock = product.stock;
+            }
         }
 
-        console.log(`[API available.ts] Product ${productId} availability:`, availabilityMap);
+        console.log(`[API available.ts] Product ${productId} availability:`, availabilityMap, 'fallback:', fallbackStock);
 
         return new Response(JSON.stringify({
             success: true,
             productId,
-            availability: availabilityMap  // { "38": 3, "39": 0, "40": 2, ... }
+            availability: availabilityMap,
+            fallbackStock
         }), {
             status: 200,
             headers: { 'Content-Type': 'application/json' }

@@ -390,18 +390,23 @@ export async function revalidateCartStock(): Promise<void> {
         const stockUpdates = await Promise.all(
             productIds.map(async (productId) => {
                 const res = await fetch(`/api/stock/available?productId=${productId}&sessionId=${sessionId}`);
-                if (!res.ok) return { productId, availability: null };
+                if (!res.ok) return { productId, availability: null, fallbackStock: null as number | null };
                 const data = await res.json();
-                return { productId, availability: data.availability };
+                return { productId, availability: data.availability, fallbackStock: data.fallbackStock as number | null };
             })
         );
 
         let needsUpdate = false;
         const newItems = cart.items.map(item => {
             const update = stockUpdates.find(u => u.productId === item.productId);
-            if (!update || !update.availability) return item;
+            if (!update) return item;
 
-            const currentAvailable = update.availability[item.size] ?? 0;
+            let currentAvailable = 0;
+            if (update.availability && Object.keys(update.availability).length > 0) {
+                currentAvailable = update.availability[item.size] ?? 0;
+            } else if (update.fallbackStock !== undefined && update.fallbackStock !== null) {
+                currentAvailable = update.fallbackStock;
+            }
 
             if (item.availableStock !== currentAvailable) {
                 needsUpdate = true;
