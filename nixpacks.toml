@@ -1,6 +1,6 @@
 # Nixpacks configuration for Astro with Node adapter
 [phases.setup]
-nixPkgs = ["nodejs_22"]
+nixPkgs = ["nodejs_22", "fontconfig", "freetype"]
 
 [phases.install]
 cmds = ["npm install"]
