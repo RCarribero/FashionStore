@@ -2,186 +2,206 @@ import type { APIRoute } from 'astro';
 import { createClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
 
+export const prerender = false;
+
 export const POST: APIRoute = async ({ request, cookies }) => {
     // Auth Check
     const authHeader = request.headers.get('authorization') || request.headers.get('Authorization');
     const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice('Bearer '.length) : undefined;
     const accessToken = cookies.get('sb-access-token')?.value || bearerToken;
-    if (!accessToken) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+    if (!accessToken) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
 
     const supabase = createClient(
         import.meta.env.PUBLIC_SUPABASE_URL,
         import.meta.env.SUPABASE_SERVICE_ROLE_KEY
     );
 
-    // Get Admin User
+    // Verify admin
     const authClient = createClient(
         import.meta.env.PUBLIC_SUPABASE_URL,
         import.meta.env.PUBLIC_SUPABASE_ANON_KEY,
         { global: { headers: { Authorization: `Bearer ${accessToken}` } } }
     );
-    const { data: { user } } = await authClient.auth.getUser();
+    const { data: { user }, error: authErr } = await authClient.auth.getUser();
+    if (authErr || !user) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+            status: 401,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
 
-    // Check Admin Role
-    const { data: profile } = await supabase.from('user_profiles').select('is_admin').eq('id', user?.id).single();
-    if (!profile?.is_admin) return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403 });
+    const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('is_admin')
+        .eq('id', user.id)
+        .single();
 
+    if (!profile?.is_admin) {
+        return new Response(JSON.stringify({ error: 'Forbidden' }), {
+            status: 403,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
+    // Parse body
+    let returnId: string | undefined;
     try {
         const body = await request.json();
-        const returnId: string | undefined = body?.returnId || body?.return_id;
-
-        if (!returnId) {
-            return new Response(JSON.stringify({ error: 'Missing returnId' }), { status: 400 });
-        }
-
-        console.log('[approve] Processing return:', returnId);
-
-        const { data: returnReq, error: returnError } = await supabase
-            .from('returns')
-            .select('id, status, order_id, user_id')
-            .eq('id', returnId)
-            .single();
-
-        if (returnError || !returnReq) {
-            console.error('[approve] Return not found:', returnError);
-            return new Response(JSON.stringify({ error: 'Return not found' }), { status: 404 });
-        }
-
-        // 1. Fetch full order + customer
-        const { data: order, error: orderFetchError } = await supabase
-            .from('orders')
-            .select('*')
-            .eq('id', returnReq.order_id)
-            .single();
-
-        if (orderFetchError || !order) {
-            console.error('[approve] Order not found:', orderFetchError);
-            return new Response(JSON.stringify({ error: 'Order not found' }), { status: 404 });
-        }
-
-        const { data: customer } = await supabase
-            .from('user_profiles')
-            .select('*')
-            .eq('id', order.user_id)
-            .single();
-
-        // 2. Refund in Stripe
-        const stripeSecretKey = import.meta.env.STRIPE_SECRET_KEY;
-        if (!stripeSecretKey) {
-            return new Response(JSON.stringify({ error: 'Missing STRIPE_SECRET_KEY' }), { status: 500 });
-        }
-
-        const stripe = new Stripe(stripeSecretKey, {
-            httpClient: Stripe.createFetchHttpClient(),
+        returnId = body?.returnId || body?.return_id;
+    } catch {
+        return new Response(JSON.stringify({ error: 'Invalid JSON body' }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' },
         });
-
-        let refundSuccess = false;
-
-        if (order.stripe_session_id) {
-            try {
-                console.log('[approve] Retrieving Stripe session:', order.stripe_session_id);
-                const session = await stripe.checkout.sessions.retrieve(order.stripe_session_id, {
-                    expand: ['payment_intent'],
-                });
-
-                const paymentIntent = session.payment_intent;
-                const paymentIntentId = typeof paymentIntent === 'string' ? paymentIntent : paymentIntent?.id;
-
-                if (!paymentIntentId) {
-                    console.error('[approve] Could not resolve payment_intent from session');
-                    return new Response(JSON.stringify({ error: 'Unable to resolve Stripe payment_intent' }), { status: 500 });
-                }
-
-                console.log('[approve] Creating refund for payment_intent:', paymentIntentId);
-                await stripe.refunds.create(
-                    { payment_intent: paymentIntentId },
-                    { idempotencyKey: `return_${returnId}` },
-                );
-                refundSuccess = true;
-                console.log('[approve] Stripe refund created successfully');
-            } catch (err: any) {
-                const code = err?.code || err?.raw?.code;
-                if (code === 'charge_already_refunded' || code === 'already_refunded') {
-                    console.log('[approve] Charge already refunded, continuing');
-                    refundSuccess = true;
-                } else {
-                    console.error('[approve] Stripe refund error:', err?.message || err);
-                    return new Response(
-                        JSON.stringify({ error: `Stripe refund failed: ${err?.message || 'Unknown error'}` }),
-                        { status: 502 }
-                    );
-                }
-            }
-        } else {
-            console.warn('[approve] No stripe_session_id found, skipping refund');
-            refundSuccess = true;
-        }
-
-        // 3. Update DB statuses (critical path)
-        if (returnReq.status !== 'approved' && returnReq.status !== 'completed') {
-            const { error: updateError } = await supabase
-                .from('returns')
-                .update({ status: 'approved', updated_at: new Date().toISOString() })
-                .eq('id', returnId);
-
-            if (updateError) {
-                console.error('[approve] Error updating return status:', updateError);
-                return new Response(JSON.stringify({ error: 'Failed to approve return in database' }), { status: 500 });
-            }
-            console.log('[approve] Return status updated to approved');
-        }
-
-        await supabase
-            .from('orders')
-            .update({ status: 'refunded' })
-            .eq('id', order.id);
-        console.log('[approve] Order status updated to refunded');
-
-        // 4. Credit note + email (non-blocking -- failures here do NOT cause a 500)
-        if (customer) {
-            try {
-                const { generateCreditNote } = await import('../../../../lib/invoicing');
-                const creditNoteBuffer = await generateCreditNote(order, customer);
-                console.log('[approve] Credit note generated');
-
-                if (customer.email) {
-                    const { sendEmail } = await import('../../../../lib/services/email');
-                    await sendEmail({
-                        to: customer.email,
-                        subject: `Devolucion Aprobada - Nota de Credito #${order.order_number}`,
-                        html: `
-                            <div style="font-family: sans-serif; color: #333;">
-                                <h1>Devolucion Aprobada</h1>
-                                <p>Hola ${customer.first_name || 'Cliente'},</p>
-                                <p>Tu solicitud de devolucion ha sido aprobada.</p>
-                                <p>Adjunto encontraras la nota de credito correspondiente.</p>
-                                <p>El reembolso de <strong>${((order.total_amount || 0) / 100).toFixed(2)} EUR</strong> ha sido procesado.</p>
-                                <br>
-                                <p>Gracias por confiar en Fashion Market.</p>
-                            </div>
-                        `,
-                        attachments: [
-                            {
-                                filename: `CreditNote-${order.order_number}.pdf`,
-                                content: creditNoteBuffer,
-                                contentType: 'application/pdf',
-                            },
-                        ],
-                    });
-                    console.log('[approve] Email sent to:', customer.email);
-                }
-            } catch (emailErr: any) {
-                // Log but do NOT fail the request -- the refund is already processed
-                console.error('[approve] Credit note / email error (non-blocking):', emailErr?.message || emailErr);
-            }
-        }
-
-        return new Response(JSON.stringify({
-            success: true,
-            message: 'Return approved' + (refundSuccess ? ' and refunded in Stripe' : ''),
-        }), { status: 200 });
-    } catch (error: any) {
-        console.error('[approve] Unexpected error:', error?.message || error, error?.stack);
-        return new Response(JSON.stringify({ error: error?.message || 'Internal server error' }), { status: 500 });
     }
+
+    if (!returnId) {
+        return new Response(JSON.stringify({ error: 'Missing returnId' }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
+    // Fetch return
+    const { data: returnReq, error: returnError } = await supabase
+        .from('returns')
+        .select('id, status, order_id, user_id')
+        .eq('id', returnId)
+        .single();
+
+    if (returnError || !returnReq) {
+        return new Response(JSON.stringify({ error: 'Return not found' }), {
+            status: 404,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
+    // Fetch order
+    const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .select('id, order_number, stripe_session_id, total_amount, user_id, items, shipping_address')
+        .eq('id', returnReq.order_id)
+        .single();
+
+    if (orderError || !order) {
+        return new Response(JSON.stringify({ error: 'Order not found' }), {
+            status: 404,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
+    // Stripe refund
+    const stripeSecretKey = import.meta.env.STRIPE_SECRET_KEY;
+    if (!stripeSecretKey) {
+        return new Response(JSON.stringify({ error: 'STRIPE_SECRET_KEY not configured' }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
+    const stripe = new Stripe(stripeSecretKey, {
+        httpClient: Stripe.createFetchHttpClient(),
+    });
+
+    let stripeRefunded = false;
+
+    if (order.stripe_session_id) {
+        try {
+            const session = await stripe.checkout.sessions.retrieve(order.stripe_session_id, {
+                expand: ['payment_intent'],
+            });
+
+            const pi = session.payment_intent;
+            const piId = typeof pi === 'string' ? pi : pi?.id;
+
+            if (!piId) {
+                return new Response(JSON.stringify({ error: 'Could not resolve Stripe payment_intent' }), {
+                    status: 500,
+                    headers: { 'Content-Type': 'application/json' },
+                });
+            }
+
+            await stripe.refunds.create(
+                { payment_intent: piId },
+                { idempotencyKey: `return_${returnId}` }
+            );
+            stripeRefunded = true;
+        } catch (stripeErr: any) {
+            const code = stripeErr?.code || stripeErr?.raw?.code;
+            if (code === 'charge_already_refunded' || code === 'already_refunded') {
+                stripeRefunded = true;
+            } else {
+                return new Response(
+                    JSON.stringify({ error: `Stripe refund failed: ${stripeErr?.message || 'Unknown error'}` }),
+                    { status: 502, headers: { 'Content-Type': 'application/json' } }
+                );
+            }
+        }
+    } else {
+        stripeRefunded = true; // no session to refund
+    }
+
+    // Update return status
+    if (returnReq.status !== 'approved' && returnReq.status !== 'completed') {
+        const { error: updateReturnErr } = await supabase
+            .from('returns')
+            .update({ status: 'approved', updated_at: new Date().toISOString() })
+            .eq('id', returnId);
+
+        if (updateReturnErr) {
+            return new Response(JSON.stringify({ error: `DB update failed: ${updateReturnErr.message}` }), {
+                status: 500,
+                headers: { 'Content-Type': 'application/json' },
+            });
+        }
+    }
+
+    // Update order status
+    await supabase
+        .from('orders')
+        .update({ status: 'refunded' })
+        .eq('id', order.id);
+
+    // Non-blocking: send email notification (no PDF for now to avoid pdfkit issues)
+    const { data: customer } = await supabase
+        .from('user_profiles')
+        .select('email, first_name')
+        .eq('id', returnReq.user_id)
+        .single();
+
+    if (customer?.email) {
+        // Fire and forget -- do not await so a failure cannot crash this response
+        const emailPayload = {
+            to: customer.email,
+            subject: `Devolucion Aprobada - Pedido #${order.order_number}`,
+            html: `
+                <div style="font-family: sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
+                    <h1 style="color: #16a34a;">Devolucion Aprobada</h1>
+                    <p>Hola ${customer.first_name || 'Cliente'},</p>
+                    <p>Tu solicitud de devolucion ha sido aprobada.</p>
+                    <p>El reembolso de <strong>${((order.total_amount || 0) / 100).toFixed(2)} EUR</strong> ha sido procesado y se vera reflejado en tu metodo de pago original en 5-10 dias habiles.</p>
+                    <br>
+                    <p>Gracias por confiar en Fashion Market.</p>
+                </div>
+            `,
+        };
+
+        import('../../../../lib/services/email')
+            .then(({ sendEmail }) => sendEmail(emailPayload))
+            .catch((err) => console.error('[approve] Email error (non-blocking):', err?.message));
+    }
+
+    return new Response(JSON.stringify({
+        success: true,
+        stripeRefunded,
+        message: 'Return approved successfully',
+    }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+    });
 };
