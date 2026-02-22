@@ -31,20 +31,25 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     );
     const { data: { user }, error: authErr } = await authClient.auth.getUser();
     if (authErr || !user) {
+        console.error('[approve] getUser failed:', authErr?.message);
         return new Response(JSON.stringify({ error: 'Unauthorized' }), {
             status: 401,
             headers: { 'Content-Type': 'application/json' },
         });
     }
 
-    const { data: profile } = await supabase
+    console.log('[approve] user.id from token:', user.id);
+
+    const { data: profile, error: profileErr } = await supabase
         .from('user_profiles')
         .select('is_admin')
         .eq('id', user.id)
         .single();
 
+    console.log('[approve] profile:', JSON.stringify(profile), 'err:', profileErr?.message);
+
     if (!profile?.is_admin) {
-        return new Response(JSON.stringify({ error: 'Forbidden' }), {
+        return new Response(JSON.stringify({ error: 'Forbidden', userId: user.id, profile }), {
             status: 403,
             headers: { 'Content-Type': 'application/json' },
         });
@@ -181,25 +186,50 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         .single();
 
     if (customer?.email) {
-        // Fire and forget -- do not await so a failure cannot crash this response
-        const emailPayload = {
-            to: customer.email,
-            subject: `Devolucion Aprobada - Pedido #${order.order_number}`,
-            html: `
-                <div style="font-family: sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
-                    <h1 style="color: #16a34a;">Devolucion Aprobada</h1>
-                    <p>Hola ${customer.first_name || 'Cliente'},</p>
-                    <p>Tu solicitud de devolucion ha sido aprobada.</p>
-                    <p>El reembolso de <strong>${((order.total_amount || 0) / 100).toFixed(2)} EUR</strong> ha sido procesado y se vera reflejado en tu metodo de pago original en 5-10 dias habiles.</p>
-                    <br>
-                    <p>Gracias por confiar en Fashion Market.</p>
-                </div>
-            `,
-        };
+        // Fire and forget -- generate credit note PDF and send email
+        const emailHtml = `
+            <div style="font-family: sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
+                <h1 style="color: #16a34a;">Devolucion Aprobada</h1>
+                <p>Hola ${customer.first_name || 'Cliente'},</p>
+                <p>Tu solicitud de devolucion ha sido aprobada.</p>
+                <p>El reembolso de <strong>${((order.total_amount || 0) / 100).toFixed(2)} EUR</strong> ha sido procesado
+                y se vera reflejado en tu metodo de pago original en 5-10 dias habiles.</p>
+                <p>Adjunto encontraras la factura rectificativa correspondiente.</p>
+                <br>
+                <p>Gracias por confiar en Fashion Market.</p>
+            </div>
+        `;
 
-        import('../../../../lib/services/email')
-            .then(({ sendEmail }) => sendEmail(emailPayload))
-            .catch((err) => console.error('[approve] Email error (non-blocking):', err?.message));
+        Promise.all([
+            import('../../../../lib/invoicing'),
+            import('../../../../lib/services/email'),
+        ])
+            .then(async ([{ generateCreditNote }, { sendEmail }]) => {
+                let attachments: any[] = [];
+                try {
+                    const pdfBuffer = await generateCreditNote(
+                        order as any,
+                        { first_name: customer.first_name || '', last_name: '', email: customer.email }
+                    );
+                    attachments = [{
+                        filename: `FacturaRectificativa-${order.order_number || order.id.slice(0, 8)}.pdf`,
+                        content: pdfBuffer,
+                        contentType: 'application/pdf',
+                    }];
+                    console.log('[approve] Credit note PDF generated');
+                } catch (pdfErr: any) {
+                    console.error('[approve] PDF generation failed (sending email without attachment):', pdfErr?.message);
+                }
+
+                await sendEmail({
+                    to: customer.email!,
+                    subject: `Devolucion Aprobada - Factura Rectificativa #${order.order_number || order.id.slice(0, 8)}`,
+                    html: emailHtml,
+                    attachments,
+                });
+                console.log('[approve] Email sent to:', customer.email);
+            })
+            .catch((err) => console.error('[approve] Email/PDF error (non-blocking):', err?.message));
     }
 
     return new Response(JSON.stringify({
