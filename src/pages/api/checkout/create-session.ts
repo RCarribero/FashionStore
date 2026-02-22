@@ -68,6 +68,58 @@ export const POST: APIRoute = async ({ request }) => {
 
         console.log('Checkout - isFirstPurchase:', isFirstPurchase);
 
+        // --- ADDED TEMPORAL STOCK RESERVATION LOGIC ---
+        // Stripe requires expires_at to be at least 30 mins. We use 31 mins to be safe from sub-second clock differences.
+        const thirtyOneMinsSeconds = 31 * 60;
+        const expiresAtEpochSeconds = Math.floor(Date.now() / 1000) + thirtyOneMinsSeconds;
+        const dbExpiresAt = new Date(expiresAtEpochSeconds * 1000);
+        const reservationSessionId = cartSessionId || `session_${Date.now()}`;
+
+        // Validate stock for all items BEFORE doing anything
+        for (const item of items) {
+            const { data: variant, error: variantError } = await supabase
+                .from('product_variants')
+                .select('id, stock')
+                .eq('product_id', item.productId)
+                .eq('size', item.size)
+                .single();
+
+            if (variantError || !variant || variant.stock < item.quantity) {
+                return new Response(JSON.stringify({ error: `No hay suficiente stock para ${item.productName} (Talla: ${item.size}). Por favor reduce la cantidad.` }), { status: 400 });
+            }
+        }
+
+        // Subtract stock and create reservations
+        for (const item of items) {
+            const { data: variant } = await supabase
+                .from('product_variants')
+                .select('id, stock')
+                .eq('product_id', item.productId)
+                .eq('size', item.size)
+                .single();
+
+            if (variant) {
+                // 1. Subtract stock immediately
+                await supabase
+                    .from('product_variants')
+                    .update({ stock: Math.max(0, variant.stock - item.quantity) })
+                    .eq('id', variant.id);
+
+                // 2. Create reservation
+                await supabase
+                    .from('stock_reservations')
+                    .insert({
+                        session_id: reservationSessionId,
+                        product_id: item.productId,
+                        variant_id: variant.id,
+                        size: item.size,
+                        quantity: item.quantity,
+                        expires_at: dbExpiresAt.toISOString()
+                    });
+            }
+        }
+        // --- END TEMPORAL STOCK RESERVATION LOGIC ---
+
         // Calculate cart total
         const cartTotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         const FREE_SHIPPING_THRESHOLD = 10000; // 100 EUR in cents
@@ -185,6 +237,7 @@ export const POST: APIRoute = async ({ request }) => {
         const session = await stripe.checkout.sessions.create({
             line_items: lineItems,
             mode: 'payment',
+            expires_at: expiresAtEpochSeconds,
             success_url: `${new URL(request.url).origin}/success?session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${new URL(request.url).origin}/checkout`,
             locale: 'es',
@@ -201,7 +254,7 @@ export const POST: APIRoute = async ({ request }) => {
                 userId: userId || '',
                 isFirstPurchase: isFirstPurchase ? 'true' : 'false',
                 couponCode: appliedCouponCode || '',
-                cartSessionId: cartSessionId || '',
+                cartSessionId: reservationSessionId, // Used to track the reservation in the webhook
                 customerFirstName: customer?.firstName || '',
                 customerLastName: customer?.lastName || '',
                 customerPhone: customer?.phone || '',

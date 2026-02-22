@@ -246,9 +246,6 @@ export function addToCart(
         updatedAt: Date.now(),
     });
 
-    // Reserve ALL items and reset global timer
-    reserveAllCartItems();
-
     return true;
 }
 
@@ -265,9 +262,6 @@ export function removeFromCart(productId: string, size: string): void {
         ),
         updatedAt: Date.now(),
     });
-
-    // Release this item's reservation
-    releaseStock(productId, size);
 
     // Revalidate coupons
     checkAutomaticPromotions();
@@ -306,14 +300,6 @@ export function updateQuantity(
         ),
         updatedAt: Date.now(),
     });
-
-    // Update reservation for this item
-    const sessionId = getOrCreateSessionId();
-    fetch('/api/stock/reserve', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId, productId, size, quantity: finalQuantity })
-    }).catch(err => console.error('Update quantity reserve error:', err));
 
     return true;
 }

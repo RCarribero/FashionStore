@@ -67,20 +67,10 @@ export const POST: APIRoute = async ({ request }) => {
                         continue;
                     }
 
-                    // 2. Decrement variant stock
-                    const newStock = Math.max(0, variant.stock - quantity);
-                    const { error: updateError } = await supabase
-                        .from('product_variants')
-                        .update({ stock: newStock })
-                        .eq('id', variant.id);
-
-                    if (updateError) {
-                        console.error(`Failed to update variant stock for ${variant.id}:`, updateError);
-                    } else {
-                        console.log(`Updated stock for variant ${variant.id}: ${variant.stock} -> ${newStock}`);
-                        // Check for low stock alert
-                        await checkLowStock(product.name, size, newStock);
-                    }
+                    // Stock was already decremented when the checkout session was created.
+                    console.log(`Current stock for variant ${variant.id} after purchase: ${variant.stock}`);
+                    // Check for low stock alert based on the already updated stock
+                    await checkLowStock(product.name, size, variant.stock);
 
                 } catch (error) {
                     console.error(`Failed to update stock for ${productId} size ${size}:`, error);
@@ -163,13 +153,14 @@ export const POST: APIRoute = async ({ request }) => {
 
             // Build shipping address from Stripe metadata or session
             const metadata = expandedSession.metadata || {};
-            const shippingAddress = expandedSession.shipping_details?.address ? {
-                name: expandedSession.shipping_details.name || `${metadata.customerFirstName || ''} ${metadata.customerLastName || ''}`.trim(),
-                line1: expandedSession.shipping_details.address.line1 || metadata.shippingAddress || '',
-                line2: expandedSession.shipping_details.address.line2 || '',
-                city: expandedSession.shipping_details.address.city || metadata.shippingCity || '',
-                postal_code: expandedSession.shipping_details.address.postal_code || metadata.shippingZip || '',
-                country: expandedSession.shipping_details.address.country || metadata.shippingCountry || 'ES'
+            const shippingDetails = (expandedSession as any).shipping_details;
+            const shippingAddress = shippingDetails?.address ? {
+                name: shippingDetails.name || `${metadata.customerFirstName || ''} ${metadata.customerLastName || ''}`.trim(),
+                line1: shippingDetails.address.line1 || metadata.shippingAddress || '',
+                line2: shippingDetails.address.line2 || '',
+                city: shippingDetails.address.city || metadata.shippingCity || '',
+                postal_code: shippingDetails.address.postal_code || metadata.shippingZip || '',
+                country: shippingDetails.address.country || metadata.shippingCountry || 'ES'
             } : metadata.shippingAddress ? {
                 name: `${metadata.customerFirstName || ''} ${metadata.customerLastName || ''}`.trim(),
                 line1: metadata.shippingAddress,
@@ -248,6 +239,52 @@ export const POST: APIRoute = async ({ request }) => {
         }
 
         console.log('Payment successful and stock updated');
+    } else if (event.type === 'checkout.session.expired') {
+        const session = event.data.object as Stripe.Checkout.Session;
+        const cartSessionId = session.metadata?.cartSessionId;
+
+        if (cartSessionId) {
+            console.log(`Session expired for cart: ${cartSessionId}, restoring stock...`);
+
+            // 1. Get reservations for this session
+            const { data: reservations, error: fetchError } = await supabase
+                .from('stock_reservations')
+                .select('*')
+                .eq('session_id', cartSessionId);
+
+            if (!fetchError && reservations && reservations.length > 0) {
+                // 2. Restore stock for each reserved item
+                for (const res of reservations) {
+                    const { data: variant } = await supabase
+                        .from('product_variants')
+                        .select('stock')
+                        .eq('id', res.variant_id)
+                        .single();
+
+                    if (variant) {
+                        await supabase
+                            .from('product_variants')
+                            .update({ stock: variant.stock + res.quantity })
+                            .eq('id', res.variant_id);
+                        console.log(`Restored ${res.quantity} stock for variant ${res.variant_id}`);
+                    }
+                }
+
+                // 3. Clear reservations
+                const { error: deleteError } = await supabase
+                    .from('stock_reservations')
+                    .delete()
+                    .eq('session_id', cartSessionId);
+
+                if (deleteError) {
+                    console.error('Failed to clear reservations after explicit restore:', deleteError);
+                } else {
+                    console.log(`Cleared reservations for expired session ${cartSessionId}`);
+                }
+            } else {
+                console.log(`No reservations found for expired session ${cartSessionId}`);
+            }
+        }
     }
 
     return new Response(JSON.stringify({ received: true }), { status: 200 });
