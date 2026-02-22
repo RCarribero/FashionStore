@@ -214,7 +214,9 @@ const reasonLabels: Record<string, string> = {
 
             <!-- Related Order Info -->
             <div class="bg-slate-900 border border-slate-800 p-6 rounded">
-                <h3 class="font-bold text-white mb-4">Información del Pedido</h3>
+                <h3 class="font-bold text-white mb-4">
+                    Información del Pedido
+                </h3>
                 <div class="space-y-3">
                     <div class="flex justify-between">
                         <span class="text-slate-400">Número de Pedido</span>
@@ -252,7 +254,9 @@ const reasonLabels: Record<string, string> = {
 
             <!-- Customer Info -->
             <div class="bg-slate-900 border border-slate-800 p-6 rounded">
-                <h3 class="font-bold text-white mb-4">Información del Cliente</h3>
+                <h3 class="font-bold text-white mb-4">
+                    Información del Cliente
+                </h3>
                 <div class="space-y-2">
                     <div>
                         <p class="text-slate-400 text-sm">Nombre</p>
@@ -263,7 +267,9 @@ const reasonLabels: Record<string, string> = {
                     </div>
                     <div>
                         <p class="text-slate-400 text-sm">Email</p>
-                        <p class="text-white">{returnReq.user_profiles.email}</p>
+                        <p class="text-white">
+                            {returnReq.user_profiles.email}
+                        </p>
                     </div>
                     {
                         returnReq.user_profiles.phone && (
@@ -376,9 +382,7 @@ const reasonLabels: Record<string, string> = {
                         >
                         </div>
                         <div>
-                            <p class="text-white text-sm">
-                                Solicitud creada
-                            </p>
+                            <p class="text-white text-sm">Solicitud creada</p>
                             <p class="text-slate-500 text-xs">
                                 {formatDate(returnReq.created_at)}
                             </p>
@@ -408,11 +412,15 @@ const reasonLabels: Record<string, string> = {
     </div>
 </AdminLayout>
 
-<script define:vars={{ returnId: id }}>
+<div id="return-data" data-return-id={id} class="hidden"></div>
+
+<script>
     import { getSession } from "../../../modules/auth/services/auth-client.service";
 
+    const returnId = document.getElementById("return-data")?.dataset.returnId;
+
     // Notification helper
-    function showNotification(message, type = "success") {
+    function showNotification(message: string, type = "success") {
         const area = document.getElementById("notification-area");
         const content = document.getElementById("notification-content");
 
@@ -437,8 +445,8 @@ const reasonLabels: Record<string, string> = {
         }, 3000);
     }
 
-    async function buildAuthHeaders() {
-        const headers = {
+    async function buildAuthHeaders(): Promise<Record<string, string>> {
+        const headers: Record<string, string> = {
             "Content-Type": "application/json",
         };
 
@@ -446,7 +454,7 @@ const reasonLabels: Record<string, string> = {
             const session = await getSession();
             const accessToken = session?.access_token;
             if (accessToken) {
-                headers.Authorization = `Bearer ${accessToken}`;
+                headers["Authorization"] = `Bearer ${accessToken}`;
             }
         } catch {
             // Fallback to cookies if present
