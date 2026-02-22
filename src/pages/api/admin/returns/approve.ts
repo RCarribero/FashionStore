@@ -172,10 +172,10 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         }
     }
 
-    // Update order status
+    // Update order status (both status and shipping_status so all UI views reflect the refund)
     await supabase
         .from('orders')
-        .update({ status: 'refunded' })
+        .update({ status: 'refunded', shipping_status: 'refunded' })
         .eq('id', order.id);
 
     // Non-blocking: send email notification (no PDF for now to avoid pdfkit issues)

@@ -473,14 +473,18 @@ export default function ProfilePage() {
                                                     'shipped': 'Enviado',
                                                     'in_transit': 'En Transito',
                                                     'out_for_delivery': 'En Reparto',
-                                                    'delivered': 'Entregado'
+                                                    'delivered': 'Entregado',
+                                                    'refunded': 'Reembolsado',
+                                                    'cancelled': 'Cancelado'
                                                 };
                                                 const statusColors: Record<string, string> = {
                                                     'processing': 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30',
                                                     'shipped': 'bg-blue-500/10 text-blue-400 border-blue-500/30',
                                                     'in_transit': 'bg-purple-500/10 text-purple-400 border-purple-500/30',
                                                     'out_for_delivery': 'bg-orange-500/10 text-orange-400 border-orange-500/30',
-                                                    'delivered': 'bg-green-500/10 text-green-400 border-green-500/30'
+                                                    'delivered': 'bg-green-500/10 text-green-400 border-green-500/30',
+                                                    'refunded': 'bg-slate-500/10 text-slate-300 border-slate-500/30',
+                                                    'cancelled': 'bg-red-500/10 text-red-400 border-red-500/30'
                                                 };
                                                 return (
                                                     <div key={order.id} className="border border-slate-700 p-4">
