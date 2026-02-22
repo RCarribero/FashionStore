@@ -410,6 +410,218 @@ const reasonLabels: Record<string, string> = {
             </div>
         </div>
     </div>
+
+    <!-- Approve Modal -->
+    <div
+        id="approveModal"
+        class="fixed inset-0 z-50 hidden items-center justify-center"
+    >
+        <div
+            class="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            data-modal-backdrop
+        >
+        </div>
+        <div
+            class="relative bg-slate-900 border border-slate-700 rounded-lg p-6 max-w-md w-full mx-4 shadow-2xl"
+        >
+            <div class="flex items-center gap-3 mb-4">
+                <div
+                    class="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center"
+                >
+                    <svg
+                        class="w-5 h-5 text-green-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-bold text-white">Aprobar Devolucion</h3>
+            </div>
+            <p class="text-slate-400 text-sm mb-6">
+                Se generara una factura de abono, se procesara el reembolso en
+                Stripe y se notificara al cliente por email.
+            </p>
+            <div class="flex gap-3 justify-end">
+                <button
+                    data-modal-cancel
+                    class="px-4 py-2 text-sm font-medium text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded transition-colors"
+                >
+                    Cancelar
+                </button>
+                <button
+                    data-modal-confirm
+                    class="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded transition-colors flex items-center gap-2"
+                >
+                    <svg
+                        class="w-4 h-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Confirmar Aprobacion
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reject Modal -->
+    <div
+        id="rejectModal"
+        class="fixed inset-0 z-50 hidden items-center justify-center"
+    >
+        <div
+            class="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            data-modal-backdrop
+        >
+        </div>
+        <div
+            class="relative bg-slate-900 border border-slate-700 rounded-lg p-6 max-w-md w-full mx-4 shadow-2xl"
+        >
+            <div class="flex items-center gap-3 mb-4">
+                <div
+                    class="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center"
+                >
+                    <svg
+                        class="w-5 h-5 text-red-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-bold text-white">
+                    Rechazar Devolucion
+                </h3>
+            </div>
+            <p class="text-slate-400 text-sm mb-4">
+                El cliente sera notificado del rechazo por email.
+            </p>
+            <div class="mb-6">
+                <label
+                    for="rejectReason"
+                    class="block text-sm font-medium text-slate-400 mb-2"
+                    >Motivo del rechazo (opcional)</label
+                >
+                <textarea
+                    id="rejectReason"
+                    rows="3"
+                    class="w-full bg-slate-800 border border-slate-600 rounded-md px-3 py-2 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-red-500 transition-colors resize-none"
+                    placeholder="Escribe el motivo del rechazo..."></textarea>
+            </div>
+            <div class="flex gap-3 justify-end">
+                <button
+                    data-modal-cancel
+                    class="px-4 py-2 text-sm font-medium text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded transition-colors"
+                >
+                    Cancelar
+                </button>
+                <button
+                    data-modal-confirm
+                    class="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded transition-colors flex items-center gap-2"
+                >
+                    <svg
+                        class="w-4 h-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                    Confirmar Rechazo
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Complete Modal -->
+    <div
+        id="completeModal"
+        class="fixed inset-0 z-50 hidden items-center justify-center"
+    >
+        <div
+            class="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            data-modal-backdrop
+        >
+        </div>
+        <div
+            class="relative bg-slate-900 border border-slate-700 rounded-lg p-6 max-w-md w-full mx-4 shadow-2xl"
+        >
+            <div class="flex items-center gap-3 mb-4">
+                <div
+                    class="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center"
+                >
+                    <svg
+                        class="w-5 h-5 text-blue-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                        ></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-bold text-white">
+                    Marcar como Completada
+                </h3>
+            </div>
+            <p class="text-slate-400 text-sm mb-6">
+                Esto indica que el producto ha sido recibido y el reembolso ha
+                sido procesado correctamente.
+            </p>
+            <div class="flex gap-3 justify-end">
+                <button
+                    data-modal-cancel
+                    class="px-4 py-2 text-sm font-medium text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded transition-colors"
+                >
+                    Cancelar
+                </button>
+                <button
+                    data-modal-confirm
+                    class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded transition-colors flex items-center gap-2"
+                >
+                    <svg
+                        class="w-4 h-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                        ></path>
+                    </svg>
+                    Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
 </AdminLayout>
 
 <div id="return-data" data-return-id={id} class="hidden"></div>
@@ -419,60 +631,92 @@ const reasonLabels: Record<string, string> = {
 
     const returnId = document.getElementById("return-data")?.dataset.returnId;
 
-    // Notification helper
+    // --- Modal helpers ---
+    function openModal(id: string) {
+        const modal = document.getElementById(id);
+        if (!modal) return;
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+    }
+
+    function closeModal(id: string) {
+        const modal = document.getElementById(id);
+        if (!modal) return;
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+    }
+
+    function onModalConfirm(id: string): Promise<boolean> {
+        return new Promise((resolve) => {
+            const modal = document.getElementById(id);
+            if (!modal) return resolve(false);
+
+            const confirmBtn = modal.querySelector("[data-modal-confirm]");
+            const cancelBtn = modal.querySelector("[data-modal-cancel]");
+            const backdrop = modal.querySelector("[data-modal-backdrop]");
+
+            function cleanup() {
+                confirmBtn?.removeEventListener("click", onConfirm);
+                cancelBtn?.removeEventListener("click", onCancel);
+                backdrop?.removeEventListener("click", onCancel);
+                closeModal(id);
+            }
+            function onConfirm() {
+                cleanup();
+                resolve(true);
+            }
+            function onCancel() {
+                cleanup();
+                resolve(false);
+            }
+
+            confirmBtn?.addEventListener("click", onConfirm);
+            cancelBtn?.addEventListener("click", onCancel);
+            backdrop?.addEventListener("click", onCancel);
+
+            openModal(id);
+        });
+    }
+
+    // --- Notification helper ---
     function showNotification(message: string, type = "success") {
         const area = document.getElementById("notification-area");
         const content = document.getElementById("notification-content");
-
         if (!area || !content) return;
 
-        if (type === "error") {
-            content.className =
-                "px-4 py-3 rounded shadow-lg text-white font-medium text-sm flex items-center gap-2 bg-red-600";
-        } else {
-            content.className =
-                "px-4 py-3 rounded shadow-lg text-white font-medium text-sm flex items-center gap-2 bg-green-600";
-        }
-
+        content.className = `px-4 py-3 rounded shadow-lg text-white font-medium text-sm flex items-center gap-2 ${
+            type === "error" ? "bg-red-600" : "bg-green-600"
+        }`;
         content.textContent = message;
-
-        // Show
         area.classList.remove("translate-x-full", "opacity-0");
-
-        // Hide after 3s
-        setTimeout(() => {
-            area.classList.add("translate-x-full", "opacity-0");
-        }, 3000);
+        setTimeout(
+            () => area.classList.add("translate-x-full", "opacity-0"),
+            3000,
+        );
     }
 
+    // --- Auth headers ---
     async function buildAuthHeaders(): Promise<Record<string, string>> {
         const headers: Record<string, string> = {
             "Content-Type": "application/json",
         };
-
         try {
             const session = await getSession();
-            const accessToken = session?.access_token;
-            if (accessToken) {
-                headers["Authorization"] = `Bearer ${accessToken}`;
+            if (session?.access_token) {
+                headers["Authorization"] = `Bearer ${session.access_token}`;
             }
         } catch {
-            // Fallback to cookies if present
+            /* fallback to cookies */
         }
-
         return headers;
     }
 
-    // Approve return
+    // --- Approve ---
     document
         .getElementById("approveReturn")
         ?.addEventListener("click", async () => {
-            if (
-                !confirm(
-                    "¿Estás seguro de aprobar esta devolución? Se generará una factura de abono y se notificará al cliente.",
-                )
-            )
-                return;
+            const confirmed = await onModalConfirm("approveModal");
+            if (!confirmed) return;
 
             const res = await fetch("/api/admin/returns/approve", {
                 method: "POST",
@@ -481,25 +725,31 @@ const reasonLabels: Record<string, string> = {
             });
 
             if (res.ok) {
-                showNotification("Devolución aprobada correctamente");
+                showNotification("Devolucion aprobada correctamente");
                 setTimeout(() => window.location.reload(), 1500);
             } else {
                 const data = await res.json();
                 showNotification(
-                    data.error || "Error al aprobar devolución",
+                    data.error || "Error al aprobar devolucion",
                     "error",
                 );
             }
         });
 
-    // Reject return
+    // --- Reject ---
     document
         .getElementById("rejectReturn")
         ?.addEventListener("click", async () => {
-            const reason = prompt(
-                "Motivo del rechazo (opcional, será enviado al cliente):",
-            );
-            if (reason === null) return; // User cancelled
+            // Clear previous reason
+            const reasonInput = document.getElementById(
+                "rejectReason",
+            ) as HTMLTextAreaElement | null;
+            if (reasonInput) reasonInput.value = "";
+
+            const confirmed = await onModalConfirm("rejectModal");
+            if (!confirmed) return;
+
+            const reason = reasonInput?.value?.trim() || "";
 
             const res = await fetch("/api/admin/returns/reject", {
                 method: "POST",
@@ -508,27 +758,23 @@ const reasonLabels: Record<string, string> = {
             });
 
             if (res.ok) {
-                showNotification("Devolución rechazada");
+                showNotification("Devolucion rechazada");
                 setTimeout(() => window.location.reload(), 1500);
             } else {
                 const data = await res.json();
                 showNotification(
-                    data.error || "Error al rechazar devolución",
+                    data.error || "Error al rechazar devolucion",
                     "error",
                 );
             }
         });
 
-    // Mark as completed
+    // --- Mark completed ---
     document
         .getElementById("markCompleted")
         ?.addEventListener("click", async () => {
-            if (
-                !confirm(
-                    "¿Marcar esta devolución como completada? Esto indica que el producto ha sido recibido y el reembolso procesado.",
-                )
-            )
-                return;
+            const confirmed = await onModalConfirm("completeModal");
+            if (!confirmed) return;
 
             const res = await fetch("/api/admin/returns/update-status", {
                 method: "POST",
@@ -537,7 +783,7 @@ const reasonLabels: Record<string, string> = {
             });
 
             if (res.ok) {
-                showNotification("Devolución marcada como completada");
+                showNotification("Devolucion marcada como completada");
                 setTimeout(() => window.location.reload(), 1500);
             } else {
                 const data = await res.json();
