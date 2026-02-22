@@ -5,7 +5,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     // Auth Check
     const authHeader = request.headers.get('authorization') || request.headers.get('Authorization');
     const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice('Bearer '.length) : undefined;
-    const accessToken = cookies.get('sb-access-token')?.value || bearerToken;
+    const accessToken = bearerToken || cookies.get('sb-access-token')?.value;
     if (!accessToken) {
         return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
     }

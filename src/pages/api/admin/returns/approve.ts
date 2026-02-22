@@ -8,7 +8,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     // Auth Check
     const authHeader = request.headers.get('authorization') || request.headers.get('Authorization');
     const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice('Bearer '.length) : undefined;
-    const accessToken = cookies.get('sb-access-token')?.value || bearerToken;
+    // Bearer header takes priority over cookie -- the cookie can be stale/expired
+    // but the JS client always sends a fresh token in the Authorization header
+    const accessToken = bearerToken || cookies.get('sb-access-token')?.value;
     if (!accessToken) {
         return new Response(JSON.stringify({ error: 'Unauthorized' }), {
             status: 401,
