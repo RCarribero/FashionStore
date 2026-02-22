@@ -20,7 +20,8 @@ import {
     removeFromCart,
     updateQuantity,
     checkAutomaticPromotions,
-    checkCartExpiration
+    checkCartExpiration,
+    revalidateCartStock
 } from '../stores/cart.store';
 import { formatPrice } from '../../../shared/utils';
 import type { CartItem } from '../../../shared/types';
@@ -94,10 +95,11 @@ export default function CartSlideOver({ isOpen, onClose }: CartSlideOverProps) {
         };
     }, [isOpen, onClose]);
 
-    // Check for automatic promotions when cart opens or total changes
+    // Check for automatic promotions and revalidate stock when cart opens
     useEffect(() => {
         if (isOpen && isMounted) {
             checkAutomaticPromotions();
+            revalidateCartStock();
         }
     }, [isOpen, cartTotal, isMounted]);
 

@@ -372,3 +372,64 @@ export function getCartItem(
         (item) => getCartItemKey(item.productId, item.size) === key
     );
 }
+
+/**
+ * Revalidate cart stock against the database limits in real-time
+ * Should be called when cart opens or checkout begins.
+ */
+export async function revalidateCartStock(): Promise<void> {
+    const cart = $cart.get();
+    if (cart.items.length === 0) return;
+
+    const sessionId = getOrCreateSessionId();
+
+    try {
+        // Group items by productId to minimize fetches
+        const productIds = Array.from(new Set(cart.items.map(item => item.productId)));
+
+        const stockUpdates = await Promise.all(
+            productIds.map(async (productId) => {
+                const res = await fetch(`/api/stock/available?productId=${productId}&sessionId=${sessionId}`);
+                if (!res.ok) return { productId, availability: null };
+                const data = await res.json();
+                return { productId, availability: data.availability };
+            })
+        );
+
+        let needsUpdate = false;
+        const newItems = cart.items.map(item => {
+            const update = stockUpdates.find(u => u.productId === item.productId);
+            if (!update || !update.availability) return item;
+
+            const currentAvailable = update.availability[item.size] ?? 0;
+
+            if (item.availableStock !== currentAvailable) {
+                needsUpdate = true;
+
+                // If current cart quantity exceeds the newly available stock, reduce it
+                const newQuantity = Math.min(item.quantity, currentAvailable);
+
+                return {
+                    ...item,
+                    availableStock: currentAvailable,
+                    quantity: newQuantity
+                };
+            }
+            return item;
+        });
+
+        if (needsUpdate) {
+            // Remove items that dropped to 0 quantity
+            const validItems = newItems.filter(item => item.quantity > 0);
+            $cart.set({
+                items: validItems,
+                updatedAt: Date.now(),
+            });
+            // If items were completely removed or quantities changed, re-check coupons
+            checkAutomaticPromotions();
+        }
+
+    } catch (err) {
+        console.error('Error revalidating cart stock:', err);
+    }
+}

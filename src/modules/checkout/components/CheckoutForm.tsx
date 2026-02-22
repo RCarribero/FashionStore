@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useStore } from '@nanostores/react';
-import { $cart, $coupon, getCartSessionId } from '../../store/stores/cart.store';
+import { $cart, $coupon, getCartSessionId, revalidateCartStock } from '../../store/stores/cart.store';
 import { getCurrentUser, supabase } from '../../auth/services/auth-client.service';
 
 interface FormData {
@@ -55,6 +55,7 @@ export default function CheckoutForm() {
     useEffect(() => {
         setIsMounted(true);
         loadUserAndAddresses();
+        revalidateCartStock();
     }, []);
 
     const loadUserAndAddresses = async () => {
@@ -134,7 +135,7 @@ export default function CheckoutForm() {
         setErrorMessage(null);
 
         try {
-                // Check if we need to save this new address (Only for logged in users)
+            // Check if we need to save this new address (Only for logged in users)
             if (user && selectedAddressId === 'new' && saveNewAddress) {
                 const { error: saveError } = await supabase
                     .from('user_addresses')
