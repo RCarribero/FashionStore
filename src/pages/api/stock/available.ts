@@ -32,27 +32,15 @@ export const GET: APIRoute = async ({ url }) => {
             return new Response(JSON.stringify({ error: 'Failed to fetch variants' }), { status: 500 });
         }
 
-        // For each variant, calculate available stock (subtract active reservations from OTHER sessions)
+        // For each variant, available stock is simply the db stock 
+        // because reservations are ALREADY physically deducted from stock during checkout
         const availabilityMap: Record<string, number> = {};
 
         for (const variant of variants) {
-            // Get sum of active reservations from OTHER sessions
-            let query = supabase
-                .from('stock_reservations')
-                .select('quantity')
-                .eq('variant_id', variant.id)
-                .gt('expires_at', new Date().toISOString());
-
-            if (sessionId) {
-                query = query.neq('session_id', sessionId);
-            }
-
-            const { data: reservations } = await query;
-
-            const reservedByOthers = reservations?.reduce((sum, r) => sum + r.quantity, 0) || 0;
-            const available = Math.max(0, variant.stock - reservedByOthers);
-            availabilityMap[variant.size] = available;
+            availabilityMap[variant.size] = variant.stock;
         }
+
+        console.log(`[API available.ts] Product ${productId} availability:`, availabilityMap);
 
         return new Response(JSON.stringify({
             success: true,
