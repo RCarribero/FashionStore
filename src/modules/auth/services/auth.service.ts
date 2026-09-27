@@ -1,6 +1,6 @@
 /**
  * Auth Service
- * Supabase authentication functions
+ * Supabase authentication functions with Embedded Mock Fallback
  */
 
 import { createClient } from '@supabase/supabase-js';
@@ -8,21 +8,30 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { APP_CONFIG } from '../../../config/app';
 import { AUTH_CONFIG } from '../config';
 import type { Session } from '../../../shared/types';
+import { createMockSupabaseClient } from '../../../lib/mock-supabase';
 
 const supabaseUrl = APP_CONFIG.supabase.url || 'https://placeholder.supabase.co';
 const supabaseAnonKey = APP_CONFIG.supabase.anonKey || 'placeholder';
 
 /**
- * Public Supabase client
- */
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-/**
  * Check if Supabase is properly configured
  */
 export function isSupabaseConfigured(): boolean {
-    return !supabaseUrl.includes('placeholder') && supabaseAnonKey !== 'placeholder';
+    return (
+        Boolean(supabaseUrl) &&
+        Boolean(supabaseAnonKey) &&
+        !supabaseUrl.includes('placeholder') &&
+        supabaseAnonKey !== 'placeholder' &&
+        supabaseUrl.startsWith('http')
+    );
 }
+
+/**
+ * Public Supabase client (or embedded mock client for demo mode)
+ */
+export const supabase: SupabaseClient = isSupabaseConfigured()
+    ? createClient(supabaseUrl, supabaseAnonKey)
+    : (createMockSupabaseClient() as any);
 
 /**
  * Create admin client for server-side operations
@@ -30,8 +39,8 @@ export function isSupabaseConfigured(): boolean {
 export function createAdminClient(): SupabaseClient {
     const serviceRoleKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    if (!serviceRoleKey) {
-        throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY environment variable');
+    if (!isSupabaseConfigured() || !serviceRoleKey) {
+        return createMockSupabaseClient() as any;
     }
 
     return createClient(supabaseUrl, serviceRoleKey, {
@@ -108,9 +117,8 @@ export async function getSession(request: Request): Promise<Session | null> {
  * Create auth cookies for response
  */
 export function createAuthCookies(accessToken: string, refreshToken: string): string[] {
-    // Always use Secure in production, and set SameSite=Strict for better security
     const secure = import.meta.env.PROD ? '; Secure' : '';
-    const sameSite = 'Lax'; // Lax allows cookies on navigation, Strict would block
+    const sameSite = 'Lax';
     
     return [
         `${AUTH_CONFIG.cookies.accessToken}=${encodeURIComponent(accessToken)}; Path=/; HttpOnly; SameSite=${sameSite}${secure}; Max-Age=${AUTH_CONFIG.cookies.maxAge.access}`,

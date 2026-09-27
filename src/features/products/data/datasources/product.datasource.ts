@@ -3,14 +3,8 @@
  * Direct calls to Supabase for product data
  */
 
-import { createClient } from '@supabase/supabase-js';
 import type { Product, ProductFormData, ProductFilters } from '../models';
-import { createAdminClient } from '../../../../modules/auth';
-
-const supabase = createClient(
-    import.meta.env.PUBLIC_SUPABASE_URL,
-    import.meta.env.PUBLIC_SUPABASE_ANON_KEY
-);
+import { supabase, createAdminClient } from '../../../../modules/auth';
 
 const adminClient = () => {
     if (typeof window !== 'undefined') {

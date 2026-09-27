@@ -1,18 +1,10 @@
 /**
  * Promotion utilities for server-side price calculations
  */
-import { createClient } from '@supabase/supabase-js';
-
-let supabase: ReturnType<typeof createClient> | null = null;
+import { supabase as authSupabase } from '../../modules/auth';
 
 function getSupabase() {
-    if (!supabase) {
-        supabase = createClient(
-            import.meta.env.PUBLIC_SUPABASE_URL,
-            import.meta.env.PUBLIC_SUPABASE_ANON_KEY
-        );
-    }
-    return supabase;
+    return authSupabase;
 }
 
 interface ActivePromotion {

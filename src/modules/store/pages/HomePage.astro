@@ -11,18 +11,7 @@ import ValueProps from "../components/home/ValueProps.astro";
 import CustomTextSection from "../components/home/CustomTextSection.astro";
 
 // Import supabase to fetch layout config
-import { createClient } from "@supabase/supabase-js";
-
-// Initialize Supabase Client (Same logic as API)
-const supabaseUrl =
-    import.meta.env.PUBLIC_SUPABASE_URL ||
-    process.env.PUBLIC_SUPABASE_URL ||
-    "";
-const supabaseAnonKey =
-    import.meta.env.PUBLIC_SUPABASE_ANON_KEY ||
-    process.env.PUBLIC_SUPABASE_ANON_KEY ||
-    "";
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+import { supabase } from "../../auth";
 
 // Component Mapping Definition
 const componentMap = {

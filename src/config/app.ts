@@ -1,7 +1,28 @@
 /**
  * Application Configuration
- * Global settings and constants
+ * Global settings and constants with embedded mock support
  */
+
+import { setupSupabaseMockFetch } from '../lib/supabase-mock-fetch';
+
+const defaultSupabaseUrl = 'https://demo-fashionstore.supabase.co';
+const defaultAnonKey = 'demo-anon-key-fashionstore';
+
+const rawUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+const rawKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+
+const isSupabaseConfigured = Boolean(
+    rawUrl &&
+    rawKey &&
+    !rawUrl.includes('placeholder') &&
+    rawUrl.startsWith('http') &&
+    !rawUrl.includes('demo-fashionstore')
+);
+
+// Enable mock fetch interceptor if not connected to live external Supabase
+if (!isSupabaseConfigured) {
+    setupSupabaseMockFetch();
+}
 
 export const APP_CONFIG = {
     name: 'FashionMarket',
@@ -11,8 +32,8 @@ export const APP_CONFIG = {
 
     // Supabase
     supabase: {
-        url: import.meta.env.PUBLIC_SUPABASE_URL,
-        anonKey: import.meta.env.PUBLIC_SUPABASE_ANON_KEY,
+        url: isSupabaseConfigured ? rawUrl : defaultSupabaseUrl,
+        anonKey: isSupabaseConfigured ? rawKey : defaultAnonKey,
         storageBucket: 'product-images',
     },
 
