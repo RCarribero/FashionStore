@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 800" width="1024" height="800">
+  <defs>
+    <linearGradient id="catBg_Pantalones" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#061a14" />
+      <stop offset="60%" stop-color="#0f3628" />
+      <stop offset="100%" stop-color="#030d0a" />
+    </linearGradient>
+    <radialGradient id="glow_Pantalones" cx="70%" cy="40%" r="50%">
+      <stop offset="0%" stop-color="#10b981" stop-opacity="0.35" />
+      <stop offset="100%" stop-color="#10b981" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <rect width="1024" height="800" fill="url(#catBg_Pantalones)" />
+  <circle cx="700" cy="400" r="380" fill="url(#glow_Pantalones)" />
+
+  <!-- Diagonal Accent Stripes -->
+  <line x1="-100" y1="800" x2="800" y2="-100" stroke="#10b981" stroke-opacity="0.08" stroke-width="80" />
+  <line x1="100" y1="900" x2="950" y2="50" stroke="#ffffff" stroke-opacity="0.03" stroke-width="40" />
+
+  <!-- Content Box -->
+  <rect x="60" y="60" width="904" height="680" rx="20" fill="none" stroke="#ffffff" stroke-opacity="0.1" stroke-width="2" />
+  
+  <text x="120" y="260" fill="#10b981" font-family="'Inter', sans-serif" font-size="20" font-weight="800" letter-spacing="6">COLECCIÓN // 2026</text>
+  <text x="120" y="360" fill="#ffffff" font-family="'Inter', sans-serif" font-size="64" font-weight="900" letter-spacing="2">PANTALONES</text>
+  <text x="120" y="420" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="24" font-weight="500">Pantalones Cargo & Sastre</text>
+
+  <rect x="120" y="480" width="220" height="56" rx="28" fill="#10b981" />
+  <text x="230" y="516" text-anchor="middle" fill="#000000" font-family="'Inter', sans-serif" font-size="16" font-weight="800" letter-spacing="1">DESCUBRIR →</text>
+
+  <circle cx="750" cy="400" r="160" fill="#000000" fill-opacity="0.4" stroke="#10b981" stroke-opacity="0.4" stroke-width="3" />
+  <text x="750" y="440" text-anchor="middle" font-size="110">👖</text>
+</svg>

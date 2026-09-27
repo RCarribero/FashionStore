@@ -1,39 +1,64 @@
 import type { Category, Product, DashboardStats } from '../types';
 
+export interface MockUser {
+    id: string;
+    email: string;
+    name: string;
+    role: 'admin' | 'customer';
+    is_admin: boolean;
+}
+
+export const EMBEDDED_USERS: MockUser[] = [
+    {
+        id: 'user-admin-1',
+        email: 'admin@fashionstore.com',
+        name: 'Carlos Director (Admin)',
+        role: 'admin',
+        is_admin: true,
+    },
+    {
+        id: 'user-client-1',
+        email: 'cliente@fashionstore.com',
+        name: 'Laura Gómez (Cliente)',
+        role: 'customer',
+        is_admin: false,
+    },
+];
+
 export const EMBEDDED_CATEGORIES: (Category & { image: string })[] = [
     {
         id: 'cat-zapatillas',
         name: 'Zapatillas',
         slug: 'zapatillas',
-        image: 'https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=1000&q=80',
+        image: '/images/categories/zapatillas.svg',
         created_at: new Date('2024-01-01').toISOString(),
     },
     {
         id: 'cat-sudaderas',
         name: 'Sudaderas',
         slug: 'sudaderas',
-        image: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=1000&q=80',
+        image: '/images/categories/sudaderas.svg',
         created_at: new Date('2024-01-02').toISOString(),
     },
     {
         id: 'cat-pantalones',
         name: 'Pantalones',
         slug: 'pantalones',
-        image: 'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&w=1000&q=80',
+        image: '/images/categories/pantalones.svg',
         created_at: new Date('2024-01-03').toISOString(),
     },
     {
         id: 'cat-camisetas',
         name: 'Camisetas',
         slug: 'camisetas',
-        image: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=1000&q=80',
+        image: '/images/categories/camisetas.svg',
         created_at: new Date('2024-01-04').toISOString(),
     },
     {
         id: 'cat-chaquetas',
         name: 'Chaquetas',
         slug: 'chaquetas',
-        image: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=1000&q=80',
+        image: '/images/categories/chaquetas.svg',
         created_at: new Date('2024-01-05').toISOString(),
     },
 ];
@@ -49,8 +74,7 @@ export const EMBEDDED_PRODUCTS: Product[] = [
         category_id: 'cat-chaquetas',
         category: EMBEDDED_CATEGORIES[4],
         images: [
-            'https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=1000&q=80',
-            'https://images.unsplash.com/photo-1495105787522-5334e3ffa0ef?auto=format&fit=crop&w=1000&q=80'
+            '/images/products/cazadora-bomber-aviator-obsidian.svg'
         ],
         featured: true,
         created_at: new Date('2024-02-01').toISOString(),
@@ -65,8 +89,7 @@ export const EMBEDDED_PRODUCTS: Product[] = [
         category_id: 'cat-sudaderas',
         category: EMBEDDED_CATEGORIES[1],
         images: [
-            'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=1000&q=80',
-            'https://images.unsplash.com/photo-1509967419530-da38b4704bc6?auto=format&fit=crop&w=1000&q=80'
+            '/images/products/sudadera-oversize-acid-wash.svg'
         ],
         featured: true,
         created_at: new Date('2024-02-02').toISOString(),
@@ -81,8 +104,7 @@ export const EMBEDDED_PRODUCTS: Product[] = [
         category_id: 'cat-zapatillas',
         category: EMBEDDED_CATEGORIES[0],
         images: [
-            'https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=1000&q=80',
-            'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=1000&q=80'
+            '/images/products/zapatillas-street-runner-pro-v2.svg'
         ],
         featured: true,
         created_at: new Date('2024-02-03').toISOString(),
@@ -97,8 +119,7 @@ export const EMBEDDED_PRODUCTS: Product[] = [
         category_id: 'cat-pantalones',
         category: EMBEDDED_CATEGORIES[2],
         images: [
-            'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&w=1000&q=80',
-            'https://images.unsplash.com/photo-1517445312882-bc9910d016b7?auto=format&fit=crop&w=1000&q=80'
+            '/images/products/pantalon-cargo-tactico-modular.svg'
         ],
         featured: true,
         created_at: new Date('2024-02-04').toISOString(),
@@ -113,8 +134,7 @@ export const EMBEDDED_PRODUCTS: Product[] = [
         category_id: 'cat-camisetas',
         category: EMBEDDED_CATEGORIES[3],
         images: [
-            'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=1000&q=80',
-            'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&w=1000&q=80'
+            '/images/products/camiseta-heavyweight-boxy-fit.svg'
         ],
         featured: true,
         created_at: new Date('2024-02-05').toISOString(),
@@ -129,7 +149,7 @@ export const EMBEDDED_PRODUCTS: Product[] = [
         category_id: 'cat-chaquetas',
         category: EMBEDDED_CATEGORIES[4],
         images: [
-            'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?auto=format&fit=crop&w=1000&q=80'
+            '/images/products/chaqueta-denim-vintage-washed.svg'
         ],
         featured: true,
         created_at: new Date('2024-02-06').toISOString(),
@@ -144,7 +164,7 @@ export const EMBEDDED_PRODUCTS: Product[] = [
         category_id: 'cat-zapatillas',
         category: EMBEDDED_CATEGORIES[0],
         images: [
-            'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=1000&q=80'
+            '/images/products/zapatillas-retro-low-classic.svg'
         ],
         featured: false,
         created_at: new Date('2024-02-07').toISOString(),
@@ -159,7 +179,7 @@ export const EMBEDDED_PRODUCTS: Product[] = [
         category_id: 'cat-pantalones',
         category: EMBEDDED_CATEGORIES[2],
         images: [
-            'https://images.unsplash.com/photo-1506629082955-511b1aa562c8?auto=format&fit=crop&w=1000&q=80'
+            '/images/products/pantalon-sastre-relaxed-pleated.svg'
         ],
         featured: false,
         created_at: new Date('2024-02-08').toISOString(),

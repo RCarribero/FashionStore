@@ -153,10 +153,17 @@ export function createMockSupabaseClient() {
                 case 'profiles':
                     return new MockQueryBuilder([
                         {
-                            id: 'demo-user-1',
+                            id: 'user-admin-1',
                             email: 'admin@fashionstore.com',
                             role: 'admin',
                             is_admin: true,
+                            created_at: new Date().toISOString(),
+                        },
+                        {
+                            id: 'user-client-1',
+                            email: 'cliente@fashionstore.com',
+                            role: 'customer',
+                            is_admin: false,
                             created_at: new Date().toISOString(),
                         }
                     ]);
@@ -166,41 +173,67 @@ export function createMockSupabaseClient() {
         },
         auth: {
             currentUser: {
-                id: 'demo-user-1',
+                id: 'user-admin-1',
                 email: 'admin@fashionstore.com',
-                user_metadata: { name: 'Demo Administrator' }
+                user_metadata: { name: 'Carlos Director (Admin)' }
             },
             currentSession: {
-                access_token: 'demo-token',
+                access_token: 'demo-token-admin',
                 refresh_token: 'demo-refresh-token',
                 user: {
-                    id: 'demo-user-1',
+                    id: 'user-admin-1',
                     email: 'admin@fashionstore.com',
-                    user_metadata: { name: 'Demo Administrator' }
+                    user_metadata: { name: 'Carlos Director (Admin)' }
                 }
             },
             async getUser(token?: string) {
+                // If in localStorage a client is stored, return client, else admin
+                let isClient = false;
+                if (typeof window !== 'undefined' && window.localStorage) {
+                    const stored = window.localStorage.getItem('fm_demo_user');
+                    if (stored === 'cliente') isClient = true;
+                }
+                const user = isClient
+                    ? { id: 'user-client-1', email: 'cliente@fashionstore.com', user_metadata: { name: 'Laura Gómez (Cliente)' } }
+                    : { id: 'user-admin-1', email: 'admin@fashionstore.com', user_metadata: { name: 'Carlos Director (Admin)' } };
+
+                return {
+                    data: { user },
+                    error: null
+                };
+            },
+            async getSession() {
+                const { data } = await this.getUser();
                 return {
                     data: {
-                        user: {
-                            id: 'demo-user-1',
-                            email: 'admin@fashionstore.com',
-                            user_metadata: { name: 'Demo Administrator' }
+                        session: {
+                            access_token: 'demo-token',
+                            refresh_token: 'demo-refresh-token',
+                            user: data.user
                         }
                     },
                     error: null
                 };
             },
             async signInWithPassword({ email, password }: any) {
+                const reqEmail = email || 'admin@fashionstore.com';
+                const isAdmin = reqEmail.toLowerCase().includes('admin');
+                const user = {
+                    id: isAdmin ? 'user-admin-1' : 'user-client-1',
+                    email: reqEmail,
+                    user_metadata: { name: isAdmin ? 'Carlos Director (Admin)' : 'Laura Gómez (Cliente)' }
+                };
+
+                if (typeof window !== 'undefined' && window.localStorage) {
+                    window.localStorage.setItem('fm_demo_user', isAdmin ? 'admin' : 'cliente');
+                    window.localStorage.setItem('sb-demo-auth-token', JSON.stringify({ user }));
+                }
+
                 return {
                     data: {
-                        user: {
-                            id: 'demo-user-1',
-                            email: email || 'admin@fashionstore.com',
-                            user_metadata: { name: 'Demo Administrator' }
-                        },
+                        user,
                         session: {
-                            access_token: 'demo-token',
+                            access_token: 'demo-token-' + (isAdmin ? 'admin' : 'client'),
                             refresh_token: 'demo-refresh-token'
                         }
                     },
@@ -208,6 +241,10 @@ export function createMockSupabaseClient() {
                 };
             },
             async signOut() {
+                if (typeof window !== 'undefined' && window.localStorage) {
+                    window.localStorage.removeItem('fm_demo_user');
+                    window.localStorage.removeItem('sb-demo-auth-token');
+                }
                 return { error: null };
             },
             onAuthStateChange(callback: any) {

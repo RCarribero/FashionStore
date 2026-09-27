@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" width="800" height="1000">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#061a14" />
+      <stop offset="50%" stop-color="#0d281e" />
+      <stop offset="100%" stop-color="#030d0a" />
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#10b981" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.8" />
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="45%" r="40%">
+      <stop offset="0%" stop-color="#10b981" stop-opacity="0.25" />
+      <stop offset="100%" stop-color="#10b981" stop-opacity="0" />
+    </radialGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="25" stdDeviation="30" flood-color="#000000" flood-opacity="0.55" />
+    </filter>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#ffffff" stroke-opacity="0.03" stroke-width="1" />
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="1000" fill="url(#bgGrad)" />
+  <rect width="800" height="1000" fill="url(#grid)" />
+  <circle cx="400" cy="450" r="350" fill="url(#glow)" />
+
+  <!-- Studio Ambient Lighting Frame -->
+  <rect x="30" y="30" width="740" height="940" fill="none" stroke="#ffffff" stroke-opacity="0.08" stroke-width="1.5" rx="16" />
+
+  <!-- Category & Brand Header -->
+  <text x="60" y="80" fill="#10b981" font-family="'Inter', -apple-system, BlinkMacSystemFont, sans-serif" font-size="14" font-weight="700" letter-spacing="4">FASHIONMARKET // PANTALONES</text>
+  <text x="740" y="80" text-anchor="end" fill="#ffffff" fill-opacity="0.3" font-family="'Inter', sans-serif" font-size="12" font-weight="600" letter-spacing="2">ED. 2026</text>
+
+  <!-- Main Illustration Group with Filter -->
+  <g filter="url(#shadow)" transform="translate(0, 20)">
+    
+          <!-- Tactical Cargo Trousers -->
+          <!-- Waistband & Belt -->
+          <rect x="250" y="220" width="300" height="35" rx="4" fill="#1e293b" stroke="#10b981" stroke-width="2" />
+          <rect x="360" y="215" width="80" height="45" rx="6" fill="#0f172a" stroke="#cbd5e1" stroke-width="2.5" />
+          <!-- Waist to Crotch -->
+          <path d="M250 255 L230 400 L370 440 L400 400 L430 440 L570 400 L550 255 Z" fill="#0f172a" stroke="#334155" stroke-width="3" />
+          <!-- Left Leg -->
+          <path d="M230 400 L210 700 L320 700 L370 440 Z" fill="#0f172a" stroke="#334155" stroke-width="3" />
+          <!-- Right Leg -->
+          <path d="M570 400 L590 700 L480 700 L430 440 Z" fill="#0f172a" stroke="#334155" stroke-width="3" />
+          <!-- Tactical Side Cargo Pockets with Straps -->
+          <rect x="180" y="440" width="90" height="120" rx="8" fill="#1e293b" stroke="#10b981" stroke-width="2" />
+          <line x1="180" y1="475" x2="270" y2="475" stroke="#10b981" stroke-width="3" />
+          <path d="M210 475 L210 560" stroke="#f1f5f9" stroke-width="3" stroke-dasharray="6 3" />
+          
+          <rect x="530" y="440" width="90" height="120" rx="8" fill="#1e293b" stroke="#10b981" stroke-width="2" />
+          <line x1="530" y1="475" x2="620" y2="475" stroke="#10b981" stroke-width="3" />
+          <path d="M590 475 L590 560" stroke="#f1f5f9" stroke-width="3" stroke-dasharray="6 3" />
+          <!-- Elastic Cuff Bottoms -->
+          <rect x="205" y="695" width="120" height="25" rx="5" fill="#1e293b" stroke="#10b981" stroke-width="2" />
+          <rect x="475" y="695" width="120" height="25" rx="5" fill="#1e293b" stroke="#10b981" stroke-width="2" />
+        
+  </g>
+
+  <!-- Bottom Product Tag -->
+  <rect x="50" y="860" width="700" height="90" rx="12" fill="#000000" fill-opacity="0.4" stroke="#ffffff" stroke-opacity="0.1" />
+  <text x="80" y="905" fill="#ffffff" font-family="'Inter', sans-serif" font-size="22" font-weight="800" letter-spacing="1">PANTALÓN CARGO TÁCTICO MODULAR</text>
+  <text x="80" y="930" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="13" font-weight="500">PREMIUM EDITION • STUDIO MOCKUP</text>
+  
+  <rect x="660" y="885" width="60" height="38" rx="6" fill="#10b981" fill-opacity="0.2" stroke="#10b981" stroke-opacity="0.6" />
+  <text x="690" y="909" text-anchor="middle" fill="#10b981" font-family="'Inter', sans-serif" font-size="12" font-weight="800">FM</text>
+</svg>

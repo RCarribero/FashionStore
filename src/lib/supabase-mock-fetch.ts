@@ -31,20 +31,31 @@ export function setupSupabaseMockFetch() {
 
             // Handle Auth
             if (path.includes('/auth/v1/')) {
+                let reqEmail = 'admin@fashionstore.com';
+                try {
+                    if (init?.body) {
+                        const parsed = JSON.parse(init.body as string);
+                        if (parsed.email) reqEmail = parsed.email;
+                    }
+                } catch (_) {}
+
+                const isAdmin = reqEmail.toLowerCase().includes('admin');
                 const mockUser = {
-                    id: 'demo-user-1',
+                    id: isAdmin ? 'user-admin-1' : 'user-client-1',
                     aud: 'authenticated',
                     role: 'authenticated',
-                    email: 'demo@fashionstore.com',
+                    email: reqEmail,
                     email_confirmed_at: new Date().toISOString(),
                     app_metadata: { provider: 'email', providers: ['email'] },
-                    user_metadata: { name: 'Demo Administrator' },
+                    user_metadata: {
+                        name: isAdmin ? 'Carlos Director (Admin)' : 'Laura Gómez (Cliente)'
+                    },
                     created_at: new Date().toISOString(),
                 };
 
                 return new Response(
                     JSON.stringify({
-                        access_token: 'demo-token',
+                        access_token: 'demo-token-' + (isAdmin ? 'admin' : 'client'),
                         token_type: 'bearer',
                         expires_in: 3600,
                         refresh_token: 'demo-refresh-token',
@@ -92,10 +103,16 @@ export function setupSupabaseMockFetch() {
                 case 'profiles':
                     items = [
                         {
-                            id: 'demo-user-1',
-                            email: 'demo@fashionstore.com',
+                            id: 'user-admin-1',
+                            email: 'admin@fashionstore.com',
                             role: 'admin',
                             is_admin: true,
+                        },
+                        {
+                            id: 'user-client-1',
+                            email: 'cliente@fashionstore.com',
+                            role: 'customer',
+                            is_admin: false,
                         },
                     ];
                     break;

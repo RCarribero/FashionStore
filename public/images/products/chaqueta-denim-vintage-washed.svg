@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" width="800" height="1000">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0d1929" />
+      <stop offset="50%" stop-color="#152942" />
+      <stop offset="100%" stop-color="#060d17" />
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#60a5fa" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.8" />
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="45%" r="40%">
+      <stop offset="0%" stop-color="#60a5fa" stop-opacity="0.25" />
+      <stop offset="100%" stop-color="#60a5fa" stop-opacity="0" />
+    </radialGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="25" stdDeviation="30" flood-color="#000000" flood-opacity="0.55" />
+    </filter>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#ffffff" stroke-opacity="0.03" stroke-width="1" />
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="1000" fill="url(#bgGrad)" />
+  <rect width="800" height="1000" fill="url(#grid)" />
+  <circle cx="400" cy="450" r="350" fill="url(#glow)" />
+
+  <!-- Studio Ambient Lighting Frame -->
+  <rect x="30" y="30" width="740" height="940" fill="none" stroke="#ffffff" stroke-opacity="0.08" stroke-width="1.5" rx="16" />
+
+  <!-- Category & Brand Header -->
+  <text x="60" y="80" fill="#60a5fa" font-family="'Inter', -apple-system, BlinkMacSystemFont, sans-serif" font-size="14" font-weight="700" letter-spacing="4">FASHIONMARKET // CHAQUETAS</text>
+  <text x="740" y="80" text-anchor="end" fill="#ffffff" fill-opacity="0.3" font-family="'Inter', sans-serif" font-size="12" font-weight="600" letter-spacing="2">ED. 2026</text>
+
+  <!-- Main Illustration Group with Filter -->
+  <g filter="url(#shadow)" transform="translate(0, 20)">
+    
+          <!-- Vintage Denim Jacket -->
+          <!-- Folded Collar -->
+          <polygon points="310,210 400,260 360,280 280,240" fill="#1e3a5f" stroke="#60a5fa" stroke-width="2" />
+          <polygon points="490,210 400,260 440,280 520,240" fill="#1e3a5f" stroke="#60a5fa" stroke-width="2" />
+          <!-- Main Body -->
+          <path d="M220 300 L300 230 L500 230 L580 300 L560 620 L240 620 Z" fill="#172554" stroke="#1d4ed8" stroke-width="3" />
+          <!-- Sleeves -->
+          <path d="M220 300 L130 490 L180 520 L230 380 Z" fill="#1e3a8a" stroke="#1d4ed8" stroke-width="2" />
+          <path d="M580 300 L670 490 L620 520 L570 380 Z" fill="#1e3a8a" stroke="#1d4ed8" stroke-width="2" />
+          <!-- Chest Flap Pockets with Bronze Buttons -->
+          <rect x="270" y="340" width="85" height="90" rx="4" fill="#1e3a8a" stroke="#60a5fa" stroke-width="2" />
+          <circle cx="312" cy="355" r="7" fill="#f59e0b" stroke="#78350f" stroke-width="2" />
+          <rect x="445" y="340" width="85" height="90" rx="4" fill="#1e3a8a" stroke="#60a5fa" stroke-width="2" />
+          <circle cx="487" cy="355" r="7" fill="#f59e0b" stroke="#78350f" stroke-width="2" />
+          <!-- Front Placket & Bronze Buttons -->
+          <line x1="400" y1="260" x2="400" y2="620" stroke="#f59e0b" stroke-width="3" stroke-dasharray="6 3" />
+          <circle cx="400" cy="310" r="7" fill="#f59e0b" stroke="#78350f" stroke-width="2" />
+          <circle cx="400" cy="380" r="7" fill="#f59e0b" stroke="#78350f" stroke-width="2" />
+          <circle cx="400" cy="450" r="7" fill="#f59e0b" stroke="#78350f" stroke-width="2" />
+          <circle cx="400" cy="520" r="7" fill="#f59e0b" stroke="#78350f" stroke-width="2" />
+          <circle cx="400" cy="590" r="7" fill="#f59e0b" stroke="#78350f" stroke-width="2" />
+        
+  </g>
+
+  <!-- Bottom Product Tag -->
+  <rect x="50" y="860" width="700" height="90" rx="12" fill="#000000" fill-opacity="0.4" stroke="#ffffff" stroke-opacity="0.1" />
+  <text x="80" y="905" fill="#ffffff" font-family="'Inter', sans-serif" font-size="22" font-weight="800" letter-spacing="1">CHAQUETA DENIM VINTAGE WASHED</text>
+  <text x="80" y="930" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="13" font-weight="500">PREMIUM EDITION • STUDIO MOCKUP</text>
+  
+  <rect x="660" y="885" width="60" height="38" rx="6" fill="#60a5fa" fill-opacity="0.2" stroke="#60a5fa" stroke-opacity="0.6" />
+  <text x="690" y="909" text-anchor="middle" fill="#60a5fa" font-family="'Inter', sans-serif" font-size="12" font-weight="800">FM</text>
+</svg>

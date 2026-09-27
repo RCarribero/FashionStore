@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" width="800" height="1000">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1c160c" />
+      <stop offset="50%" stop-color="#2c2211" />
+      <stop offset="100%" stop-color="#0e0b06" />
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.8" />
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="45%" r="40%">
+      <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.25" />
+      <stop offset="100%" stop-color="#f59e0b" stop-opacity="0" />
+    </radialGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="25" stdDeviation="30" flood-color="#000000" flood-opacity="0.55" />
+    </filter>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#ffffff" stroke-opacity="0.03" stroke-width="1" />
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="1000" fill="url(#bgGrad)" />
+  <rect width="800" height="1000" fill="url(#grid)" />
+  <circle cx="400" cy="450" r="350" fill="url(#glow)" />
+
+  <!-- Studio Ambient Lighting Frame -->
+  <rect x="30" y="30" width="740" height="940" fill="none" stroke="#ffffff" stroke-opacity="0.08" stroke-width="1.5" rx="16" />
+
+  <!-- Category & Brand Header -->
+  <text x="60" y="80" fill="#f59e0b" font-family="'Inter', -apple-system, BlinkMacSystemFont, sans-serif" font-size="14" font-weight="700" letter-spacing="4">FASHIONMARKET // CAMISETAS</text>
+  <text x="740" y="80" text-anchor="end" fill="#ffffff" fill-opacity="0.3" font-family="'Inter', sans-serif" font-size="12" font-weight="600" letter-spacing="2">ED. 2026</text>
+
+  <!-- Main Illustration Group with Filter -->
+  <g filter="url(#shadow)" transform="translate(0, 20)">
+    
+          <!-- Boxy Fit Heavyweight T-Shirt -->
+          <!-- Ribbed Collar -->
+          <path d="M320 220 Q400 280 480 220 Q460 190 400 200 Q340 190 320 220 Z" fill="#27272a" stroke="#f59e0b" stroke-width="2.5" />
+          <!-- Torso Boxy -->
+          <path d="M220 280 L290 220 Q400 270 510 220 L580 280 L570 650 L230 650 Z" fill="#18181b" stroke="#3f3f46" stroke-width="3" />
+          <!-- Sleeves Wide Boxy -->
+          <path d="M220 280 L130 400 L210 440 L240 350 Z" fill="#27272a" stroke="#3f3f46" stroke-width="2" />
+          <path d="M580 280 L670 400 L590 440 L560 350 Z" fill="#27272a" stroke="#3f3f46" stroke-width="2" />
+          <!-- Minimalist Chest Print -->
+          <rect x="360" y="340" width="80" height="12" rx="3" fill="#f59e0b" />
+          <text x="400" y="380" text-anchor="middle" fill="#ffffff" fill-opacity="0.8" font-family="'Inter', sans-serif" font-size="14" font-weight="800" letter-spacing="4">HEAVY 280G</text>
+          <!-- Double Stitched Hem -->
+          <line x1="230" y1="630" x2="570" y2="630" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4 2" />
+          <line x1="230" y1="640" x2="570" y2="640" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4 2" />
+        
+  </g>
+
+  <!-- Bottom Product Tag -->
+  <rect x="50" y="860" width="700" height="90" rx="12" fill="#000000" fill-opacity="0.4" stroke="#ffffff" stroke-opacity="0.1" />
+  <text x="80" y="905" fill="#ffffff" font-family="'Inter', sans-serif" font-size="22" font-weight="800" letter-spacing="1">CAMISETA HEAVYWEIGHT BOXY FIT</text>
+  <text x="80" y="930" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="13" font-weight="500">PREMIUM EDITION • STUDIO MOCKUP</text>
+  
+  <rect x="660" y="885" width="60" height="38" rx="6" fill="#f59e0b" fill-opacity="0.2" stroke="#f59e0b" stroke-opacity="0.6" />
+  <text x="690" y="909" text-anchor="middle" fill="#f59e0b" font-family="'Inter', sans-serif" font-size="12" font-weight="800">FM</text>
+</svg>

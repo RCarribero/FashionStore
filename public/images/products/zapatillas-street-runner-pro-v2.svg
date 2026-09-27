@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" width="800" height="1000">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1c0a10" />
+      <stop offset="50%" stop-color="#2b1019" />
+      <stop offset="100%" stop-color="#0d0306" />
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f43f5e" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.8" />
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="45%" r="40%">
+      <stop offset="0%" stop-color="#f43f5e" stop-opacity="0.25" />
+      <stop offset="100%" stop-color="#f43f5e" stop-opacity="0" />
+    </radialGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="25" stdDeviation="30" flood-color="#000000" flood-opacity="0.55" />
+    </filter>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#ffffff" stroke-opacity="0.03" stroke-width="1" />
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="1000" fill="url(#bgGrad)" />
+  <rect width="800" height="1000" fill="url(#grid)" />
+  <circle cx="400" cy="450" r="350" fill="url(#glow)" />
+
+  <!-- Studio Ambient Lighting Frame -->
+  <rect x="30" y="30" width="740" height="940" fill="none" stroke="#ffffff" stroke-opacity="0.08" stroke-width="1.5" rx="16" />
+
+  <!-- Category & Brand Header -->
+  <text x="60" y="80" fill="#f43f5e" font-family="'Inter', -apple-system, BlinkMacSystemFont, sans-serif" font-size="14" font-weight="700" letter-spacing="4">FASHIONMARKET // ZAPATILLAS</text>
+  <text x="740" y="80" text-anchor="end" fill="#ffffff" fill-opacity="0.3" font-family="'Inter', sans-serif" font-size="12" font-weight="600" letter-spacing="2">ED. 2026</text>
+
+  <!-- Main Illustration Group with Filter -->
+  <g filter="url(#shadow)" transform="translate(0, 20)">
+    
+          <!-- Futuristic Sneaker Profile -->
+          <!-- Sole / Midsole with Cushioning Chambers -->
+          <path d="M120 540 Q250 560 400 550 Q560 530 680 500 Q690 530 660 570 Q520 600 360 600 Q200 590 120 570 Z" fill="#ffffff" stroke="#f43f5e" stroke-width="3" />
+          <!-- Neon Reactive Air Bubbles -->
+          <rect x="260" y="555" width="45" height="18" rx="8" fill="#f43f5e" />
+          <rect x="320" y="555" width="45" height="18" rx="8" fill="#f43f5e" />
+          <rect x="380" y="555" width="45" height="18" rx="8" fill="#f43f5e" />
+          <rect x="440" y="550" width="45" height="18" rx="8" fill="#f43f5e" />
+          <!-- Sneaker Body Upper -->
+          <path d="M140 540 C170 480 250 440 330 420 L440 310 C480 300 530 340 550 380 L650 450 C680 470 685 495 675 510 L140 540 Z" fill="#18181b" stroke="#3f3f46" stroke-width="3" />
+          <!-- Heel Counter & Collar -->
+          <path d="M430 310 C410 260 460 250 490 280 L540 370 L480 370 Z" fill="#27272a" stroke="#f43f5e" stroke-width="2" />
+          <!-- Dynamic Swoosh / Speed Wave -->
+          <path d="M220 510 C320 490 450 420 560 400 C470 450 350 520 220 510 Z" fill="#f43f5e" />
+          <!-- Lacing System -->
+          <line x1="380" y1="410" x2="430" y2="360" stroke="#f43f5e" stroke-width="4" stroke-linecap="round" />
+          <line x1="410" y1="430" x2="460" y2="380" stroke="#f43f5e" stroke-width="4" stroke-linecap="round" />
+          <line x1="440" y1="450" x2="490" y2="400" stroke="#f43f5e" stroke-width="4" stroke-linecap="round" />
+          <!-- Front Mesh Toe Box -->
+          <path d="M150 535 C200 490 260 470 300 465 L270 535 Z" fill="#27272a" stroke="#3f3f46" stroke-width="1.5" stroke-dasharray="3 3" />
+        
+  </g>
+
+  <!-- Bottom Product Tag -->
+  <rect x="50" y="860" width="700" height="90" rx="12" fill="#000000" fill-opacity="0.4" stroke="#ffffff" stroke-opacity="0.1" />
+  <text x="80" y="905" fill="#ffffff" font-family="'Inter', sans-serif" font-size="22" font-weight="800" letter-spacing="1">ZAPATILLAS STREET RUNNER PRO V2</text>
+  <text x="80" y="930" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="13" font-weight="500">PREMIUM EDITION • STUDIO MOCKUP</text>
+  
+  <rect x="660" y="885" width="60" height="38" rx="6" fill="#f43f5e" fill-opacity="0.2" stroke="#f43f5e" stroke-opacity="0.6" />
+  <text x="690" y="909" text-anchor="middle" fill="#f43f5e" font-family="'Inter', sans-serif" font-size="12" font-weight="800">FM</text>
+</svg>

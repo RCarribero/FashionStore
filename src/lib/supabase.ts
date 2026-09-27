@@ -7,6 +7,7 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
 const isConfigured = Boolean(
     supabaseUrl &&
     supabaseKey &&
+    !supabaseUrl.includes("demo") &&
     !supabaseUrl.includes("placeholder") &&
     supabaseUrl.startsWith("http")
 );

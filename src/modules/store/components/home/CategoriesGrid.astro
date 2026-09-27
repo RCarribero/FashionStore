@@ -12,11 +12,11 @@ const { data: categories } = await getCatalogCategories();
 
 // Fallback images for categories that don't have an image set in DB
 const fallbackImages: Record<string, string> = {
-    'zapatillas': 'fashionstore/categories/zapatillas',
-    'sudaderas': 'fashionstore/categories/sudaderas',
-    'pantalones': 'fashionstore/categories/pantalones',
-    'camisetas': 'fashionstore/categories/camisetas',
-    'chaquetas': 'fashionstore/categories/chaquetas'
+    'zapatillas': '/images/categories/zapatillas.svg',
+    'sudaderas': '/images/categories/sudaderas.svg',
+    'pantalones': '/images/categories/pantalones.svg',
+    'camisetas': '/images/categories/camisetas.svg',
+    'chaquetas': '/images/categories/chaquetas.svg'
 };
 
 // Image dimensions by category position

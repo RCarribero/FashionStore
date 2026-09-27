@@ -2,20 +2,7 @@
  * Auth Client Service
  * Client-side authentication operations using Supabase
  */
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-    import.meta.env.PUBLIC_SUPABASE_URL,
-    import.meta.env.PUBLIC_SUPABASE_ANON_KEY,
-    {
-        auth: {
-            storage: typeof window !== 'undefined' ? window.localStorage : undefined,
-            autoRefreshToken: true,
-            persistSession: true,
-            detectSessionInUrl: true
-        }
-    }
-);
+import { supabase } from '../../../lib/supabase';
 
 export interface LoginCredentials {
     email: string;

@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 800" width="1000" height="800">
+  <defs>
+    <radialGradient id="heroGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ef4444" stop-opacity="0.45" />
+      <stop offset="70%" stop-color="#ef4444" stop-opacity="0.08" />
+      <stop offset="100%" stop-color="#ef4444" stop-opacity="0" />
+    </radialGradient>
+    <filter id="heroShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="30" stdDeviation="40" flood-color="#ef4444" flood-opacity="0.3" />
+    </filter>
+  </defs>
+
+  <circle cx="500" cy="400" r="380" fill="url(#heroGlow)" />
+
+  <g filter="url(#heroShadow)" transform="translate(100, 100) rotate(-8, 400, 300)">
+    <!-- Sole -->
+    <path d="M80 430 Q240 450 420 440 Q620 410 760 360 Q780 400 730 450 Q560 490 380 490 Q180 480 80 460 Z" fill="#ffffff" stroke="#ef4444" stroke-width="4" />
+    <!-- Air Unit -->
+    <rect x="250" y="445" width="60" height="25" rx="10" fill="#ef4444" />
+    <rect x="330" y="445" width="60" height="25" rx="10" fill="#ef4444" />
+    <rect x="410" y="440" width="60" height="25" rx="10" fill="#ef4444" />
+    <!-- Sneaker Body -->
+    <path d="M100 430 C140 350 250 300 350 280 L490 140 C540 120 600 170 630 220 L740 310 C770 330 775 360 760 375 L100 430 Z" fill="#09090b" stroke="#27272a" stroke-width="4" />
+    <!-- Red Swoosh Flare -->
+    <path d="M200 400 C340 370 510 270 650 250 C540 320 380 415 200 400 Z" fill="#ef4444" />
+    <!-- Speed Lines -->
+    <line x1="480" y1="180" x2="680" y2="180" stroke="#ef4444" stroke-width="4" stroke-linecap="round" stroke-opacity="0.8" />
+    <line x1="530" y1="210" x2="720" y2="210" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-opacity="0.6" />
+  </g>
+</svg>
