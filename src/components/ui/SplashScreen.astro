@@ -1,0 +1,76 @@
+---
+/**
+ * Initial Splash Screen Component for FashionStore
+ * Displays an elegant intro animation on the first visit of the session.
+ */
+---
+
+<div
+  id="fm-initial-splash"
+  class="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center transition-all duration-700 ease-out select-none"
+  aria-hidden="true"
+>
+  <div class="relative flex flex-col items-center text-center px-6">
+    <!-- Animated Badge -->
+    <div class="inline-flex items-center gap-2 px-3 py-1 bg-red-600/10 border border-red-500/30 rounded-full mb-6 animate-pulse">
+      <span class="w-2 h-2 bg-[#E60000] rounded-full"></span>
+      <span class="text-[#E60000] text-xs font-bold uppercase tracking-widest">Nueva Colección 2026</span>
+    </div>
+
+    <!-- Main Brand Title -->
+    <h1 class="font-display text-4xl sm:text-6xl font-black text-white tracking-wider mb-2">
+      FASHION<span class="text-[#E60000]">MARKET</span>
+    </h1>
+
+    <p class="text-xs sm:text-sm font-semibold text-slate-400 tracking-[0.25em] uppercase mb-8">
+      Moda Masculina Premium
+    </p>
+
+    <!-- Animated Loading Bar -->
+    <div class="w-48 sm:w-64 h-1 bg-slate-800 rounded-full overflow-hidden">
+      <div id="fm-splash-bar" class="h-full bg-[#E60000] w-0 transition-all duration-1000 ease-out"></div>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+  (function () {
+    const splash = document.getElementById('fm-initial-splash');
+    const bar = document.getElementById('fm-splash-bar');
+
+    if (!splash) return;
+
+    // Only show once per session
+    const hasSeenSplash = sessionStorage.getItem('fm_splash_shown');
+    if (hasSeenSplash) {
+      splash.style.display = 'none';
+      return;
+    }
+
+    // Trigger bar fill
+    setTimeout(() => {
+      if (bar) bar.style.width = '100%';
+    }, 100);
+
+    // Fade out and remove after completion
+    setTimeout(() => {
+      splash.style.opacity = '0';
+      splash.style.pointerEvents = 'none';
+      sessionStorage.setItem('fm_splash_shown', 'true');
+
+      setTimeout(() => {
+        splash.style.display = 'none';
+      }, 700);
+    }, 1200);
+
+    // Allow clicking to dismiss immediately
+    splash.addEventListener('click', () => {
+      splash.style.opacity = '0';
+      splash.style.pointerEvents = 'none';
+      sessionStorage.setItem('fm_splash_shown', 'true');
+      setTimeout(() => {
+        splash.style.display = 'none';
+      }, 300);
+    });
+  })();
+</script>
