@@ -50,6 +50,11 @@ export function buildCloudinaryUrl(
     return publicId;
   }
 
+  if (isCloudinaryUrl(publicId)) {
+    const extracted = extractPublicId(publicId);
+    if (extracted) publicId = extracted;
+  }
+
   const baseUrl = `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/image/upload`;
 
   const quality = options?.quality || 'auto:eco';
@@ -157,6 +162,11 @@ export function buildResponsiveSet(
     (publicId.startsWith('http') && !isCloudinaryUrl(publicId))
   ) {
     return '';
+  }
+
+  if (isCloudinaryUrl(publicId)) {
+    const extracted = extractPublicId(publicId);
+    if (extracted) publicId = extracted;
   }
 
   const baseUrl = `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/image/upload`;

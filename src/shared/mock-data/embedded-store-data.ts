@@ -30,35 +30,35 @@ export const EMBEDDED_CATEGORIES: (Category & { image: string })[] = [
         id: 'cat-zapatillas',
         name: 'Zapatillas',
         slug: 'zapatillas',
-        image: '/images/categories/zapatillas.jpg',
+        image: 'https://res.cloudinary.com/dzaka0idb/image/upload/v1768292616/fashionstore/categories/zapatillas.webp',
         created_at: new Date('2024-01-01').toISOString(),
     },
     {
         id: 'cat-sudaderas',
         name: 'Sudaderas',
         slug: 'sudaderas',
-        image: '/images/categories/sudaderas.jpg',
+        image: 'https://res.cloudinary.com/dzaka0idb/image/upload/v1768292618/fashionstore/categories/sudaderas.webp',
         created_at: new Date('2024-01-02').toISOString(),
     },
     {
         id: 'cat-pantalones',
         name: 'Pantalones',
         slug: 'pantalones',
-        image: '/images/categories/pantalones.jpg',
+        image: 'https://res.cloudinary.com/dzaka0idb/image/upload/v1768292619/fashionstore/categories/pantalones.webp',
         created_at: new Date('2024-01-03').toISOString(),
     },
     {
         id: 'cat-camisetas',
         name: 'Camisetas',
         slug: 'camisetas',
-        image: '/images/categories/camisetas.jpg',
+        image: 'https://res.cloudinary.com/dzaka0idb/image/upload/v1768292621/fashionstore/categories/camisetas.webp',
         created_at: new Date('2024-01-04').toISOString(),
     },
     {
         id: 'cat-chaquetas',
         name: 'Chaquetas',
         slug: 'chaquetas',
-        image: '/images/categories/chaquetas.jpg',
+        image: 'https://res.cloudinary.com/dzaka0idb/image/upload/v1768292621/fashionstore/categories/chaquetas.webp',
         created_at: new Date('2024-01-05').toISOString(),
     },
 ];
@@ -66,120 +66,120 @@ export const EMBEDDED_CATEGORIES: (Category & { image: string })[] = [
 export const EMBEDDED_PRODUCTS: Product[] = [
     {
         id: 'prod-1',
-        name: 'Cazadora Bomber Aviator Obsidian',
-        slug: 'cazadora-bomber-aviator-obsidian',
-        description: 'Chaqueta bomber premium en tejido técnico hidrófugo con forro térmico satinado y detalles metálicos en acabado gunmetal.',
-        price: 12900,
+        name: 'Chaqueta Windrunner Sportswear',
+        slug: 'chaqueta-windrunner-sportswear',
+        description: 'Chaqueta icónica cortavientos de inspiración running con diseño en chevron de 26 grados y tejido hidrófugo.',
+        price: 11900,
         stock: 14,
         category_id: 'cat-chaquetas',
         category: EMBEDDED_CATEGORIES[4],
         images: [
-            '/images/products/cazadora-bomber-aviator-obsidian.jpg'
+            'https://res.cloudinary.com/dzaka0idb/image/upload/v1768207470/sportswear/windrunner-jacket-0.webp'
         ],
         featured: true,
         created_at: new Date('2024-02-01').toISOString(),
     },
     {
         id: 'prod-2',
-        name: 'Sudadera Oversize Acid Wash',
-        slug: 'sudadera-oversize-acid-wash',
-        description: 'Sudadera holgada de alto gramaje (460 GSM) en algodón orgánico peinado con lavado ácido artesanal y capucha estructurada.',
-        price: 6990,
+        name: 'Sudadera Vintage Hoodie Cream',
+        slug: 'sudadera-vintage-hoodie-cream',
+        description: 'Sudadera premium con capucha en tono crema vintage, algodón peinado de alta densidad y acabado suave.',
+        price: 7990,
         stock: 22,
         category_id: 'cat-sudaderas',
         category: EMBEDDED_CATEGORIES[1],
         images: [
-            '/images/products/sudadera-oversize-acid-wash.jpg'
+            'https://res.cloudinary.com/dzaka0idb/image/upload/v1768389284/fashionstore/products/vintage-hoodie-cream.webp'
         ],
         featured: true,
         created_at: new Date('2024-02-02').toISOString(),
     },
     {
         id: 'prod-3',
-        name: 'Zapatillas Street Runner Pro V2',
-        slug: 'zapatillas-street-runner-pro-v2',
-        description: 'Sneakers urbanas vanguardistas con suela ergonómica de amortiguación reactiva, empeine de malla transpirable y paneles de ante.',
-        price: 11950,
+        name: 'Nike Air Jordan 1 High OG',
+        slug: 'nike-air-jordan-1-high-og',
+        description: 'La legendaria zapatilla de baloncesto de 1985 con amortiguación Air-Sole encapsulada y confección en piel de primera calidad.',
+        price: 18999,
         stock: 18,
         category_id: 'cat-zapatillas',
         category: EMBEDDED_CATEGORIES[0],
         images: [
-            '/images/products/zapatillas-street-runner-pro-v2.jpg'
+            'https://res.cloudinary.com/dzaka0idb/image/upload/v1768207952/sportswear/nike-air-jordan-1-high-og-0.webp'
         ],
         featured: true,
         created_at: new Date('2024-02-03').toISOString(),
     },
     {
         id: 'prod-4',
-        name: 'Pantalón Cargo Táctico Modular',
-        slug: 'pantalon-cargo-tactico-modular',
-        description: 'Pantalón cargo de corte relaxed con múltiples bolsillos reforzados, hebillas magnéticas de ajuste rápido y bajos ajustables.',
-        price: 8490,
-        stock: 11,
+        name: 'Pantalón Chino Beige Classic',
+        slug: 'pantalon-chino-beige-classic',
+        description: 'Pantalón chino beige de corte entallado contemporáneo con elasticidad añadida para máxima comodidad diaria.',
+        price: 6990,
+        stock: 19,
         category_id: 'cat-pantalones',
         category: EMBEDDED_CATEGORIES[2],
         images: [
-            '/images/products/pantalon-cargo-tactico-modular.jpg'
+            'https://res.cloudinary.com/dzaka0idb/image/upload/v1768389276/fashionstore/products/chino-pants-beige.webp'
         ],
         featured: true,
         created_at: new Date('2024-02-04').toISOString(),
     },
     {
         id: 'prod-5',
-        name: 'Camiseta Heavyweight Boxy Fit',
-        slug: 'camiseta-heavyweight-boxy-fit',
-        description: 'Camiseta de corte cuadrado (Boxy Fit) en 100% algodón cardado de 280 GSM, cuello acanalado reforzado y costuras dobles.',
+        name: 'Camiseta Graphic Tee Black',
+        slug: 'camiseta-graphic-tee-black',
+        description: 'Camiseta gráfica de corte regular en algodón orgánico suave con estampado frontal de inspiración urbana.',
         price: 3490,
         stock: 35,
         category_id: 'cat-camisetas',
         category: EMBEDDED_CATEGORIES[3],
         images: [
-            '/images/products/camiseta-heavyweight-boxy-fit.jpg'
+            'https://res.cloudinary.com/dzaka0idb/image/upload/v1768389277/fashionstore/products/graphic-tee-black.webp'
         ],
         featured: true,
         created_at: new Date('2024-02-05').toISOString(),
     },
     {
         id: 'prod-6',
-        name: 'Chaqueta Denim Vintage Washed',
-        slug: 'chaqueta-denim-vintage-washed',
-        description: 'Chaqueta vaquera icónica en denim rígido de 14 oz con efecto desgastado manual, botones de bronce y forro interior con micromalla.',
-        price: 9900,
-        stock: 9,
+        name: 'Chaqueta Zip Hoodie Navy',
+        slug: 'chaqueta-zip-hoodie-navy',
+        description: 'Chaqueta con cremallera completa y capucha en azul marino profundo, forro polar interior y bolsillos canguro.',
+        price: 8490,
+        stock: 12,
         category_id: 'cat-chaquetas',
         category: EMBEDDED_CATEGORIES[4],
         images: [
-            '/images/products/chaqueta-denim-vintage-washed.jpg'
+            'https://res.cloudinary.com/dzaka0idb/image/upload/v1768389281/fashionstore/products/zip-hoodie-navy.webp'
         ],
         featured: true,
         created_at: new Date('2024-02-06').toISOString(),
     },
     {
         id: 'prod-7',
-        name: 'Zapatillas Retro Low Classic',
-        slug: 'zapatillas-retro-low-classic',
-        description: 'Silueta clásica de caña baja inspirada en el calzado de pista de los 80, confeccionada en cuero nobuck y suela color caramelo.',
-        price: 8990,
-        stock: 16,
+        name: 'Adidas Samba OG White Black',
+        slug: 'adidas-samba-og-white-black',
+        description: 'El clásico atemporal del fútbol y la moda urbana con parte superior de piel suave, puntera de ante en T y suela de goma caramelo.',
+        price: 11999,
+        stock: 25,
         category_id: 'cat-zapatillas',
         category: EMBEDDED_CATEGORIES[0],
         images: [
-            '/images/products/zapatillas-retro-low-classic.jpg'
+            'https://res.cloudinary.com/dzaka0idb/image/upload/v1768207954/sportswear/adidas-samba-og-0.webp'
         ],
         featured: false,
         created_at: new Date('2024-02-07').toISOString(),
     },
     {
         id: 'prod-8',
-        name: 'Pantalón Sastre Relaxed Pleated',
-        slug: 'pantalon-sastre-relaxed-pleated',
-        description: 'Pantalón sastre contemporáneo de tiro medio con pinzas delanteras dobles y caída fluida en mezcla de lana fría y elastano.',
+        name: 'Pantalón Slim Jeans Dark Wash',
+        slug: 'pantalon-slim-jeans-dark-wash',
+        description: 'Vaquero de corte slim en denim tintado azul oscuro con elasticidad moderada y confección resistente de 5 bolsillos.',
         price: 7990,
-        stock: 13,
+        stock: 16,
         category_id: 'cat-pantalones',
         category: EMBEDDED_CATEGORIES[2],
         images: [
-            '/images/products/pantalon-sastre-relaxed-pleated.jpg'
+            'https://res.cloudinary.com/dzaka0idb/image/upload/v1768389275/fashionstore/products/slim-jeans-dark.webp'
         ],
         featured: false,
         created_at: new Date('2024-02-08').toISOString(),
