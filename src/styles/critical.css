@@ -248,7 +248,29 @@ img {
   box-sizing: border-box;
 }
 
-/* 3D Floating Sneaker Animation - Critical Hero Styles */
+/* 3D Floating Sneaker & Hero Entrance Animations - Critical Hero Styles */
+@keyframes heroFadeUp {
+  0% {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes heroSneakerEnter {
+  0% {
+    opacity: 0;
+    transform: translateX(80px) rotateY(20deg) scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) rotateY(0deg) scale(1);
+  }
+}
+
 @keyframes sneakerFloat3D {
   0% {
     transform: translateY(-16px) rotateX(6deg) rotateY(-5deg) rotateZ(-3deg);
@@ -283,6 +305,31 @@ img {
   50% {
     transform: translateY(-8px) rotate(1deg);
   }
+}
+
+.hero-anim-badge {
+  opacity: 1;
+  animation: heroFadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.05s backwards;
+}
+
+.hero-anim-title {
+  opacity: 1;
+  animation: heroFadeUp 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.15s backwards;
+}
+
+.hero-anim-subtitle {
+  opacity: 1;
+  animation: heroFadeUp 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.3s backwards;
+}
+
+.hero-anim-ctas {
+  opacity: 1;
+  animation: heroFadeUp 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.45s backwards;
+}
+
+.hero-sneaker-enter {
+  opacity: 1;
+  animation: heroSneakerEnter 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.2s backwards;
 }
 
 .hero-sneaker-container {

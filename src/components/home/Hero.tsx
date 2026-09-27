@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
 
 export const Hero = ({ config }: { config?: any }) => {
     const title = config?.title || "DEFINE TU ESTILO";
@@ -54,45 +53,26 @@ export const Hero = ({ config }: { config?: any }) => {
             {/* Hero Content */}
             <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
+                    {/* Left Column - Text & Actions */}
                     <div className="max-w-2xl">
                         {/* Badge */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.6 }}
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-accent/10 border border-accent/30 mb-8 rounded-full"
-                        >
+                        <div className="hero-anim-badge inline-flex items-center gap-2 px-4 py-2 bg-accent/10 border border-accent/30 mb-8 rounded-full">
                             <span className="w-2 h-2 bg-accent rounded-full animate-pulse"></span>
                             <span className="text-accent text-sm font-semibold uppercase tracking-wider">Nueva Colección 2026</span>
-                        </motion.div>
+                        </div>
 
                         {/* Title */}
-                        <motion.h1
-                            initial={{ opacity: 0, y: 30 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.8, delay: 0.2 }}
-                            className="font-display text-5xl lg:text-7xl font-bold text-white mb-6 leading-tight"
-                        >
+                        <h1 className="hero-anim-title font-display text-5xl lg:text-7xl font-bold text-white mb-6 leading-tight">
                             {renderTitle()}
-                        </motion.h1>
+                        </h1>
 
                         {/* Subtitle */}
-                        <motion.p
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ duration: 0.8, delay: 0.4 }}
-                            className="text-xl lg:text-2xl text-slate-300 mb-10 max-w-xl"
-                        >
+                        <p className="hero-anim-subtitle text-xl lg:text-2xl text-slate-300 mb-10 max-w-xl">
                             {subtitle}
-                        </motion.p>
+                        </p>
 
                         {/* CTAs */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.8, delay: 0.6 }}
-                            className="flex flex-wrap gap-4"
-                        >
+                        <div className="hero-anim-ctas flex flex-wrap gap-4">
                             <a
                                 href="/productos"
                                 className="group inline-flex items-center gap-3 px-8 py-4 bg-accent hover:bg-accent-600 text-white font-bold uppercase tracking-wider transition-all duration-300 hover:scale-105 rounded-none"
@@ -108,11 +88,11 @@ export const Hero = ({ config }: { config?: any }) => {
                             >
                                 Explorar Camisetas
                             </a>
-                        </motion.div>
+                        </div>
                     </div>
 
                     {/* Right Column - 3D Floating Sneaker Stage */}
-                    <div className="flex items-center justify-center relative z-20 mt-8 lg:mt-0 w-full">
+                    <div className="hero-sneaker-enter flex items-center justify-center relative z-20 mt-8 lg:mt-0 w-full">
                         {/* Dynamic Atmospheric Radial Glow */}
                         <div className="absolute inset-0 bg-gradient-to-tr from-accent/30 via-red-600/10 to-transparent rounded-full blur-3xl pointer-events-none scale-125" />
 
