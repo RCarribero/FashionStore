@@ -1,22 +1,28 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 
 export const Hero = ({ config }: { config?: any }) => {
-    const title = config?.title || "DEFINE TU ESTILO"; // Handle highlighting logic later if needed
+    const title = config?.title || "DEFINE TU ESTILO";
     const subtitle = config?.subtitle || "Piezas premium para el hombre que marca tendencia. Calidad, diseño y actitud en cada prenda.";
     const buttonText = config?.buttonText || "Ver Colección";
 
-    // Simple parser for title to keep the "ESTILO" highlight if user enters similar text?
-    // For now, let's just render the text. If we want "ESTILO" highlighted, we'd need a rich text editor or a convention.
-    // Let's assume input is plain text for now.
+    // Mouse tilt interaction for responsive 3D feel
+    const [tilt, setTilt] = useState({ rotateX: 0, rotateY: 0 });
 
-    // To maintain the design where the last word is highlighted if it matches defaults:
-    // We can do a simple split if we want, or just print it all white for custom text.
-    // Let's print it all white for custom text to avoid breaking layout, unless it's default.
+    const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width - 0.5) * 16; // -8 to +8 deg
+        const y = ((e.clientY - rect.top) / rect.height - 0.5) * -16; // -8 to +8 deg
+        setTilt({ rotateX: y, rotateY: x });
+    };
+
+    const handleMouseLeave = () => {
+        setTilt({ rotateX: 0, rotateY: 0 });
+    };
 
     const renderTitle = () => {
         if (config?.title) {
-            return config.title; // Render custom title as is (all white)
+            return config.title;
         }
         return (
             <>
@@ -25,13 +31,20 @@ export const Hero = ({ config }: { config?: any }) => {
         );
     };
 
+    // Cloudinary transparent studio asset with local backup
+    const sneakerUrl = "https://res.cloudinary.com/dzaka0idb/image/upload/e_make_transparent:40,f_webp,q_auto/v1768389286/fashionstore/products/running-shoes-red.webp";
+
     return (
-        <section className="relative min-h-[90vh] bg-black flex items-center overflow-hidden">
+        <section 
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
+            className="relative min-h-[85vh] lg:min-h-[90vh] bg-black flex items-center overflow-hidden py-16 lg:py-28"
+        >
             {/* Background Gradient */}
-            <div className="absolute inset-0 bg-gradient-to-br from-black via-slate-900 to-black"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-black via-slate-900 to-black pointer-events-none"></div>
 
             {/* Animated Grid Pattern */}
-            <div className="absolute inset-0 opacity-10">
+            <div className="absolute inset-0 opacity-10 pointer-events-none">
                 <div className="absolute inset-0" style={{
                     backgroundImage: 'linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)',
                     backgroundSize: '50px 50px'
@@ -39,9 +52,9 @@ export const Hero = ({ config }: { config?: any }) => {
             </div>
 
             {/* Hero Content */}
-            <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
-                <div className="grid lg:grid-cols-2 gap-12 items-center">
-                    <div className="max-w-3xl">
+            <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
+                    <div className="max-w-2xl">
                         {/* Badge */}
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
@@ -68,7 +81,7 @@ export const Hero = ({ config }: { config?: any }) => {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ duration: 0.8, delay: 0.4 }}
-                            className="text-xl lg:text-2xl text-slate-300 mb-10 max-w-2xl"
+                            className="text-xl lg:text-2xl text-slate-300 mb-10 max-w-xl"
                         >
                             {subtitle}
                         </motion.p>
@@ -98,65 +111,57 @@ export const Hero = ({ config }: { config?: any }) => {
                         </motion.div>
                     </div>
 
-                    {/* Right Column - Floating Image */}
-                    <div className="hidden lg:flex items-center justify-center relative z-20">
-                        {/* Abstract background shapes */}
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ duration: 1, delay: 0.5 }}
-                            className="absolute inset-0 bg-gradient-to-tr from-accent/20 to-transparent rounded-full blur-3xl"
-                        />
+                    {/* Right Column - 3D Floating Sneaker Stage */}
+                    <div className="flex items-center justify-center relative z-20 mt-8 lg:mt-0 w-full">
+                        {/* Dynamic Atmospheric Radial Glow */}
+                        <div className="absolute inset-0 bg-gradient-to-tr from-accent/30 via-red-600/10 to-transparent rounded-full blur-3xl pointer-events-none scale-125" />
 
-                        <motion.div
-                            initial={{ opacity: 0, x: 100, rotateY: 20 }}
-                            animate={{ opacity: 1, x: 0, rotateY: 0 }}
-                            transition={{ duration: 1, delay: 0.2, type: "spring", stiffness: 100 }}
-                            className="relative z-10 w-full max-w-lg"
-                            style={{ perspective: 1000 }}
+                        {/* 3D Floating Stage with Perspective */}
+                        <div 
+                            className="hero-sneaker-container relative z-10 w-full max-w-md sm:max-w-lg flex flex-col items-center justify-center"
+                            style={{
+                                transform: `rotateX(${tilt.rotateX}deg) rotateY(${tilt.rotateY}deg)`,
+                                transition: 'transform 0.15s ease-out'
+                            }}
                         >
-                            <motion.img
-                                src="https://res.cloudinary.com/dzaka0idb/image/upload/v1768389286/fashionstore/products/running-shoes-red.webp"
-                                alt="Nike Air Max Premium"
-                                className="w-full h-auto drop-shadow-2xl object-contain transform-gpu"
-                                animate={{
-                                    y: [-15, 15, -15],
-                                    rotateZ: [-2, 2, -2],
-                                    rotateX: [5, -5, 5]
-                                }}
-                                transition={{
-                                    duration: 6,
-                                    repeat: Infinity,
-                                    ease: "easeInOut"
-                                }}
-                            />
+                            <div className="hero-floating-sneaker relative w-full flex items-center justify-center">
+                                <img
+                                    src={sneakerUrl}
+                                    alt="Nike Air Max Runner Red - Edición Limitada"
+                                    width="600"
+                                    height="450"
+                                    loading="eager"
+                                    fetchPriority="high"
+                                    decoding="async"
+                                    className="w-full h-auto drop-shadow-[0_20px_35px_rgba(239,68,68,0.25)] drop-shadow-[0_30px_50px_rgba(0,0,0,0.85)] object-contain select-none pointer-events-none"
+                                    onError={(e) => {
+                                        const target = e.target as HTMLImageElement;
+                                        if (!target.src.includes('/images/hero/hero-sneaker-transparent.webp')) {
+                                            target.src = '/images/hero/hero-sneaker-transparent.webp';
+                                        }
+                                    }}
+                                />
 
-                            {/* Floating Badge */}
-                            <motion.div
-                                initial={{ opacity: 0, scale: 0 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ delay: 1, duration: 0.5 }}
-                                className="absolute -bottom-10 -right-4 bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-xl shadow-xl z-20 max-w-[200px]"
-                            >
-                                <div className="flex items-center gap-2 mb-1">
-                                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                                    <p className="text-xs font-bold text-white/80 uppercase tracking-wider">Just Dropped</p>
+                                {/* Floating Glassmorphism Badge */}
+                                <div className="hero-badge-float absolute -bottom-6 -right-2 sm:-bottom-8 sm:-right-4 bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-xl shadow-2xl z-20 max-w-[210px] pointer-events-auto">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <span className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse"></span>
+                                        <p className="text-xs font-bold text-white/90 uppercase tracking-wider">Just Dropped</p>
+                                    </div>
+                                    <p className="font-display font-bold text-lg leading-tight text-white">Air Max Pulse</p>
+                                    <p className="text-sm text-white/70">Edición Limitada</p>
                                 </div>
-                                <p className="font-display font-bold text-lg leading-tight text-white">Air Max Pulse</p>
-                                <p className="text-sm text-white/60">Edición Limitada</p>
-                            </motion.div>
-                        </motion.div>
+                            </div>
+
+                            {/* 3D Dynamic Synchronized Contact Shadow */}
+                            <div className="hero-sneaker-shadow w-3/4 sm:w-2/3 h-5 sm:h-7 bg-black/80 rounded-[100%] blur-md mt-2 pointer-events-none"></div>
+                        </div>
                     </div>
                 </div>
             </div>
 
             {/* Decorative Element */}
-            <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 1.5 }}
-                className="absolute right-0 top-1/2 -translate-y-1/2 w-1/3 h-[600px] bg-gradient-to-l from-accent/20 to-transparent blur-3xl pointer-events-none"
-            ></motion.div>
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1/3 h-[600px] bg-gradient-to-l from-accent/15 to-transparent blur-3xl pointer-events-none"></div>
         </section>
     );
 };

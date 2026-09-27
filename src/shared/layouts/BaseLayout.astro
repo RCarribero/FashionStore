@@ -1,7 +1,6 @@
 ---
 import "../../styles/global.css";
 import criticalCSS from "../../styles/critical.css?raw";
-import SplashScreen from "../../components/ui/SplashScreen.astro";
 
 interface Props {
   title: string;
@@ -89,7 +88,6 @@ const canonicalURL = Astro.site
     <meta name="generator" content={Astro.generator} />
   </head>
   <body class="min-h-screen flex flex-col bg-slate-950 text-white selection:bg-accent selection:text-white">
-    <SplashScreen />
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 z-50 px-4 py-2 bg-accent text-white font-bold rounded ring-4 ring-slate-900">
         Saltar al contenido principal
     </a>

@@ -1,5 +1,4 @@
-
-import { Hero } from "../../../../../components/home/Hero";
+import { Hero } from "./Hero";
 
 // Add props to accept config
 export const PreviewHero = ({ config }: { config?: any }) => {

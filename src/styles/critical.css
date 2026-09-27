@@ -247,3 +247,60 @@ img {
 * {
   box-sizing: border-box;
 }
+
+/* 3D Floating Sneaker Animation - Critical Hero Styles */
+@keyframes sneakerFloat3D {
+  0% {
+    transform: translateY(-16px) rotateX(6deg) rotateY(-5deg) rotateZ(-3deg);
+  }
+  50% {
+    transform: translateY(16px) rotateX(-5deg) rotateY(5deg) rotateZ(3deg);
+  }
+  100% {
+    transform: translateY(-16px) rotateX(6deg) rotateY(-5deg) rotateZ(-3deg);
+  }
+}
+
+@keyframes sneakerShadow3D {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.3;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.75;
+  }
+  100% {
+    transform: scale(0.85);
+    opacity: 0.3;
+  }
+}
+
+@keyframes badgeFloat {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(1deg);
+  }
+}
+
+.hero-sneaker-container {
+  perspective: 1200px;
+  transform-style: preserve-3d;
+}
+
+.hero-floating-sneaker {
+  animation: sneakerFloat3D 5s ease-in-out infinite;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.hero-sneaker-shadow {
+  animation: sneakerShadow3D 5s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.hero-badge-float {
+  animation: badgeFloat 4s ease-in-out infinite;
+}
