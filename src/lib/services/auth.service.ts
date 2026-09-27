@@ -9,20 +9,31 @@ import { APP_CONFIG } from '../config/app';
 import { AUTH_CONFIG } from '../db';
 import type { Session } from '../../shared/types';
 
+import { createMockSupabaseClient } from '../mock-supabase';
+
 const supabaseUrl = APP_CONFIG.supabase.url || 'https://placeholder.supabase.co';
 const supabaseAnonKey = APP_CONFIG.supabase.anonKey || 'placeholder';
-
-/**
- * Public Supabase client
- */
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 /**
  * Check if Supabase is properly configured
  */
 export function isSupabaseConfigured(): boolean {
-    return !supabaseUrl.includes('placeholder') && supabaseAnonKey !== 'placeholder';
+    return (
+        Boolean(supabaseUrl) &&
+        Boolean(supabaseAnonKey) &&
+        !supabaseUrl.includes('placeholder') &&
+        !supabaseUrl.includes('demo') &&
+        supabaseAnonKey !== 'placeholder' &&
+        supabaseUrl.startsWith('http')
+    );
 }
+
+/**
+ * Public Supabase client
+ */
+export const supabase: SupabaseClient = isSupabaseConfigured()
+    ? createClient(supabaseUrl, supabaseAnonKey)
+    : (createMockSupabaseClient() as any);
 
 /**
  * Create admin client for server-side operations
@@ -30,8 +41,8 @@ export function isSupabaseConfigured(): boolean {
 export function createAdminClient(): SupabaseClient {
     const serviceRoleKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    if (!serviceRoleKey) {
-        throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY environment variable');
+    if (!isSupabaseConfigured() || !serviceRoleKey || serviceRoleKey.includes('demo')) {
+        return createMockSupabaseClient() as any;
     }
 
     return createClient(supabaseUrl, serviceRoleKey, {

@@ -7,16 +7,11 @@ export const prerender = false;
 import AdminLayout from "../../modules/admin/layouts/AdminLayout.astro";
 import DashboardCharts from "../../components/admin/DashboardCharts";
 import CohortChart from "../../components/admin/CohortChart";
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from "../../lib/supabase";
 import {
     ORDER_STATUSES,
     type OrderStatus,
 } from "../../config/constants/order-status";
-
-const supabase = createClient(
-    import.meta.env.PUBLIC_SUPABASE_URL,
-    import.meta.env.SUPABASE_SERVICE_ROLE_KEY,
-);
 
 const STATUS_COLOR_MAP: Record<string, string> = {
     "bg-yellow-500": "#eab308",

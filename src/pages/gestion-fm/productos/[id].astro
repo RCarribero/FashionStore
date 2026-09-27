@@ -5,13 +5,8 @@
 export const prerender = false;
 
 import AdminLayout from "../../../modules/admin/layouts/AdminLayout.astro";
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from "../../../lib/supabase";
 import ImageUploader from "../../../modules/admin/components/ImageUploader";
-
-const supabase = createClient(
-    import.meta.env.PUBLIC_SUPABASE_URL,
-    import.meta.env.SUPABASE_SERVICE_ROLE_KEY,
-);
 
 const { id } = Astro.params;
 

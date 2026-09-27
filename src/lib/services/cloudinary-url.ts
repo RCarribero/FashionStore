@@ -39,6 +39,17 @@ export function buildCloudinaryUrl(
   resourceType: ResourceType = 'other',
   options?: UrlOptions
 ): string {
+  if (!publicId) return '';
+  if (
+    publicId.startsWith('/') ||
+    publicId.startsWith('./') ||
+    publicId.startsWith('data:') ||
+    publicId.startsWith('blob:') ||
+    (publicId.startsWith('http') && !isCloudinaryUrl(publicId))
+  ) {
+    return publicId;
+  }
+
   const baseUrl = `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/image/upload`;
 
   const quality = options?.quality || 'auto:eco';
@@ -137,6 +148,17 @@ export function buildResponsiveSet(
   resourceType: ResourceType = 'product',
   options?: UrlOptions
 ): string {
+  if (
+    !publicId ||
+    publicId.startsWith('/') ||
+    publicId.startsWith('./') ||
+    publicId.startsWith('data:') ||
+    publicId.startsWith('blob:') ||
+    (publicId.startsWith('http') && !isCloudinaryUrl(publicId))
+  ) {
+    return '';
+  }
+
   const baseUrl = `https://res.cloudinary.com/${CLOUDINARY_CLOUD}/image/upload`;
   const baseTransforms = 'f_auto,q_auto:eco,fl_lossy';
 

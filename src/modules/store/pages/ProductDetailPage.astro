@@ -50,6 +50,10 @@ const THUMBNAIL_SIZE = 200;
 const getOptimizedImage = (imageUrl?: string) => {
     if (!imageUrl) return null;
 
+    if (imageUrl.startsWith('/') || imageUrl.startsWith('./')) {
+        return { src: imageUrl, srcset: undefined };
+    }
+
     const isAbsoluteUrl =
         imageUrl.startsWith("http://") || imageUrl.startsWith("https://");
 
@@ -76,6 +80,10 @@ const getOptimizedImage = (imageUrl?: string) => {
 
 const getOptimizedThumbnail = (imageUrl?: string) => {
     if (!imageUrl) return null;
+
+    if (imageUrl.startsWith('/') || imageUrl.startsWith('./')) {
+        return imageUrl;
+    }
 
     const isAbsoluteUrl =
         imageUrl.startsWith("http://") || imageUrl.startsWith("https://");

@@ -21,6 +21,7 @@ export function isSupabaseConfigured(): boolean {
         Boolean(supabaseUrl) &&
         Boolean(supabaseAnonKey) &&
         !supabaseUrl.includes('placeholder') &&
+        !supabaseUrl.includes('demo') &&
         supabaseAnonKey !== 'placeholder' &&
         supabaseUrl.startsWith('http')
     );

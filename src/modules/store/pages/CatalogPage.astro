@@ -63,6 +63,10 @@ const PRODUCT_IMAGE_HEIGHT = 800;
 const getOptimizedImage = (imageUrl?: string) => {
     if (!imageUrl) return null;
 
+    if (imageUrl.startsWith('/') || imageUrl.startsWith('./')) {
+        return { src: imageUrl, srcset: undefined };
+    }
+
     const isAbsoluteUrl = imageUrl.startsWith("http://") || imageUrl.startsWith("https://");
     if (isAbsoluteUrl && !isCloudinaryUrl(imageUrl)) {
         return { src: imageUrl, srcset: undefined };

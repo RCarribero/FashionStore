@@ -116,7 +116,7 @@ export const Hero = ({ config }: { config?: any }) => {
                             style={{ perspective: 1000 }}
                         >
                             <motion.img
-                                src="/images/hero/hero-sneaker.svg"
+                                src="/images/hero/hero-sneaker.jpg"
                                 alt="Nike Air Max Premium"
                                 className="w-full h-auto drop-shadow-2xl object-contain transform-gpu"
                                 animate={{

@@ -30,35 +30,35 @@ export const EMBEDDED_CATEGORIES: (Category & { image: string })[] = [
         id: 'cat-zapatillas',
         name: 'Zapatillas',
         slug: 'zapatillas',
-        image: '/images/categories/zapatillas.svg',
+        image: '/images/categories/zapatillas.jpg',
         created_at: new Date('2024-01-01').toISOString(),
     },
     {
         id: 'cat-sudaderas',
         name: 'Sudaderas',
         slug: 'sudaderas',
-        image: '/images/categories/sudaderas.svg',
+        image: '/images/categories/sudaderas.jpg',
         created_at: new Date('2024-01-02').toISOString(),
     },
     {
         id: 'cat-pantalones',
         name: 'Pantalones',
         slug: 'pantalones',
-        image: '/images/categories/pantalones.svg',
+        image: '/images/categories/pantalones.jpg',
         created_at: new Date('2024-01-03').toISOString(),
     },
     {
         id: 'cat-camisetas',
         name: 'Camisetas',
         slug: 'camisetas',
-        image: '/images/categories/camisetas.svg',
+        image: '/images/categories/camisetas.jpg',
         created_at: new Date('2024-01-04').toISOString(),
     },
     {
         id: 'cat-chaquetas',
         name: 'Chaquetas',
         slug: 'chaquetas',
-        image: '/images/categories/chaquetas.svg',
+        image: '/images/categories/chaquetas.jpg',
         created_at: new Date('2024-01-05').toISOString(),
     },
 ];
@@ -74,7 +74,7 @@ export const EMBEDDED_PRODUCTS: Product[] = [
         category_id: 'cat-chaquetas',
         category: EMBEDDED_CATEGORIES[4],
         images: [
-            '/images/products/cazadora-bomber-aviator-obsidian.svg'
+            '/images/products/cazadora-bomber-aviator-obsidian.jpg'
         ],
         featured: true,
         created_at: new Date('2024-02-01').toISOString(),
@@ -89,7 +89,7 @@ export const EMBEDDED_PRODUCTS: Product[] = [
         category_id: 'cat-sudaderas',
         category: EMBEDDED_CATEGORIES[1],
         images: [
-            '/images/products/sudadera-oversize-acid-wash.svg'
+            '/images/products/sudadera-oversize-acid-wash.jpg'
         ],
         featured: true,
         created_at: new Date('2024-02-02').toISOString(),
@@ -104,7 +104,7 @@ export const EMBEDDED_PRODUCTS: Product[] = [
         category_id: 'cat-zapatillas',
         category: EMBEDDED_CATEGORIES[0],
         images: [
-            '/images/products/zapatillas-street-runner-pro-v2.svg'
+            '/images/products/zapatillas-street-runner-pro-v2.jpg'
         ],
         featured: true,
         created_at: new Date('2024-02-03').toISOString(),
@@ -119,7 +119,7 @@ export const EMBEDDED_PRODUCTS: Product[] = [
         category_id: 'cat-pantalones',
         category: EMBEDDED_CATEGORIES[2],
         images: [
-            '/images/products/pantalon-cargo-tactico-modular.svg'
+            '/images/products/pantalon-cargo-tactico-modular.jpg'
         ],
         featured: true,
         created_at: new Date('2024-02-04').toISOString(),
@@ -134,7 +134,7 @@ export const EMBEDDED_PRODUCTS: Product[] = [
         category_id: 'cat-camisetas',
         category: EMBEDDED_CATEGORIES[3],
         images: [
-            '/images/products/camiseta-heavyweight-boxy-fit.svg'
+            '/images/products/camiseta-heavyweight-boxy-fit.jpg'
         ],
         featured: true,
         created_at: new Date('2024-02-05').toISOString(),
@@ -149,7 +149,7 @@ export const EMBEDDED_PRODUCTS: Product[] = [
         category_id: 'cat-chaquetas',
         category: EMBEDDED_CATEGORIES[4],
         images: [
-            '/images/products/chaqueta-denim-vintage-washed.svg'
+            '/images/products/chaqueta-denim-vintage-washed.jpg'
         ],
         featured: true,
         created_at: new Date('2024-02-06').toISOString(),
@@ -164,7 +164,7 @@ export const EMBEDDED_PRODUCTS: Product[] = [
         category_id: 'cat-zapatillas',
         category: EMBEDDED_CATEGORIES[0],
         images: [
-            '/images/products/zapatillas-retro-low-classic.svg'
+            '/images/products/zapatillas-retro-low-classic.jpg'
         ],
         featured: false,
         created_at: new Date('2024-02-07').toISOString(),
@@ -179,7 +179,7 @@ export const EMBEDDED_PRODUCTS: Product[] = [
         category_id: 'cat-pantalones',
         category: EMBEDDED_CATEGORIES[2],
         images: [
-            '/images/products/pantalon-sastre-relaxed-pleated.svg'
+            '/images/products/pantalon-sastre-relaxed-pleated.jpg'
         ],
         featured: false,
         created_at: new Date('2024-02-08').toISOString(),

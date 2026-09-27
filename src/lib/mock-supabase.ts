@@ -58,6 +58,19 @@ class MockQueryBuilder<T = any> implements PromiseLike<{ data: any; error: any; 
         return this;
     }
 
+    in(column: string, values: any[]) {
+        this.items = this.items.filter((item) => values.includes(item[column]));
+        return this;
+    }
+
+    ilike(column: string, pattern: string) {
+        const clean = pattern.replace(/%/g, '').toLowerCase();
+        this.items = this.items.filter((item) =>
+            String(item[column] || '').toLowerCase().includes(clean)
+        );
+        return this;
+    }
+
     order(column: string, options?: { ascending?: boolean }) {
         const ascending = options?.ascending !== false;
         this.items.sort((a, b) => {
